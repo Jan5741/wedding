@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>婚禮規劃 💍</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--rose:#c97b63;--blush:#e8c5b0;--sage:#7fa87f;--cream:#fdf6ee;--light:#f5ece3;--dark:#3a2e28;--mid:#7a6458;--white:#fffdf9;--shadow:0 2px 18px rgba(58,46,40,.09);--red:#e74c3c;--gold:#b7860a}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh}
+header{background:var(--white);border-bottom:1px solid var(--blush);padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.header-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+h1{font-family:'Noto Serif TC',serif;font-size:19px;color:var(--rose);letter-spacing:2px}
+.sync-badge{margin-left:auto;font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--blush);background:var(--light);color:var(--mid);display:flex;align-items:center;gap:4px}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#ccc;transition:background .3s}
+.sync-dot.ok{background:var(--sage)}.sync-dot.err{background:var(--red)}.sync-dot.loading{background:var(--blush);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.date-banners{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.date-banner{background:var(--light);border-radius:10px;padding:8px 12px;cursor:pointer;border:1px solid rgba(232,197,176,.5);transition:background .2s}
+.date-banner:hover{background:var(--blush)}
+.db-label{font-size:10px;color:var(--mid);margin-bottom:2px}
+.db-val{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--dark)}
+.db-countdown{font-size:11px;color:var(--rose);font-weight:500;margin-top:1px}
+nav{display:flex;overflow-x:auto}
+nav button{flex:1;min-width:68px;padding:9px 4px;border:none;background:transparent;font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--mid);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
+nav button.active{color:var(--rose);border-bottom-color:var(--rose);font-weight:500}
+.content{padding:16px;max-width:680px;margin:0 auto}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.card{background:var(--white);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid rgba(232,197,176,.3)}
+.section-title{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--rose);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.input-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+input[type=text],input[type=number],input[type=date],select,textarea{flex:1;min-width:100px;padding:8px 11px;border:1px solid var(--blush);border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--dark);background:var(--cream);outline:none;transition:border .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--rose);background:var(--white)}
+textarea{resize:vertical;min-height:54px}
+.btn{padding:8px 15px;border:none;border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-primary{background:var(--rose);color:#fff}.btn-primary:hover{background:#b56a52}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-del{background:transparent;color:#ccc;border:none;padding:4px 6px;font-size:14px;cursor:pointer;line-height:1;transition:color .2s}.btn-del:hover{color:var(--red)}
+
+/* ── SHARED EXPANDABLE CARD ── */
+.ex-card{background:var(--white);border:1px solid rgba(232,197,176,.4);border-radius:12px;margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow)}
+.ex-main{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
+.ex-main:hover{background:rgba(232,197,176,.08)}
+.ex-body{flex:1;min-width:0}
+.ex-arrow{font-size:16px;color:var(--mid);transition:transform .2s;flex-shrink:0}
+.ex-arrow.open{transform:rotate(90deg)}
+.ex-detail{display:none;padding:0 14px 14px;border-top:1px solid var(--light)}
+.ex-detail.open{display:block}
+.ex-field{margin-top:10px}
+.ex-field label{font-size:11px;color:var(--mid);display:block;margin-bottom:4px}
+.ex-field input,.ex-field select,.ex-field textarea{width:100%;min-width:unset}
+.ex-save{margin-top:10px;width:100%}
+.ex-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ex-col{flex:1;min-width:80px}
+.ex-col label{font-size:11px;color:var(--mid);display:block;margin-bottom:4px}
+.ex-col input,.ex-col select{width:100%;min-width:unset}
+
+/* ── TODOS ── */
+.todo-cb{width:18px;height:18px;min-width:18px;accent-color:var(--sage);cursor:pointer;flex-shrink:0}
+.todo-title{font-size:14px;line-height:1.5;word-break:break-all}
+.todo-title.done{text-decoration:line-through;color:var(--mid);opacity:.5}
+.tags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.tag{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--light);color:var(--mid)}
+.tag.urgent{background:#fdecea;color:var(--red)}.tag.done-tag{background:#eaf4ea;color:var(--sage)}
+.progress-wrap{background:var(--light);border-radius:10px;height:7px;margin:10px 0 4px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--sage),var(--rose));border-radius:10px;transition:width .5s}
+.progress-lbl{font-size:12px;color:var(--mid);text-align:right}
+/* photos */
+.photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.photo-wrap{position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--blush);flex-shrink:0}
+.photo-wrap img{width:100%;height:100%;object-fit:cover}
+.photo-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-add{width:72px;height:72px;border:2px dashed var(--blush);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--mid);gap:3px;background:var(--cream);transition:border-color .2s;flex-shrink:0}
+.photo-add:hover{border-color:var(--rose);color:var(--rose)}
+
+/* ── BUDGET ── */
+.budget-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.bsum-box{border-radius:12px;padding:14px 16px;text-align:center}
+.bsum-box.paid{background:linear-gradient(135deg,#eaf4ea,#f0f8f0)}
+.bsum-box.pending{background:linear-gradient(135deg,#fff8e1,#fffbf0)}
+.bl{font-size:11px;color:var(--mid);margin-bottom:4px}
+.ba{font-family:'Noto Serif TC',serif;font-size:22px}
+.bsum-box.paid .ba{color:var(--sage)}.bsum-box.pending .ba{color:var(--gold)}
+.btotal-row{text-align:center;padding:10px 0 4px;font-size:13px;color:var(--mid)}
+.btotal-row strong{font-family:'Noto Serif TC',serif;font-size:18px;color:var(--rose);margin-left:6px}
+.exp-name{font-size:14px;word-break:break-all}
+.exp-sub{font-size:11px;color:var(--mid);margin-top:2px}
+.exp-amt{font-size:15px;font-weight:500;white-space:nowrap;margin-right:4px}
+.exp-amt.paid{color:var(--sage)}.exp-amt.unpaid{color:var(--gold)}
+.exp-badge{font-size:10px;padding:2px 8px;border-radius:8px;white-space:nowrap;cursor:pointer;border:none;font-family:'Noto Sans TC',sans-serif}
+.exp-badge.paid{background:#eaf4ea;color:var(--sage)}.exp-badge.unpaid{background:#fff8e1;color:var(--gold)}
+
+/* ── VENDOR ── */
+.vendor-name-txt{font-weight:500;font-size:15px;flex:1;min-width:0;word-break:break-all}
+.vendor-type-tag{font-size:11px;padding:3px 10px;border-radius:10px;background:var(--blush);color:var(--dark);flex-shrink:0}
+.vstatus{display:inline-block;font-size:11px;padding:3px 10px;border-radius:10px}
+.vstatus-confirmed{background:#eaf4ea;color:var(--sage)}.vstatus-pending{background:#fff8e1;color:var(--gold)}.vstatus-cancelled{background:#fdecea;color:var(--red)}
+.vendor-preview{font-size:12px;color:var(--mid);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── GUEST ── */
+.guest-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.stat-box{background:var(--light);border-radius:10px;padding:10px 6px;text-align:center}
+.stat-box .num{font-family:'Noto Serif TC',serif;font-size:22px;color:var(--rose)}
+.stat-box .lbl{font-size:11px;color:var(--mid)}
+.g-name-txt{font-size:14px;flex:1}
+.g-side-tag{font-size:11px;color:var(--mid)}
+.g-preview{font-size:12px;color:var(--mid);margin-top:2px}
+.rsvp-badge{font-size:11px;padding:3px 10px;border-radius:10px;flex-shrink:0}
+.rsvp-yes{background:#eaf4ea;color:var(--sage)}.rsvp-no{background:#fdecea;color:var(--red)}.rsvp-pending{background:var(--light);color:var(--mid)}
+
+.empty{text-align:center;padding:28px;color:var(--mid);font-size:13px}
+.empty .emoji{font-size:30px;margin-bottom:8px}
+#loadingOverlay{position:fixed;inset:0;background:rgba(253,246,238,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:12px}
+#loadingOverlay .spinner{width:36px;height:36px;border:3px solid var(--blush);border-top-color:var(--rose);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadingOverlay p{font-size:14px;color:var(--mid)}
+@media(max-width:400px){.guest-stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="loadingOverlay"><div class="spinner"></div><p>載入婚禮資料中…</p></div>
+
+<header>
+  <div class="header-top">
+    <span style="font-size:24px">💍</span>
+    <h1>婚禮規劃</h1>
+    <div class="sync-badge"><div class="sync-dot loading" id="syncDot"></div><span id="syncLabel">同步中</span></div>
+  </div>
+  <div class="date-banners">
+    <div class="date-banner" onclick="editDate('wedding')">
+      <div class="db-label">💒 婚禮日期</div>
+      <div class="db-val" id="weddingDateVal">點擊設定</div>
+      <div class="db-countdown" id="weddingCountdown"></div>
+    </div>
+    <div class="date-banner" onclick="editDate('registry')">
+      <div class="db-label">📋 登記日期</div>
+      <div class="db-val" id="registryDateVal">點擊設定</div>
+      <div class="db-countdown" id="registryCountdown"></div>
+    </div>
+  </div>
+  <nav>
+    <button class="active" onclick="switchTab('todo',this)">✅ 待辦</button>
+    <button onclick="switchTab('budget',this)">💰 費用</button>
+    <button onclick="switchTab('vendor',this)">🏪 廠商</button>
+    <button onclick="switchTab('guest',this)">👥 賓客</button>
+  </nav>
+</header>
+
+<div class="content">
+  <!-- TODO -->
+  <div id="tab-todo" class="tab-panel active">
+    <div class="card">
+      <div class="section-title">📋 新增待辦</div>
+      <div class="input-row">
+        <input type="text" id="todo-text" placeholder="待辦事項名稱">
+        <select id="todo-cat" onchange="handleCatChange(this,'todo-cat')"></select>
+      </div>
+      <div class="input-row">
+        <input type="date" id="todo-due">
+        <select id="todo-priority"><option value="">一般</option><option value="urgent">緊急</option></select>
+        <button class="btn btn-primary" onclick="addTodo()">新增</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">📌 完成進度</div>
+      <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+      <div class="progress-lbl" id="progressLbl">0 / 0 完成</div>
+    </div>
+    <div id="todo-list"></div>
+  </div>
+
+  <!-- BUDGET -->
+  <div id="tab-budget" class="tab-panel">
+    <div class="card">
+      <div class="budget-summary">
+        <div class="bsum-box paid"><div class="bl">✅ 已付總計</div><div class="ba" id="b-paid">$0</div></div>
+        <div class="bsum-box pending"><div class="bl">⏳ 待付總計</div><div class="ba" id="b-unpaid">$0</div></div>
+      </div>
+      <div class="btotal-row">所有費用合計<strong id="b-total">$0</strong></div>
+    </div>
+    <div class="card">
+      <div class="section-title">➕ 新增費用</div>
+      <div class="input-row">
+        <input type="text" id="exp-name" placeholder="費用名稱（例：婚攝Fanson）">
+        <select id="exp-cat" onchange="handleCatChange(this,'exp-cat')"></select>
+      </div>
+      <div class="input-row">
+        <div style="flex:1;min-width:100px"><label style="font-size:11px;color:var(--mid);display:block;margin-bottom:4px">✅ 已付金額</label><input type="number" id="exp-paid" placeholder="0"></div>
+        <div style="flex:1;min-width:100px"><label style="font-size:11px;color:var(--mid);display:block;margin-bottom:4px">⏳ 待付金額</label><input type="number" id="exp-unpaid" placeholder="0"></div>
+        <button class="btn btn-primary" style="align-self:flex-end" onclick="addExpense()">新增</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">📊 費用明細 <span style="font-size:11px;color:var(--mid);font-family:'Noto Sans TC'">(點項目可編輯)</span></div>
+      <div id="expense-list"><div class="empty"><div class="emoji">💵</div>還沒有費用記錄</div></div>
+    </div>
+  </div>
+
+  <!-- VENDOR -->
+  <div id="tab-vendor" class="tab-panel">
+    <div class="card">
+      <div class="section-title">🏪 新增廠商</div>
+      <div class="input-row">
+        <input type="text" id="v-name" placeholder="廠商名稱">
+        <select id="v-type" onchange="handleCatChange(this,'v-type')"></select>
+      </div>
+      <div class="input-row">
+        <input type="text" id="v-contact" placeholder="聯絡人">
+        <input type="text" id="v-phone" placeholder="電話">
+        <input type="text" id="v-line" placeholder="LINE ID">
+      </div>
+      <div class="input-row">
+        <select id="v-status"><option value="pending">洽談中</option><option value="confirmed">已確認</option><option value="cancelled">已取消</option></select>
+        <button class="btn btn-primary" onclick="addVendor()">新增廠商</button>
+      </div>
+      <div class="input-row"><textarea id="v-note" placeholder="備注（價格、約定等）"></textarea></div>
+    </div>
+    <div id="vendor-list"></div>
+  </div>
+
+  <!-- GUEST -->
+  <div id="tab-guest" class="tab-panel">
+    <div class="card">
+      <div class="guest-stats">
+        <div class="stat-box"><div class="num" id="g-total">0</div><div class="lbl">總人數</div></div>
+        <div class="stat-box"><div class="num" id="g-yes">0</div><div class="lbl">確認出席</div></div>
+        <div class="stat-box"><div class="num" id="g-no">0</div><div class="lbl">無法出席</div></div>
+        <div class="stat-box"><div class="num" id="g-pending">0</div><div class="lbl">待確認</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">👤 新增賓客</div>
+      <div class="input-row">
+        <input type="text" id="g-name" placeholder="賓客姓名">
+        <select id="g-side"><option>新郎方</option><option>新娘方</option><option>共同</option></select>
+      </div>
+      <div class="input-row">
+        <input type="text" id="g-table" placeholder="桌次（選填）">
+        <select id="g-rsvp"><option value="pending">待確認</option><option value="yes">確認出席</option><option value="no">無法出席</option></select>
+        <input type="text" id="g-diet" placeholder="飲食需求（選填）">
+      </div>
+      <button class="btn btn-primary" onclick="addGuest()">新增賓客</button>
+    </div>
+    <div class="card">
+      <div class="section-title">📋 賓客名單 <span style="font-size:11px;color:var(--mid);font-family:'Noto Sans TC'">(點項目可編輯)</span></div>
+      <div id="guest-list"><div class="empty"><div class="emoji">🎊</div>還沒有賓客</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Supabase 設定 ──────────────────────────────
+const SUPABASE_URL = 'https://blgxdxapxagnqbkcvmzd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_VCzd0zINstH1sko8H3pKXQ_8NCJrIK2';
+const DB_ROW_KEY   = 'wedding-main';
+// ──────────────────────────────────────────────
+async function sbFetch(path, method='GET', body=null){
+  const res = await fetch(SUPABASE_URL + path, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method==='POST' ? 'resolution=merge-duplicates' : ''
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+  if(!res.ok) throw new Error(await res.text());
+  return res.status===204 ? null : res.json();
+}
+
+const DEFAULT_CATS=['場地','婚紗','餐飲','攝影','花藝','喜帖','蜜月','其他'];
+const VTYPES=['場地','婚紗','攝影','錄影','花藝','餐飲','喜帖','主持人','其他'];
+let db={todos:[],expenses:[],vendors:[],guests:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS]};
+let saving=false,lastSavedJSON='';
+function getCats(){return(db.cats&&db.cats.length)?db.cats:[...DEFAULT_CATS];}
+function catOpts(cur){return[...getCats(),'＋新增類別'].map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
+function vtypeOpts(cur){const all=[...VTYPES,...getCats().filter(c=>!VTYPES.includes(c)),'＋新增類別'];return all.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
+
+function setSyncState(s,t){document.getElementById('syncDot').className='sync-dot '+s;document.getElementById('syncLabel').textContent=t}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function selOpts(opts,cur){return opts.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
+
+const SEED={
+  weddingDate:'2027-01-17',registryDate:'',
+  cats:[...DEFAULT_CATS],
+  todos:[
+    {id:1001,text:'喜餅',cat:'其他',due:'',priority:'',done:false,note:'',photos:[]},
+    {id:1002,text:'互動：似顏繪山山總',cat:'其他',due:'',priority:'',done:false,note:'總價28600，已付18600，尾款10000待付（新人婚紗緊緻1000，車馬2800，4.5hr）',photos:[]},
+    {id:1003,text:'互動：拍拍印',cat:'其他',due:'',priority:'',done:false,note:'訂金3000，尾款23499待付，另贈拍拍印送2',photos:[]},
+    {id:1004,text:'外包商確認',cat:'其他',due:'',priority:'',done:false,note:'',photos:[]},
+    {id:1005,text:'婚紗選定',cat:'婚紗',due:'',priority:'urgent',done:false,note:'候選：verdi / mydear / 後生 / Juno / Lucian',photos:[]},
+    {id:1006,text:'婚禮小物準備',cat:'其他',due:'',priority:'',done:false,note:'',photos:[]},
+    {id:1007,text:'婚禮遊戲：拍拍印送2',cat:'其他',due:'',priority:'',done:false,note:'',photos:[]},
+    {id:1008,text:'六禮：皮鞋、西裝、金飾（婚戒1）、部分喜餅',cat:'其他',due:'',priority:'',done:false,note:'男生已給：金飾260000（項鍊1手鐲2戒指1）婚戒Cartier×1',photos:[]},
+    {id:1009,text:'燈光：長榮（待確認）',cat:'場地',due:'',priority:'',done:false,note:'',photos:[]},
+    {id:1010,text:'喜帖：電子喜帖拍拍印 ＋ 紙本',cat:'喜帖',due:'',priority:'',done:false,note:'紙本待印',photos:[]},
+    {id:1011,text:'婚禮影片：不留白（待簽約）',cat:'攝影',due:'',priority:'',done:false,note:'',photos:[]},
+    {id:1012,text:'婚攝Fanson 尾款18200 待付',cat:'攝影',due:'',priority:'urgent',done:false,note:'另加攝影跟錄影',photos:[]},
+    {id:1013,text:'主持斯杰 尾款13000 待付',cat:'其他',due:'',priority:'urgent',done:false,note:'',photos:[]},
+    {id:1014,text:'婚紗攝影時尚芭莎澳門 加價15000 待付',cat:'婚紗',due:'',priority:'urgent',done:false,note:'所有照片+初修+精修78張，大框1中框3小框3相本2',photos:[]},
+    {id:1015,text:'婚紗照：澳門拍（照片待出）',cat:'攝影',due:'',priority:'',done:true,note:'澳門拍，還沒出來',photos:[]},
+    {id:1016,text:'戒指：Cartier',cat:'其他',due:'',priority:'',done:true,note:'女53000 男43000 我出50000',photos:[]},
+    {id:1017,text:'婚佈：憶起幸福 訂金8000',cat:'場地',due:'',priority:'',done:true,note:'',photos:[]},
+    {id:1018,text:'新秘：Yibi 訂金7200',cat:'其他',due:'',priority:'',done:true,note:'',photos:[]},
+    {id:1019,text:'婚攝：Fanson 訂金7800',cat:'攝影',due:'',priority:'',done:true,note:'',photos:[]},
+    {id:1020,text:'主持：斯杰 訂金8800',cat:'其他',due:'',priority:'',done:true,note:'',photos:[]},
+    {id:1021,text:'場地：長榮文苑 訂金9萬',cat:'場地',due:'',priority:'',done:true,note:'',photos:[]},
+    {id:1022,text:'婚紗攝影：時尚芭莎澳門 付款4萬6',cat:'婚紗',due:'',priority:'',done:true,note:'',photos:[]},
+    {id:1023,text:'和八字：楊雅晴 1200',cat:'其他',due:'',priority:'',done:true,note:'',photos:[]},
+  ],
+  expenses:[
+    {id:2001,name:'場地：長榮文苑',cat:'場地',paid:90000,unpaid:0,note:'訂金已付，尾款待確認'},
+    {id:2002,name:'婚紗攝影：時尚芭莎澳門',cat:'婚紗',paid:46000,unpaid:15000,note:'已付4萬6，加價1萬5待付（所有照片+初修+精修78張，大框1中框3小框3相本2）'},
+    {id:2004,name:'金飾（項鍊1手鐲2戒指1）',cat:'其他',paid:260000,unpaid:0,note:'男生已給'},
+    {id:2005,name:'戒指 Cartier',cat:'其他',paid:50000,unpaid:0,note:'女53000 男43000，我出50000'},
+    {id:2006,name:'婚攝：Fanson',cat:'攝影',paid:7800,unpaid:18200,note:'訂金7800已付，尾款18200待付，另加攝影跟錄影'},
+    {id:2008,name:'主持：斯杰',cat:'其他',paid:8800,unpaid:13000,note:'訂金8800已付，尾款13000待付'},
+    {id:2010,name:'婚佈：憶起幸福',cat:'場地',paid:8000,unpaid:0,note:'訂金已付'},
+    {id:2011,name:'新秘：Yibi',cat:'其他',paid:7200,unpaid:0,note:'訂金已付'},
+    {id:2012,name:'互動：似顏繪山山總',cat:'其他',paid:18600,unpaid:10000,note:'總價28600，已付18600，尾款10000待付（新人婚紗緊緻1000，車馬2800）'},
+    {id:2014,name:'互動：拍拍印',cat:'其他',paid:3000,unpaid:23499,note:'訂金3000，尾款23499待付'},
+    {id:2016,name:'和八字：楊雅晴',cat:'其他',paid:1200,unpaid:0,note:''},
+  ],
+  vendors:[
+    {id:3001,name:'長榮文苑',type:'場地',contact:'',phone:'',line:'',status:'confirmed',note:'婚禮日期2027/1/17，訂金9萬已付，燈光待確認'},
+    {id:3002,name:'憶起幸福',type:'花藝',contact:'',phone:'',line:'',status:'confirmed',note:'婚佈，訂金8000已付'},
+    {id:3003,name:'Yibi',type:'其他',contact:'Yibi',phone:'',line:'',status:'confirmed',note:'新秘，訂金7200已付'},
+    {id:3004,name:'Fanson',type:'攝影',contact:'Fanson',phone:'',line:'',status:'confirmed',note:'婚攝，訂金7800已付，尾款18200待付，另加攝影跟錄影'},
+    {id:3005,name:'斯杰',type:'主持人',contact:'斯杰',phone:'',line:'',status:'confirmed',note:'訂金8800已付，尾款13000待付'},
+    {id:3006,name:'時尚芭莎澳門',type:'攝影',contact:'',phone:'',line:'',status:'confirmed',note:'婚紗攝影，付款4萬6，加價1萬5待付（精修78張，大框1中框3小框3相本2）'},
+    {id:3007,name:'楊雅晴',type:'其他',contact:'楊雅晴',phone:'',line:'',status:'confirmed',note:'和八字，1200已付'},
+    {id:3008,name:'不留白',type:'錄影',contact:'',phone:'',line:'',status:'pending',note:'婚禮影片，洽談中'},
+    {id:3009,name:'似顏繪山山總',type:'其他',contact:'',phone:'',line:'',status:'confirmed',note:'互動，總價28600，已付18600，尾款10000待付'},
+    {id:3010,name:'拍拍印',type:'其他',contact:'',phone:'',line:'',status:'confirmed',note:'互動+電子喜帖，訂金3000，尾款23499待付'},
+  ],
+  guests:[]
+};
+
+// ── STORAGE ────────────────────────────────────────────────────
+async function loadData(){
+  setSyncState('loading','載入中');
+  try{
+    const rows=await sbFetch('/rest/v1/wedding_data?key=eq.'+DB_ROW_KEY+'&select=value');
+    if(rows&&rows.length){
+      const p=rows[0].value;
+      db={todos:[],expenses:[],vendors:[],guests:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
+      db.expenses=db.expenses.map(e=>{
+        if(e.paid===undefined) return{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0};
+        return e;
+      });
+      lastSavedJSON=JSON.stringify(db);
+    } else {
+      db=JSON.parse(JSON.stringify(SEED));
+      await saveData();
+    }
+    setSyncState('ok','已同步');
+  }catch(e){
+    console.error('load error',e);
+    db=JSON.parse(JSON.stringify(SEED));
+    setSyncState('err','載入失敗');
+  }
+  document.getElementById('loadingOverlay').style.display='none';
+  renderAll();updateDateBanners();populateCatSelects();
+  setInterval(pollData,8000);
+}
+
+async function saveData(){
+  if(saving)return;
+  saving=true; setSyncState('loading','儲存中');
+  const timer=setTimeout(()=>{saving=false;},8000);
+  try{
+    const j=JSON.stringify(db);
+    await sbFetch('/rest/v1/wedding_data','POST',{key:DB_ROW_KEY,value:db,updated_at:new Date().toISOString()});
+    lastSavedJSON=j;
+    setSyncState('ok','已同步');
+  } catch(e){
+    setSyncState('err','儲存失敗');
+    console.error(e);
+  } finally {
+    clearTimeout(timer);
+    saving=false;
+  }
+}
+
+async function pollData(){
+  if(saving)return;
+  try{
+    const rows=await sbFetch('/rest/v1/wedding_data?key=eq.'+DB_ROW_KEY+'&select=value,updated_at');
+    if(rows&&rows.length){
+      const j=JSON.stringify(rows[0].value);
+      if(j!==lastSavedJSON){
+        db={todos:[],expenses:[],vendors:[],guests:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...rows[0].value};
+        lastSavedJSON=j;
+        renderAll();updateDateBanners();populateCatSelects();
+      }
+    }
+  }catch(e){}
+}
+
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');
+}
+
+// ── DATES ──────────────────────────────────────────────────────
+function editDate(type){
+  const cur=type==='wedding'?db.weddingDate:db.registryDate;
+  const val=prompt('設定'+(type==='wedding'?'婚禮':'登記')+'日期（格式：YYYY-MM-DD）',cur||'');
+  if(val===null)return;
+  if(type==='wedding')db.weddingDate=val.trim();else db.registryDate=val.trim();
+  updateDateBanners();saveData();
+}
+function updateDateBanners(){
+  banner('weddingDateVal','weddingCountdown',db.weddingDate,'婚禮');
+  banner('registryDateVal','registryCountdown',db.registryDate,'登記');
+}
+function banner(vId,cId,ds,label){
+  const v=document.getElementById(vId),c=document.getElementById(cId);
+  if(!ds){v.textContent='點擊設定';c.textContent='';return;}
+  v.textContent=ds.replace(/-/g,'/');
+  const d=Math.ceil((new Date(ds)-new Date())/86400000);
+  c.textContent=d>0?`距離${label}還有 ${d} 天`:d===0?`今天就是${label}！🎉`:`${label}已過 ${-d} 天`;
+}
+
+// ── EXPAND HELPER ──────────────────────────────────────────────
+function toggleEx(id){
+  const d=document.getElementById('ex-detail-'+id);
+  const a=document.getElementById('ex-arrow-'+id);
+  if(!d)return;
+  d.classList.toggle('open');
+  if(a)a.classList.toggle('open');
+}
+
+// ── TODOS ──────────────────────────────────────────────────────
+async function addTodo(){
+  const text=document.getElementById('todo-text').value.trim();if(!text)return;
+  db.todos.push({id:Date.now(),text,cat:document.getElementById('todo-cat').value,due:document.getElementById('todo-due').value,priority:document.getElementById('todo-priority').value,done:false,note:'',photos:[]});
+  document.getElementById('todo-text').value='';document.getElementById('todo-due').value='';
+  renderTodos();await saveData();
+}
+async function toggleDone(id){
+  const t=db.todos.find(t=>t.id===id);if(t){t.done=!t.done;renderTodos();await saveData();}
+}
+async function saveTodo(id){
+  const t=db.todos.find(t=>t.id===id);if(!t)return;
+  const nt=document.getElementById('td-title-'+id).value.trim();if(nt)t.text=nt;
+  t.cat=document.getElementById('td-cat-'+id).value;
+  t.due=document.getElementById('td-due-'+id).value;
+  t.priority=document.getElementById('td-pri-'+id).value;
+  t.note=document.getElementById('td-note-'+id).value;
+  renderTodos();await saveData();
+}
+async function deleteTodo(id){
+  if(!confirm('確定要刪除？'))return;
+  db.todos=db.todos.filter(t=>t.id!==id);renderTodos();await saveData();
+}
+function addTodoPhoto(id){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.multiple=true;
+  inp.onchange=async(e)=>{
+    const t=db.todos.find(t=>t.id===id);if(!t)return;if(!t.photos)t.photos=[];
+    for(const f of e.target.files)t.photos.push(await toB64(f));
+    renderTodos();await saveData();
+  };inp.click();
+}
+async function removeTodoPhoto(tid,idx){
+  const t=db.todos.find(t=>t.id===tid);if(t&&t.photos){t.photos.splice(idx,1);renderTodos();await saveData();}
+}
+function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)})}
+
+function renderTodos(){
+  const list=document.getElementById('todo-list');
+  const arr=[...db.todos.filter(t=>!t.done),...db.todos.filter(t=>t.done)];
+  if(!arr.length){list.innerHTML='<div class="card"><div class="empty"><div class="emoji">🌸</div>還沒有待辦事項</div></div>';updateProgress();return;}
+  list.innerHTML=arr.map(t=>{
+    const photos=t.photos||[];
+    return`<div class="ex-card">
+      <div class="ex-main" onclick="toggleEx(${t.id})">
+        <input type="checkbox" class="todo-cb" ${t.done?'checked':''} onclick="event.stopPropagation();toggleDone(${t.id})">
+        <div class="ex-body">
+          <div class="todo-title${t.done?' done':''}">${esc(t.text)}</div>
+          <div class="tags">
+            <span class="tag">${t.cat}</span>
+            ${t.due?`<span class="tag">📅 ${t.due}</span>`:''}
+            ${t.priority==='urgent'?'<span class="tag urgent">🔴 緊急</span>':''}
+            ${t.done?'<span class="tag done-tag">✓ 完成</span>':''}
+            ${t.note?'<span class="tag">📝 備注</span>':''}
+            ${photos.length?`<span class="tag">🖼 ${photos.length}張</span>`:''}
+          </div>
+        </div>
+        <span class="ex-arrow" id="ex-arrow-${t.id}">›</span>
+        <button class="btn-del" onclick="event.stopPropagation();deleteTodo(${t.id})">✕</button>
+      </div>
+      <div class="ex-detail" id="ex-detail-${t.id}">
+        <div class="ex-field"><label>事項名稱</label><input type="text" id="td-title-${t.id}" value="${esc(t.text)}"></div>
+        <div class="ex-row">
+          <div class="ex-col"><label>類別</label><select id="td-cat-${t.id}" onchange="handleInlineCat(this,'td-cat-${t.id}')">${catOpts(t.cat)}</select></div>
+          <div class="ex-col"><label>截止日</label><input type="date" id="td-due-${t.id}" value="${t.due||''}"></div>
+          <div class="ex-col"><label>優先度</label><select id="td-pri-${t.id}"><option value=""${!t.priority?' selected':''}>一般</option><option value="urgent"${t.priority==='urgent'?' selected':''}>緊急</option></select></div>
+        </div>
+        <div class="ex-field"><label>備注</label><textarea id="td-note-${t.id}" placeholder="詳細備注、合約內容、聯絡紀錄…">${esc(t.note||'')}</textarea></div>
+        <div class="ex-field"><label>照片</label>
+          <div class="photo-grid">
+            ${photos.map((src,i)=>`<div class="photo-wrap"><img src="${src}"><button class="photo-del" onclick="removeTodoPhoto(${t.id},${i})">✕</button></div>`).join('')}
+            <div class="photo-add" onclick="addTodoPhoto(${t.id})"><span style="font-size:22px">＋</span><span>加照片</span></div>
+          </div>
+        </div>
+        <button class="btn btn-primary ex-save btn-sm" onclick="saveTodo(${t.id})">💾 儲存更改</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateProgress();
+}
+function updateProgress(){
+  const done=db.todos.filter(t=>t.done).length,total=db.todos.length,pct=total?Math.round(done/total*100):0;
+  document.getElementById('progressBar').style.width=pct+'%';
+  document.getElementById('progressLbl').textContent=`${done} / ${total} 完成（${pct}%）`;
+}
+
+// ── EXPENSES ──────────────────────────────────────────────────
+async function addExpense(){
+  const name=document.getElementById('exp-name').value.trim();
+  if(!name)return;
+  const paid=parseFloat(document.getElementById('exp-paid').value)||0;
+  const unpaid=parseFloat(document.getElementById('exp-unpaid').value)||0;
+  if(paid===0&&unpaid===0)return;
+  db.expenses.push({id:Date.now(),name,cat:document.getElementById('exp-cat').value,paid,unpaid,note:''});
+  document.getElementById('exp-name').value='';
+  document.getElementById('exp-paid').value='';
+  document.getElementById('exp-unpaid').value='';
+  renderExpenses();await saveData();
+}
+async function saveExpense(id){
+  const e=db.expenses.find(e=>e.id===id);if(!e)return;
+  const nn=document.getElementById('ee-name-'+id).value.trim();if(nn)e.name=nn;
+  e.cat=document.getElementById('ee-cat-'+id).value;
+  e.paid=parseFloat(document.getElementById('ee-paid-'+id).value)||0;
+  e.unpaid=parseFloat(document.getElementById('ee-unpaid-'+id).value)||0;
+  e.note=document.getElementById('ee-note-'+id).value;
+  renderExpenses();await saveData();
+}
+async function deleteExpense(id){
+  db.expenses=db.expenses.filter(e=>e.id!==id);renderExpenses();await saveData();
+}
+
+function renderExpenses(){
+  const totalPaid=db.expenses.reduce((s,e)=>s+(e.paid||0),0);
+  const totalUnpaid=db.expenses.reduce((s,e)=>s+(e.unpaid||0),0);
+  document.getElementById('b-paid').textContent='$'+totalPaid.toLocaleString();
+  document.getElementById('b-unpaid').textContent='$'+totalUnpaid.toLocaleString();
+  document.getElementById('b-total').textContent='$'+(totalPaid+totalUnpaid).toLocaleString();
+  const list=document.getElementById('expense-list');
+  if(!db.expenses.length){list.innerHTML='<div class="empty"><div class="emoji">💵</div>還沒有費用記錄</div>';return;}
+  list.innerHTML=db.expenses.map(e=>{
+    const paid=e.paid||0,unpaid=e.unpaid||0,total=paid+unpaid;
+    const hasBoth=paid>0&&unpaid>0;
+    return`<div class="ex-card">
+      <div class="ex-main" onclick="toggleEx('e${e.id}')">
+        <div class="ex-body">
+          <div class="exp-name">${esc(e.name)}</div>
+          <div class="exp-sub" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:3px">
+            <span style="color:var(--mid);font-size:11px">${e.cat}</span>
+            ${paid>0?`<span style="color:var(--sage);font-size:11px">✅ 已付 $${paid.toLocaleString()}</span>`:''}
+            ${unpaid>0?`<span style="color:var(--gold);font-size:11px">⏳ 待付 $${unpaid.toLocaleString()}</span>`:''}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:14px;font-weight:500;color:var(--dark)">$${total.toLocaleString()}</div>
+          ${hasBoth?'<div style="font-size:10px;color:var(--mid)">合計</div>':unpaid>0?'<div class="exp-badge unpaid" style="margin-top:2px">待付</div>':'<div class="exp-badge paid" style="margin-top:2px">已付</div>'}
+        </div>
+        <span class="ex-arrow" id="ex-arrow-e${e.id}">›</span>
+        <button class="btn-del" onclick="event.stopPropagation();deleteExpense(${e.id})">✕</button>
+      </div>
+      <div class="ex-detail" id="ex-detail-e${e.id}">
+        <div class="ex-field"><label>費用名稱</label><input type="text" id="ee-name-${e.id}" value="${esc(e.name)}"></div>
+        <div class="ex-row">
+          <div class="ex-col"><label>類別</label><select id="ee-cat-${e.id}" onchange="handleInlineCat(this,'ee-cat-${e.id}')">${catOpts(e.cat)}</select></div>
+        </div>
+        <div class="ex-row">
+          <div class="ex-col"><label>✅ 已付金額</label><input type="number" id="ee-paid-${e.id}" value="${paid}"></div>
+          <div class="ex-col"><label>⏳ 待付金額</label><input type="number" id="ee-unpaid-${e.id}" value="${unpaid}"></div>
+        </div>
+        <div class="ex-field"><label>備注</label><textarea id="ee-note-${e.id}" placeholder="付款時間、合約備注…">${esc(e.note||'')}</textarea></div>
+        <button class="btn btn-primary ex-save btn-sm" onclick="saveExpense(${e.id})">💾 儲存更改</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+// ── VENDORS ──────────────────────────────────────────────────
+async function addVendor(){
+  const name=document.getElementById('v-name').value.trim();if(!name)return;
+  db.vendors.push({id:Date.now(),name,type:document.getElementById('v-type').value,contact:document.getElementById('v-contact').value,phone:document.getElementById('v-phone').value,line:document.getElementById('v-line').value,status:document.getElementById('v-status').value,note:document.getElementById('v-note').value});
+  ['v-name','v-contact','v-phone','v-line','v-note'].forEach(id=>document.getElementById(id).value='');
+  renderVendors();await saveData();
+}
+async function saveVendor(id){
+  const v=db.vendors.find(v=>v.id===id);if(!v)return;
+  const nn=document.getElementById('vv-name-'+id).value.trim();if(nn)v.name=nn;
+  v.type=document.getElementById('vv-type-'+id).value;
+  v.contact=document.getElementById('vv-contact-'+id).value;
+  v.phone=document.getElementById('vv-phone-'+id).value;
+  v.line=document.getElementById('vv-line-'+id).value;
+  v.status=document.getElementById('vv-st-'+id).value;
+  v.note=document.getElementById('vv-note-'+id).value;
+  renderVendors();await saveData();
+}
+async function deleteVendor(id){db.vendors=db.vendors.filter(v=>v.id!==id);renderVendors();await saveData();}
+
+function renderVendors(){
+  const list=document.getElementById('vendor-list');
+  if(!db.vendors.length){list.innerHTML='<div class="card"><div class="empty"><div class="emoji">🏪</div>還沒有廠商資訊</div></div>';return;}
+  const sl={confirmed:'已確認',pending:'洽談中',cancelled:'已取消'};
+  list.innerHTML=db.vendors.map(v=>`
+    <div class="ex-card">
+      <div class="ex-main" onclick="toggleEx('v${v.id}')">
+        <div class="ex-body">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="vendor-name-txt">${esc(v.name)}</span>
+            <span class="vendor-type-tag">${v.type}</span>
+            <span class="vstatus vstatus-${v.status}">${sl[v.status]}</span>
+          </div>
+          ${v.contact||v.phone?`<div class="vendor-preview">${[v.contact,v.phone].filter(Boolean).join(' · ')}</div>`:''}
+        </div>
+        <span class="ex-arrow" id="ex-arrow-v${v.id}">›</span>
+        <button class="btn-del" onclick="event.stopPropagation();deleteVendor(${v.id})">✕</button>
+      </div>
+      <div class="ex-detail" id="ex-detail-v${v.id}">
+        <div class="ex-row">
+          <div class="ex-col" style="flex:2"><label>廠商名稱</label><input type="text" id="vv-name-${v.id}" value="${esc(v.name)}"></div>
+          <div class="ex-col"><label>類型</label><select id="vv-type-${v.id}" onchange="handleInlineCat(this,'vv-type-${v.id}')">${vtypeOpts(v.type)}</select></div>
+        </div>
+        <div class="ex-row">
+          <div class="ex-col"><label>聯絡人</label><input type="text" id="vv-contact-${v.id}" value="${esc(v.contact)}"></div>
+          <div class="ex-col"><label>電話</label><input type="text" id="vv-phone-${v.id}" value="${esc(v.phone)}"></div>
+          <div class="ex-col"><label>LINE ID</label><input type="text" id="vv-line-${v.id}" value="${esc(v.line)}"></div>
+        </div>
+        <div class="ex-row">
+          <div class="ex-col"><label>狀態</label><select id="vv-st-${v.id}"><option value="pending"${v.status==='pending'?' selected':''}>洽談中</option><option value="confirmed"${v.status==='confirmed'?' selected':''}>已確認</option><option value="cancelled"${v.status==='cancelled'?' selected':''}>已取消</option></select></div>
+        </div>
+        <div class="ex-field"><label>備注</label><textarea id="vv-note-${v.id}" placeholder="價格、約定、付款紀錄…">${esc(v.note||'')}</textarea></div>
+        <button class="btn btn-primary ex-save btn-sm" onclick="saveVendor(${v.id})">💾 儲存更改</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── GUESTS ──────────────────────────────────────────────────
+async function addGuest(){
+  const name=document.getElementById('g-name').value.trim();if(!name)return;
+  db.guests.push({id:Date.now(),name,side:document.getElementById('g-side').value,table:document.getElementById('g-table').value,rsvp:document.getElementById('g-rsvp').value,diet:document.getElementById('g-diet').value,note:''});
+  ['g-name','g-table','g-diet'].forEach(id=>document.getElementById(id).value='');
+  renderGuests();await saveData();
+}
+async function saveGuest(id){
+  const g=db.guests.find(g=>g.id===id);if(!g)return;
+  const nn=document.getElementById('gg-name-'+id).value.trim();if(nn)g.name=nn;
+  g.side=document.getElementById('gg-side-'+id).value;
+  g.table=document.getElementById('gg-table-'+id).value;
+  g.rsvp=document.getElementById('gg-rsvp-'+id).value;
+  g.diet=document.getElementById('gg-diet-'+id).value;
+  g.note=document.getElementById('gg-note-'+id).value;
+  renderGuests();await saveData();
+}
+async function deleteGuest(id){db.guests=db.guests.filter(g=>g.id!==id);renderGuests();await saveData();}
+
+function renderGuests(){
+  document.getElementById('g-total').textContent=db.guests.length;
+  document.getElementById('g-yes').textContent=db.guests.filter(g=>g.rsvp==='yes').length;
+  document.getElementById('g-no').textContent=db.guests.filter(g=>g.rsvp==='no').length;
+  document.getElementById('g-pending').textContent=db.guests.filter(g=>g.rsvp==='pending').length;
+  const list=document.getElementById('guest-list');
+  if(!db.guests.length){list.innerHTML='<div class="empty"><div class="emoji">🎊</div>還沒有賓客</div>';return;}
+  const rl={yes:'rsvp-yes',no:'rsvp-no',pending:'rsvp-pending'};
+  const rt={yes:'確認出席',no:'無法出席',pending:'待確認'};
+  list.innerHTML=db.guests.map(g=>`
+    <div class="ex-card">
+      <div class="ex-main" onclick="toggleEx('g${g.id}')">
+        <div class="ex-body">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="g-name-txt">${esc(g.name)}</span>
+            <span class="g-side-tag">${g.side}</span>
+            <span class="rsvp-badge ${rl[g.rsvp]||'rsvp-pending'}">${rt[g.rsvp]||'待確認'}</span>
+          </div>
+          ${g.table||g.diet?`<div class="g-preview">${[g.table?'桌次：'+g.table:'',g.diet].filter(Boolean).join('　')}</div>`:''}
+        </div>
+        <span class="ex-arrow" id="ex-arrow-g${g.id}">›</span>
+        <button class="btn-del" onclick="event.stopPropagation();deleteGuest(${g.id})">✕</button>
+      </div>
+      <div class="ex-detail" id="ex-detail-g${g.id}">
+        <div class="ex-row">
+          <div class="ex-col" style="flex:2"><label>賓客姓名</label><input type="text" id="gg-name-${g.id}" value="${esc(g.name)}"></div>
+          <div class="ex-col"><label>方</label><select id="gg-side-${g.id}"><option${g.side==='新郎方'?' selected':''}>新郎方</option><option${g.side==='新娘方'?' selected':''}>新娘方</option><option${g.side==='共同'?' selected':''}>共同</option></select></div>
+        </div>
+        <div class="ex-row">
+          <div class="ex-col"><label>出席確認</label><select id="gg-rsvp-${g.id}"><option value="pending"${g.rsvp==='pending'?' selected':''}>待確認</option><option value="yes"${g.rsvp==='yes'?' selected':''}>確認出席</option><option value="no"${g.rsvp==='no'?' selected':''}>無法出席</option></select></div>
+          <div class="ex-col"><label>桌次</label><input type="text" id="gg-table-${g.id}" value="${esc(g.table||'')}"></div>
+          <div class="ex-col"><label>飲食需求</label><input type="text" id="gg-diet-${g.id}" value="${esc(g.diet||'')}"></div>
+        </div>
+        <div class="ex-field"><label>備注</label><textarea id="gg-note-${g.id}" placeholder="禮金、特殊需求、座位備注…">${esc(g.note||'')}</textarea></div>
+        <button class="btn btn-primary ex-save btn-sm" onclick="saveGuest(${g.id})">💾 儲存更改</button>
+      </div>
+    </div>`).join('');
+}
+
+function populateCatSelects(){
+  ['todo-cat','exp-cat','v-type'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const cur=el.value;
+    if(id==='v-type'){el.innerHTML=vtypeOpts(el.value||VTYPES[0]);}
+    else{el.innerHTML=catOpts(cur)||catOpts('');}
+  });
+}
+
+async function handleInlineCat(sel, elId){
+  if(sel.value!=='＋新增類別')return;
+  const name=prompt('新增類別名稱：','');
+  if(!name||!name.trim()){sel.value=getCats()[0];return;}
+  const trimmed=name.trim();
+  if(!db.cats)db.cats=[...DEFAULT_CATS];
+  if(!db.cats.includes(trimmed))db.cats.push(trimmed);
+  sel.innerHTML=catOpts(trimmed);
+  sel.value=trimmed;
+  populateCatSelects();
+  await saveData();
+}
+
+async function handleCatChange(sel, elId){
+  if(sel.value!=='＋新增類別')return;
+  const name=prompt('新增類別名稱：','');
+  if(!name||!name.trim()){sel.value=getCats()[0];return;}
+  const trimmed=name.trim();
+  if(!db.cats)db.cats=[...DEFAULT_CATS];
+  if(!db.cats.includes(trimmed))db.cats.push(trimmed);
+  if(elId==='v-type')sel.innerHTML=vtypeOpts(trimmed);
+  else sel.innerHTML=catOpts(trimmed);
+  sel.value=trimmed;
+  populateCatSelects();
+  await saveData();
+}
+
+function renderAll(){renderTodos();renderExpenses();renderVendors();renderGuests();populateCatSelects();}
+loadData();
+</script>
+</body>
+</html>
