@@ -131,24 +131,39 @@ textarea{resize:vertical;min-height:54px}
 .cal-day:hover{background:var(--light)}
 .cal-day.other-month{color:var(--blush)}
 .cal-day.today{background:var(--light);font-weight:700;color:var(--rose)}
-.cal-day.selected{background:var(--rose);color:#fff}
-.cal-day.selected:hover{background:#b56a52}
+.cal-day.selected{background:var(--rose)!important;color:#fff!important}
+.cal-day.selected:hover{background:#b56a52!important}
 .cal-day.has-event::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--sage);position:absolute;bottom:4px}
 .cal-day.selected.has-event::after{background:#fff}
-.cal-day.wedding-day{background:linear-gradient(135deg,var(--rose),var(--blush));color:#fff;font-weight:700}
-.cal-day.registry-day{background:linear-gradient(135deg,var(--sage),#b5d5b5);color:#fff;font-weight:700}
+.cal-day.wedding-day{background:linear-gradient(135deg,var(--rose),var(--blush))!important;color:#fff!important;font-weight:700}
+.cal-day.registry-day{background:linear-gradient(135deg,var(--sage),#b5d5b5)!important;color:#fff!important;font-weight:700}
+.cal-dots{display:flex;gap:2px;position:absolute;bottom:3px;left:50%;transform:translateX(-50%)}
+.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 
 .event-panel{background:var(--white);border-radius:12px;padding:16px;box-shadow:var(--shadow);border:1px solid rgba(232,197,176,.3)}
 .event-panel-title{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--rose);margin-bottom:12px}
-.event-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--light)}
+.event-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--light)}
 .event-item:last-child{border-bottom:none}
 .event-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.event-dot.type-todo{background:var(--sage)}
-.event-dot.type-vendor{background:var(--rose)}
-.event-dot.type-custom{background:var(--gold)}
-.event-text{flex:1;font-size:13px}
-.event-type-tag{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--light);color:var(--mid)}
+.event-body{flex:1;min-width:0}
+.event-text{font-size:13px;word-break:break-all}
+.event-text.editing{display:none}
+.event-edit-input{width:100%;padding:4px 8px;border:1px solid var(--blush);border-radius:6px;font-size:13px;font-family:'Noto Sans TC',sans-serif;background:var(--cream)}
+.event-meta{font-size:11px;color:var(--mid);margin-top:2px}
+.event-actions{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.ev-edit-btn{background:transparent;border:1px solid var(--blush);border-radius:6px;padding:3px 8px;font-size:11px;color:var(--mid);cursor:pointer}
+.ev-edit-btn:hover{background:var(--light)}
+.ev-save-btn{background:var(--rose);border:none;border-radius:6px;padding:3px 8px;font-size:11px;color:#fff;cursor:pointer;display:none}
+
 .add-event-form{margin-top:14px;padding-top:14px;border-top:1px solid var(--light)}
+
+/* color picker */
+.color-picker{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+.color-swatch{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0}
+.color-swatch:hover{transform:scale(1.15)}
+.color-swatch.selected{border-color:var(--dark);transform:scale(1.15)}
+
+.ev-type-sel{font-size:12px;padding:6px 8px;border:1px solid var(--blush);border-radius:8px;background:var(--cream);color:var(--dark);font-family:'Noto Sans TC',sans-serif}
 
 
 /* ── SIDEBAR ── */
@@ -337,15 +352,17 @@ textarea{resize:vertical;min-height:54px}
       <div class="event-panel-title" id="event-panel-title">選擇日期查看行程</div>
       <div id="event-list-day"></div>
       <div class="add-event-form" id="add-event-form" style="display:none">
-        <div class="input-row">
+        <div class="input-row" style="margin-bottom:6px">
           <input type="text" id="ev-text" placeholder="新增行程（例：試婚紗、場地看場）">
-          <select id="ev-type">
+          <select class="ev-type-sel" id="ev-type">
             <option value="custom">自訂</option>
-            <option value="vendor">廠商</option>
-            <option value="todo">待辦</option>
+            <option value="vendor">廠商約定</option>
+            <option value="todo">待辦提醒</option>
           </select>
         </div>
-        <button class="btn btn-primary" style="width:100%" onclick="addCalEvent()">➕ 新增行程</button>
+        <div style="font-size:11px;color:var(--mid);margin-bottom:4px">選擇顏色</div>
+        <div class="color-picker" id="ev-color-picker"></div>
+        <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="addCalEvent()">➕ 新增行程</button>
       </div>
     </div>
   </div>
@@ -443,108 +460,155 @@ const SEED={
 
 
 // ── CALENDAR ──────────────────────────────────────────────────
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-let selectedDate = null;
+let calYear=new Date().getFullYear();
+let calMonth=new Date().getMonth();
+let selectedDate=null;
+let selectedColor='#c97b63';
+
+const EVENT_COLORS=[
+  '#c97b63','#7fa87f','#b7860a','#6b9cc7','#a67cb8',
+  '#e07b7b','#5b9e9e','#d4956a','#7a6458','#4a8c6f'
+];
+
+function initColorPicker(){
+  const picker=document.getElementById('ev-color-picker');
+  if(!picker)return;
+  picker.innerHTML=EVENT_COLORS.map(c=>
+    `<div class="color-swatch${c===selectedColor?' selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`
+  ).join('');
+}
+
+function selectColor(c){
+  selectedColor=c;
+  document.querySelectorAll('.color-swatch').forEach(s=>{
+    s.classList.toggle('selected', s.style.background===c||s.style.backgroundColor===c);
+  });
+}
 
 function changeMonth(dir){
-  calMonth += dir;
-  if(calMonth > 11){calMonth=0;calYear++;}
-  if(calMonth < 0){calMonth=11;calYear--;}
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
   renderCalendar();
 }
 
 function renderCalendar(){
   const months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  document.getElementById('cal-title').textContent = calYear+'年 '+months[calMonth];
-
-  const grid = document.getElementById('cal-grid');
-  const dows = ['日','一','二','三','四','五','六'];
-  const today = new Date(); today.setHours(0,0,0,0);
-
-  const weddingDs = db.weddingDate ? db.weddingDate.replace(/-/g,'/') : null;
-  const registryDs = db.registryDate ? db.registryDate.replace(/-/g,'/') : null;
-
-  let html = dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
-
-  const firstDay = new Date(calYear, calMonth, 1).getDay();
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
-
-  // prev month padding
-  for(let i=firstDay-1;i>=0;i--){
-    html+=`<div class="cal-day other-month">${daysInPrev-i}</div>`;
-  }
-
+  document.getElementById('cal-title').textContent=calYear+'年 '+months[calMonth];
+  const grid=document.getElementById('cal-grid');
+  const dows=['日','一','二','三','四','五','六'];
+  const today=new Date();today.setHours(0,0,0,0);
+  const weddingDs=db.weddingDate?db.weddingDate.replace(/-/g,'/'):null;
+  const registryDs=db.registryDate?db.registryDate.replace(/-/g,'/'):null;
+  let h=dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  for(let i=firstDay-1;i>=0;i--) h+=`<div class="cal-day other-month">${daysInPrev-i}</div>`;
   for(let d=1;d<=daysInMonth;d++){
-    const dateStr = calYear+'/'+(String(calMonth+1).padStart(2,'0'))+'/'+String(d).padStart(2,'0');
-    const dt = new Date(calYear,calMonth,d);
-    const isToday = dt.getTime()===today.getTime();
-    const isSelected = selectedDate===dateStr;
-    const isWedding = weddingDs && dateStr===weddingDs;
-    const isRegistry = registryDs && dateStr===registryDs;
-    const hasEv = (db.events||[]).some(e=>e.date===dateStr) ||
-                  db.todos.some(t=>t.due && t.due.replace(/-/g,'/')===dateStr);
-
+    const dateStr=calYear+'/'+(String(calMonth+1).padStart(2,'0'))+'/'+String(d).padStart(2,'0');
+    const dt=new Date(calYear,calMonth,d);
+    const isToday=dt.getTime()===today.getTime();
+    const isSelected=selectedDate===dateStr;
+    const isWedding=weddingDs&&dateStr===weddingDs;
+    const isRegistry=registryDs&&dateStr===registryDs;
+    const dayEvs=(db.events||[]).filter(e=>e.date===dateStr);
+    const hasTodo=db.todos.some(t=>t.due&&t.due.replace(/-/g,'/')===dateStr);
     let cls='cal-day';
-    if(isWedding) cls+=' wedding-day';
-    else if(isRegistry) cls+=' registry-day';
-    else if(isToday) cls+=' today';
-    if(isSelected) cls+=' selected';
-    if(hasEv) cls+=' has-event';
-
-    html+=`<div class="${cls}" onclick="selectDate('${dateStr}')">${d}</div>`;
+    if(isWedding)cls+=' wedding-day';
+    else if(isRegistry)cls+=' registry-day';
+    else if(isToday)cls+=' today';
+    if(isSelected)cls+=' selected';
+    // colored dots
+    let dotsHtml='';
+    if(dayEvs.length||hasTodo){
+      const dots=[...dayEvs.map(e=>`<div class="cal-dot" style="background:${e.color||'var(--sage)'}"></div>`),
+        hasTodo?`<div class="cal-dot" style="background:var(--sage)"></div>`:''].join('');
+      dotsHtml=`<div class="cal-dots">${dots}</div>`;
+    }
+    h+=`<div class="${cls}" onclick="selectDate('${dateStr}')">${d}${dotsHtml}</div>`;
   }
-
-  // next month padding
-  const total = firstDay + daysInMonth;
-  const remaining = total%7===0 ? 0 : 7-(total%7);
-  for(let d=1;d<=remaining;d++){
-    html+=`<div class="cal-day other-month">${d}</div>`;
-  }
-
-  grid.innerHTML=html;
+  const total=firstDay+daysInMonth;
+  const rem=total%7===0?0:7-(total%7);
+  for(let d=1;d<=rem;d++) h+=`<div class="cal-day other-month">${d}</div>`;
+  grid.innerHTML=h;
 }
 
 function selectDate(dateStr){
   selectedDate=dateStr;
   renderCalendar();
   renderDayEvents(dateStr);
+  initColorPicker();
 }
 
 function renderDayEvents(dateStr){
   const panel=document.getElementById('event-panel-title');
   const list=document.getElementById('event-list-day');
   const form=document.getElementById('add-event-form');
-
-  panel.textContent = dateStr+' 的行程';
+  panel.textContent=dateStr+' 的行程';
   form.style.display='block';
-
-  // gather events: custom events + todos with this due date
+  initColorPicker();
   const customEvs=(db.events||[]).filter(e=>e.date===dateStr);
   const todoEvs=db.todos.filter(t=>t.due&&t.due.replace(/-/g,'/')===dateStr);
-
   if(!customEvs.length&&!todoEvs.length){
-    list.innerHTML='<div style="text-align:center;padding:16px;color:var(--mid);font-size:13px">這天還沒有行程</div>';
+    list.innerHTML='<div style="text-align:center;padding:16px;color:var(--mid);font-size:13px">這天還沒有行程 ✨</div>';
     return;
   }
-
   const typeLabel={custom:'自訂',vendor:'廠商',todo:'待辦'};
   list.innerHTML=[
     ...customEvs.map(e=>`
-      <div class="event-item">
-        <div class="event-dot type-${e.type||'custom'}"></div>
-        <div class="event-text">${esc(e.text)}</div>
-        <span class="event-type-tag">${typeLabel[e.type]||'自訂'}</span>
-        <button class="btn-del" onclick="deleteCalEvent(${e.id})">✕</button>
+      <div class="event-item" id="ev-item-${e.id}">
+        <div class="event-dot" style="background:${e.color||'var(--sage)'}"></div>
+        <div class="event-body">
+          <div class="event-text" id="ev-txt-${e.id}">${esc(e.text)}</div>
+          <input class="event-edit-input" id="ev-inp-${e.id}" value="${esc(e.text)}" style="display:none">
+          <div class="event-meta">${typeLabel[e.type||'custom']}</div>
+          <div class="color-picker" id="ev-cp-${e.id}" style="display:none;margin-top:6px">
+            ${EVENT_COLORS.map(c=>`<div class="color-swatch${c===(e.color||'#c97b63')?' selected':''}" style="background:${c}" onclick="setEvColor(${e.id},'${c}')"></div>`).join('')}
+          </div>
+        </div>
+        <div class="event-actions">
+          <button class="ev-edit-btn" id="ev-edt-${e.id}" onclick="startEditEv(${e.id})">✏️ 編輯</button>
+          <button class="ev-save-btn" id="ev-sav-${e.id}" onclick="saveEditEv(${e.id})">💾 存</button>
+          <button class="btn-del" onclick="deleteCalEvent(${e.id})">✕</button>
+        </div>
       </div>`),
     ...todoEvs.map(t=>`
       <div class="event-item">
-        <div class="event-dot type-todo"></div>
-        <div class="event-text">${esc(t.text)}${t.done?' ✓':''}</div>
-        <span class="event-type-tag">待辦</span>
+        <div class="event-dot" style="background:var(--sage)"></div>
+        <div class="event-body">
+          <div class="event-text">${esc(t.text)}${t.done?' ✓':''}</div>
+          <div class="event-meta">待辦</div>
+        </div>
       </div>`)
   ].join('');
+}
+
+function startEditEv(id){
+  document.getElementById('ev-txt-'+id).style.display='none';
+  document.getElementById('ev-inp-'+id).style.display='block';
+  document.getElementById('ev-cp-'+id).style.display='flex';
+  document.getElementById('ev-edt-'+id).style.display='none';
+  document.getElementById('ev-sav-'+id).style.display='inline-block';
+}
+
+function setEvColor(id,color){
+  const e=db.events&&db.events.find(e=>e.id===id);
+  if(e)e.color=color;
+  document.querySelectorAll(`#ev-cp-${id} .color-swatch`).forEach(s=>{
+    s.classList.toggle('selected',s.style.background===color||s.style.backgroundColor===color);
+  });
+  document.querySelector(`#ev-item-${id} .event-dot`).style.background=color;
+}
+
+async function saveEditEv(id){
+  const e=db.events&&db.events.find(e=>e.id===id);
+  if(!e)return;
+  const newText=document.getElementById('ev-inp-'+id).value.trim();
+  if(newText)e.text=newText;
+  renderCalendar();
+  renderDayEvents(selectedDate);
+  await saveData();
 }
 
 async function addCalEvent(){
@@ -552,7 +616,7 @@ async function addCalEvent(){
   const text=document.getElementById('ev-text').value.trim();
   if(!text)return;
   if(!db.events)db.events=[];
-  db.events.push({id:Date.now(),date:selectedDate,text,type:document.getElementById('ev-type').value});
+  db.events.push({id:Date.now(),date:selectedDate,text,type:document.getElementById('ev-type').value,color:selectedColor});
   document.getElementById('ev-text').value='';
   renderCalendar();
   renderDayEvents(selectedDate);
