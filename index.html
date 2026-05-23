@@ -151,90 +151,74 @@ textarea{resize:vertical;min-height:54px}
 .add-event-form{margin-top:14px;padding-top:14px;border-top:1px solid var(--light)}
 
 
-/* ── SIDEBAR FIXED ── */
-body{display:flex;min-height:100vh;}
+/* ── SIDEBAR ── */
 #sidebar{
-  width:200px;min-width:200px;height:100vh;position:sticky;top:0;
-  background:var(--white);border-right:1px solid var(--blush);
-  display:flex;flex-direction:column;flex-shrink:0;
-  box-shadow:2px 0 12px rgba(58,46,40,.07);
+  position:fixed;top:0;left:-280px;width:260px;height:100vh;
+  background:var(--white);z-index:200;transition:left .3s ease;
+  box-shadow:4px 0 24px rgba(58,46,40,.15);
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--blush);
 }
+#sidebar.open{left:0}
 .sb-header{
-  padding:24px 16px 16px;border-bottom:1px solid var(--blush);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 16px 16px;border-bottom:1px solid var(--blush);
+  flex-shrink:0;
 }
-.sb-logo{font-family:'Noto Serif TC',serif;font-size:15px;color:var(--rose);line-height:1.4}
-.sb-dates{margin-top:10px}
-.sb-date-row{font-size:11px;color:var(--mid);margin-top:4px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s}
-.sb-date-row:hover{background:var(--light)}
-.sb-date-row .sd-label{color:var(--mid)}
-.sb-date-row .sd-val{color:var(--dark);font-weight:500}
-.sb-date-row .sd-cd{color:var(--rose);font-size:10px;margin-top:1px}
-#sidebar nav{display:flex;flex-direction:column;padding:10px 0;flex:1;overflow-y:auto}
+.sb-close{background:transparent;border:none;font-size:18px;color:var(--mid);cursor:pointer;padding:4px}
+#sidebar nav{display:flex;flex-direction:column;padding:12px 0;overflow-y:auto;flex:1}
 #sidebar nav button{
-  text-align:left;padding:13px 20px;border:none;background:transparent;
-  font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--mid);
+  text-align:left;padding:14px 20px;border:none;background:transparent;
+  font-family:'Noto Sans TC',sans-serif;font-size:14px;color:var(--mid);
   cursor:pointer;transition:all .15s;border-left:3px solid transparent;
-  white-space:nowrap;display:flex;align-items:center;gap:8px;
+  white-space:nowrap;
 }
 #sidebar nav button:hover{background:var(--light);color:var(--dark)}
-#sidebar nav button.active{color:var(--rose);background:var(--light);border-left-color:var(--rose);font-weight:500}
-.sb-sync{padding:12px 16px;border-top:1px solid var(--blush);flex-shrink:0;font-size:11px;color:var(--mid);display:flex;align-items:center;gap:6px}
-.hamburger{display:none}
-#sidebar-overlay{display:none!important}
-/* main area */
-.main-wrap{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
-header{position:sticky;top:0;z-index:50}
-.content{flex:1;overflow-y:auto}
-/* mobile: hide sidebar, show bottom nav */
-@media(max-width:600px){
-  body{flex-direction:column}
-  #sidebar{display:none}
-  .bottom-nav{display:flex}
+#sidebar nav button.active{
+  color:var(--rose);background:var(--light);
+  border-left-color:var(--rose);font-weight:500;
 }
-.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--blush);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
-.bottom-nav button{flex:1;padding:10px 4px 8px;border:none;background:transparent;font-family:'Noto Sans TC',sans-serif;font-size:10px;color:var(--mid);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:color .15s}
-.bottom-nav button .bn-icon{font-size:20px;line-height:1}
-.bottom-nav button.active{color:var(--rose)}
-.content{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+.hamburger{
+  background:transparent;border:none;font-size:22px;color:var(--mid);
+  cursor:pointer;padding:4px 8px;line-height:1;flex-shrink:0;
+}
 
 </style>
 </head>
 <body>
 <div id="loadingOverlay"><div class="spinner"></div><p>載入婚禮資料中…</p></div>
-<div class="main-wrap">
+
 <header>
-  <div class="header-top">
+  <div class="header-top"><button class="hamburger" onclick="openSidebar()">☰</button>
     <span style="font-size:24px">💍</span>
     <h1>婚禮規劃</h1>
+    <div class="sync-badge"><div class="sync-dot loading" id="syncDot"></div><span id="syncLabel">同步中</span></div>
   </div>
-
+  <div class="date-banners">
+    <div class="date-banner" onclick="editDate('wedding')">
+      <div class="db-label">💒 婚禮日期</div>
+      <div class="db-val" id="weddingDateVal">點擊設定</div>
+      <div class="db-countdown" id="weddingCountdown"></div>
+    </div>
+    <div class="date-banner" onclick="editDate('registry')">
+      <div class="db-label">📋 登記日期</div>
+      <div class="db-val" id="registryDateVal">點擊設定</div>
+      <div class="db-countdown" id="registryCountdown"></div>
+    </div>
+  </div>
+  <div id="sidebar-overlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199"></div>
   <div id="sidebar">
     <div class="sb-header">
-      <div class="sb-logo">💍 婚禮規劃</div>
-      <div class="sb-dates">
-        <div class="sb-date-row" onclick="editDate('wedding')">
-          <div class="sd-label">💒 婚禮</div>
-          <div class="sd-val" id="sb-wedding-val">點擊設定</div>
-          <div class="sd-cd" id="sb-wedding-cd"></div>
-        </div>
-        <div class="sb-date-row" onclick="editDate('registry')">
-          <div class="sd-label">📋 登記</div>
-          <div class="sd-val" id="sb-registry-val">點擊設定</div>
-          <div class="sd-cd" id="sb-registry-cd"></div>
-        </div>
-      </div>
+      <div style="font-family:'Noto Serif TC',serif;font-size:16px;color:var(--rose)">💍 婚禮規劃</div>
+      <button onclick="closeSidebar()" class="sb-close">✕</button>
     </div>
     <nav>
-      <button class="active" onclick="switchTab('todo',this)"><span>✅</span>待辦事項</button>
-      <button onclick="switchTab('budget',this)"><span>💰</span>費用明細</button>
-      <button onclick="switchTab('vendor',this)"><span>🏪</span>廠商資訊</button>
-      <button onclick="switchTab('guest',this)"><span>👥</span>賓客名單</button>
-      <button onclick="switchTab('calendar',this)"><span>📅</span>行事曆</button>
+      <button class="active" onclick="switchTab('todo',this)">✅ 待辦事項</button>
+      <button onclick="switchTab('budget',this)">💰 費用明細</button>
+      <button onclick="switchTab('vendor',this)">🏪 廠商資訊</button>
+      <button onclick="switchTab('guest',this)">👥 賓客名單</button>
+      <button onclick="switchTab('calendar',this)">📅 行事曆</button>
     </nav>
-    <div class="sb-sync">
-      <div class="sync-dot loading" id="syncDot"></div>
-      <span id="syncLabel">同步中</span>
-    </div>
   </div>
 </header>
 
@@ -366,14 +350,6 @@ header{position:sticky;top:0;z-index:50}
     </div>
   </div>
 
-</div>
-  <nav class="bottom-nav">
-    <button class="active" onclick="switchTab('todo',this)"><span class="bn-icon">✅</span>待辦</button>
-    <button onclick="switchTab('budget',this)"><span class="bn-icon">💰</span>費用</button>
-    <button onclick="switchTab('vendor',this)"><span class="bn-icon">🏪</span>廠商</button>
-    <button onclick="switchTab('guest',this)"><span class="bn-icon">👥</span>賓客</button>
-    <button onclick="switchTab('calendar',this)"><span class="bn-icon">📅</span>行事曆</button>
-  </nav>
 </div>
 
 <script>
@@ -592,7 +568,16 @@ async function deleteCalEvent(id){
 }
 
 
-function closeSidebar(){}
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').style.display='block';
+  document.body.style.overflow='hidden';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').style.display='none';
+  document.body.style.overflow='';
+}
 
 // ── STORAGE ────────────────────────────────────────────────────
 async function loadData(){
@@ -662,6 +647,7 @@ function switchTab(name,btn){
   document.querySelectorAll('nav button').forEach(b=>{
     if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+name+"'"))b.classList.add('active');
   });
+  closeSidebar();
 }
 
 // ── DATES ──────────────────────────────────────────────────────
@@ -673,18 +659,16 @@ function editDate(type){
   updateDateBanners();saveData();
 }
 function updateDateBanners(){
-  sbBanner('sb-wedding-val','sb-wedding-cd',db.weddingDate,'婚禮');
-  sbBanner('sb-registry-val','sb-registry-cd',db.registryDate,'登記');
+  banner('weddingDateVal','weddingCountdown',db.weddingDate,'婚禮');
+  banner('registryDateVal','registryCountdown',db.registryDate,'登記');
 }
-function sbBanner(vId,cId,ds,label){
+function banner(vId,cId,ds,label){
   const v=document.getElementById(vId),c=document.getElementById(cId);
-  if(!v)return;
   if(!ds){v.textContent='點擊設定';c.textContent='';return;}
   v.textContent=ds.replace(/-/g,'/');
   const d=Math.ceil((new Date(ds)-new Date())/86400000);
-  c.textContent=d>0?`倒數 ${d} 天`:d===0?`今天！🎉`:`已過 ${-d} 天`;
+  c.textContent=d>0?`距離${label}還有 ${d} 天`:d===0?`今天就是${label}！🎉`:`${label}已過 ${-d} 天`;
 }
-function banner(vId,cId,ds,label){sbBanner(vId,cId,ds,label);}
 
 // ── EXPAND HELPER ──────────────────────────────────────────────
 function toggleEx(id){
