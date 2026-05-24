@@ -459,7 +459,7 @@ textarea{resize:vertical;min-height:50px}
 // ── CONFIG ──────────────────────────────────────────────
 const SUPABASE_URL='https://blgxdxapxagnqbkcvmzd.supabase.co';
 const SUPABASE_KEY='sb_publishable_VCzd0zINstH1sko8H3pKXQ_8NCJrIK2';
-const DB_KEY='wedding-v10';
+const DB_KEY='wedding-main-permanent';
 const EV_COLORS=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#b87a5b','#9e8a5b','#7a6ea8','#5b8a6b'];
 const DEFAULT_CATS=['場地','婚紗','餐飲','攝影','花藝','喜帖','蜜月','其他'];
 const VTYPES=['場地','婚紗','攝影','錄影','花藝','餐飲','喜帖','主持人','其他'];
@@ -498,7 +498,15 @@ async function loadData(){
     if(rows&&rows.length){
       const p=rows[0].value;
       db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
+      // migrate old expense format
       db.expenses=db.expenses.map(e=>e.paid===undefined?{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0}:e);
+      // migrate vendors without paid/unpaid
+      db.vendors=db.vendors.map(v=>({paid:0,unpaid:0,...v}));
+      // ensure all items have files array
+      db.todos=db.todos.map(t=>({files:[],...t}));
+      db.expenses=db.expenses.map(e=>({files:[],...e}));
+      db.vendors=db.vendors.map(v=>({files:[],...v}));
+      db.guests=db.guests.map(g=>({files:[],...g,note:g.note||''}));
       lastJSON=JSON.stringify(db);
     }else{db=JSON.parse(JSON.stringify(SEED));await saveData()}
     setSyncState('ok','已同步');
