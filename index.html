@@ -920,8 +920,7 @@ async function addVendor(){
 }
 async function deleteVendor(id){
   const v=db.vendors.find(v=>v.id===id);
-  if(!confirm('確定要刪除廠商「'+(v?v.name:'此廠商')+'」嗎？
-（對應的費用記錄也會一起刪除）'))return;
+  if(!confirm('確定要刪除廠商「'+(v?v.name:'此廠商')+'」嗎？（對應的費用記錄也會一起刪除）'))return;
   db.vendors=db.vendors.filter(v=>v.id!==id);
   db.expenses=db.expenses.filter(e=>e.vendorId!==id);
   renderVendors();renderExpenses();await saveData();
