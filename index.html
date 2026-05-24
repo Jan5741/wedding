@@ -457,8 +457,8 @@ textarea{resize:vertical;min-height:50px}
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────
-const SUPABASE_URL='https://blgxdxapxagnqbkcvmzd.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsZ3hkeGFweGFnbnFia2N2bXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1MDQ4MTEsImV4cCI6MjA5NTA4MDgxMX0.Gz9KsZFID-USHmdDzw3Yf2rxKtsHKPRfCJRkvxiwGnk';
+const BIN_ID='6a130745ee5a733b1210d76d';
+const API_KEY="$2a$10$HSLHfBpQBbhWeLWI8Yq8VOX8kyHjgjM6Mkkj0YgnZlQUsMfqOZkfS";
 const DB_KEY='wedding-main-permanent';
 const EV_COLORS=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#b87a5b','#9e8a5b','#7a6ea8','#5b8a6b'];
 const DEFAULT_CATS=['場地','婚紗','餐飲','攝影','花藝','喜帖','蜜月','其他'];
@@ -478,55 +478,105 @@ function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onlo
 function dateKey(y,m,d){return y+'/'+(String(m+1).padStart(2,'0'))+'/'+String(d).padStart(2,'0')}
 function parseDate(s){const[y,m,d]=s.split(/[-\/]/).map(Number);return new Date(y,m-1,d)}
 
-// ── SUPABASE ─────────────────────────────────────────────
-async function sbFetch(path,method='GET',body=null){
-  const res=await fetch(SUPABASE_URL+path,{method,headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'resolution=merge-duplicates':''},body:body?JSON.stringify(body):null});
+// ── JSONBIN STORAGE ──────────────────────────────────────
+async function binFetch(method='GET', body=null){
+  const res=await fetch('https://api.jsonbin.io/v3/b/'+BIN_ID+(method==='GET'?'/latest':''),{
+    method,
+    headers:{
+      'Content-Type':'application/json',
+      'X-Master-Key':API_KEY,
+      'X-Bin-Versioning':'false'
+    },
+    body:body?JSON.stringify(body):null
+  });
   if(!res.ok)throw new Error(await res.text());
-  return res.status===204?null:res.json();
+  return res.json();
 }
 async function saveData(){
   if(saving)return;saving=true;setSyncState('loading','儲存中');
-  const timer=setTimeout(()=>{saving=false},8000);
-  try{const j=JSON.stringify(db);await sbFetch('/rest/v1/wedding_data','POST',{key:DB_KEY,value:db,updated_at:new Date().toISOString()});lastJSON=j;setSyncState('ok','已同步')}
-  catch(e){setSyncState('err','儲存失敗')}
-  finally{clearTimeout(timer);saving=false}
+  const timer=setTimeout(()=>{saving=false},10000);
+  try{
+    const j=JSON.stringify(db);
+    localStorage.setItem(DB_KEY,j);
+    await binFetch('PUT',db);
+    lastJSON=j;
+    setSyncState('ok','已同步');
+  }catch(e){
+    setSyncState('err','離線（本機已存）');
+    console.error(e);
+  }finally{clearTimeout(timer);saving=false;}
 }
 async function loadData(){
   setSyncState('loading','載入中');
-  try{
-    const rows=await sbFetch('/rest/v1/wedding_data?key=eq.'+DB_KEY+'&select=value');
-    if(rows&&rows.length){
-      const p=rows[0].value;
+  // show cached data instantly
+  const cached=localStorage.getItem(DB_KEY);
+  if(cached){
+    try{
+      const p=JSON.parse(cached);
       db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
-      // migrate old expense format
-      db.expenses=db.expenses.map(e=>e.paid===undefined?{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0}:e);
-      // migrate vendors without paid/unpaid
-      db.vendors=db.vendors.map(v=>({paid:0,unpaid:0,...v}));
-      // link vendors to expenses if not already linked
-      db.vendors.forEach(v=>{
-        if(!v.paid&&!v.unpaid)return;
-        const linked=db.expenses.find(e=>e.vendorId===v.id);
-        if(!linked){
-          // try match by name
-          const byName=db.expenses.find(e=>!e.vendorId&&e.name&&e.name.includes(v.name.split('：')[1]||v.name));
-          if(byName){byName.vendorId=v.id;byName.paid=v.paid;byName.unpaid=v.unpaid;}
-          else if(v.paid||v.unpaid){
-            db.expenses.push({id:Date.now()+(Math.random()*1000|0),name:v.name,cat:v.type,paid:v.paid,unpaid:v.unpaid,note:v.note||'',files:[],vendorId:v.id});
-          }
-        }
-      });
-      // ensure all items have files array
-      db.todos=db.todos.map(t=>({files:[],...t}));
-      db.expenses=db.expenses.map(e=>({files:[],...e}));
-      db.vendors=db.vendors.map(v=>({files:[],...v}));
-      db.guests=db.guests.map(g=>({files:[],...g,note:g.note||''}));
-      lastJSON=JSON.stringify(db);
-    }else{db=JSON.parse(JSON.stringify(SEED));await saveData()}
+      migrateData();
+      document.getElementById('loadingOverlay').style.display='none';
+      renderAll();updateDates();populateSelects();
+    }catch(e){}
+  }
+  // load from JSONBin
+  try{
+    const res=await binFetch('GET');
+    const p=res.record||res;
+    if(p&&!p.init){
+      db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
+      migrateData();
+      const j=JSON.stringify(db);
+      localStorage.setItem(DB_KEY,j);
+      lastJSON=j;
+    }else if(!cached){
+      db=JSON.parse(JSON.stringify(SEED));
+      await saveData();
+    }
     setSyncState('ok','已同步');
-  }catch(e){console.error(e);db=JSON.parse(JSON.stringify(SEED));setSyncState('err','載入失敗')}
+  }catch(e){
+    console.error('JSONBin error:',e);
+    if(!cached){db=JSON.parse(JSON.stringify(SEED));}
+    setSyncState('err','離線模式');
+  }
   document.getElementById('loadingOverlay').style.display='none';
   renderAll();updateDates();populateSelects();
-  setInterval(async()=>{if(saving)return;try{const rows=await sbFetch('/rest/v1/wedding_data?key=eq.'+DB_KEY+'&select=value,updated_at');if(rows&&rows.length){const j=JSON.stringify(rows[0].value);if(j!==lastJSON){db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...rows[0].value};lastJSON=j;renderAll();updateDates();populateSelects()}}}catch(e){}},8000);
+  // poll every 10s for changes from other users
+  setInterval(async()=>{
+    if(saving)return;
+    try{
+      const res=await binFetch('GET');
+      const p=res.record||res;
+      if(p&&!p.init){
+        const j=JSON.stringify(p);
+        if(j!==lastJSON){
+          db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
+          migrateData();lastJSON=j;
+          localStorage.setItem(DB_KEY,j);
+          renderAll();updateDates();populateSelects();
+        }
+      }
+    }catch(e){}
+  },10000);
+}
+
+function migrateData(){
+  db.expenses=db.expenses.map(e=>e.paid===undefined?{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0}:e);
+  db.vendors=db.vendors.map(v=>({paid:0,unpaid:0,...v}));
+  db.todos=db.todos.map(t=>({files:[],...t}));
+  db.expenses=db.expenses.map(e=>({files:[],...e}));
+  db.vendors=db.vendors.map(v=>({files:[],...v}));
+  db.guests=db.guests.map(g=>({files:[],...g,note:g.note||''}));
+  // link vendors to expenses
+  db.vendors.forEach(v=>{
+    if(!v.paid&&!v.unpaid)return;
+    const linked=db.expenses.find(e=>e.vendorId===v.id);
+    if(!linked){
+      const byName=db.expenses.find(e=>!e.vendorId&&e.name&&e.name.includes(v.name.split('：')[1]||v.name));
+      if(byName){byName.vendorId=v.id;byName.paid=v.paid;byName.unpaid=v.unpaid;}
+      else if(v.paid||v.unpaid){db.expenses.push({id:Date.now()+(Math.random()*1000|0),name:v.name,cat:v.type,paid:v.paid,unpaid:v.unpaid,note:v.note||'',files:[],vendorId:v.id});}
+    }
+  });
 }
 
 // ── SEED DATA ────────────────────────────────────────────
