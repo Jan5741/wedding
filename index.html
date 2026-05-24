@@ -502,6 +502,19 @@ async function loadData(){
       db.expenses=db.expenses.map(e=>e.paid===undefined?{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0}:e);
       // migrate vendors without paid/unpaid
       db.vendors=db.vendors.map(v=>({paid:0,unpaid:0,...v}));
+      // link vendors to expenses if not already linked
+      db.vendors.forEach(v=>{
+        if(!v.paid&&!v.unpaid)return;
+        const linked=db.expenses.find(e=>e.vendorId===v.id);
+        if(!linked){
+          // try match by name
+          const byName=db.expenses.find(e=>!e.vendorId&&e.name&&e.name.includes(v.name.split('：')[1]||v.name));
+          if(byName){byName.vendorId=v.id;byName.paid=v.paid;byName.unpaid=v.unpaid;}
+          else if(v.paid||v.unpaid){
+            db.expenses.push({id:Date.now()+(Math.random()*1000|0),name:v.name,cat:v.type,paid:v.paid,unpaid:v.unpaid,note:v.note||'',files:[],vendorId:v.id});
+          }
+        }
+      });
       // ensure all items have files array
       db.todos=db.todos.map(t=>({files:[],...t}));
       db.expenses=db.expenses.map(e=>({files:[],...e}));
@@ -658,7 +671,7 @@ async function addTodo(){
   renderTodos();await saveData();
 }
 async function toggleDone(id){const t=db.todos.find(t=>t.id===id);if(t){t.done=!t.done;renderTodos();await saveData()}}
-async function deleteTodo(id){if(!confirm('確定刪除？'))return;db.todos=db.todos.filter(t=>t.id!==id);renderTodos();await saveData()}
+async function deleteTodo(id){const t=db.todos.find(t=>t.id===id);if(!confirm('確定要刪除待辦「'+(t?t.text:'此項目')+'」嗎？'))return;db.todos=db.todos.filter(t=>t.id!==id);renderTodos();await saveData()}
 
 function openTodoDetail(id){
   const t=db.todos.find(t=>t.id===id);if(!t)return;
@@ -711,6 +724,7 @@ async function addTodoFile(id){
   };inp.click();
 }
 async function removeTodoFile(id,idx){
+  if(!confirm('確定要刪除此附件嗎？'))return;
   const t=db.todos.find(t=>t.id===id);if(!t||!t.files)return;t.files.splice(idx,1);
   const el=document.getElementById('todo-attach-'+id);
   if(el){const tmp=document.createElement('div');tmp.innerHTML=buildTodoFileGrid(t);el.replaceWith(tmp.firstChild)}
@@ -758,7 +772,7 @@ async function addExpense(){
   document.getElementById('exp-name').value='';document.getElementById('exp-paid').value='';document.getElementById('exp-unpaid').value='';
   renderExpenses();await saveData();
 }
-async function deleteExpense(id){db.expenses=db.expenses.filter(e=>e.id!==id);renderExpenses();await saveData()}
+async function deleteExpense(id){const e=db.expenses.find(e=>e.id===id);if(!confirm('確定要刪除「'+(e?e.name:'此費用')+'」嗎？'))return;db.expenses=db.expenses.filter(e=>e.id!==id);renderExpenses();await saveData()}
 
 function openExpDetail(id){
   const e=db.expenses.find(e=>e.id===id);if(!e)return;
@@ -778,7 +792,12 @@ function openExpDetail(id){
     e.paid=parseFloat(document.getElementById('em-paid').value)||0;
     e.unpaid=parseFloat(document.getElementById('em-unpaid').value)||0;
     e.note=document.getElementById('em-note').value;
-    renderExpenses();await saveData();
+    // sync back to vendor if linked
+    if(e.vendorId){
+      const v=db.vendors.find(v=>v.id===e.vendorId);
+      if(v){v.paid=e.paid;v.unpaid=e.unpaid;v.note=e.note;}
+    }
+    renderExpenses();renderVendors();await saveData();
   });
   window._curExpId=id;
 }
@@ -803,6 +822,7 @@ async function addExpFile(id){
   };inp.click();
 }
 async function removeExpFile(id,idx){
+  if(!confirm('確定要刪除此附件嗎？'))return;
   const e=db.expenses.find(e=>e.id===id);if(!e||!e.files)return;e.files.splice(idx,1);
   const el=document.getElementById('exp-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildExpFileGrid(e);el.replaceWith(tmp.firstChild)}
   renderExpenses();await saveData();
@@ -821,11 +841,11 @@ function renderExpenses(){
     return`<div class="item-card">
       <div class="item-row" onclick="openExpDetail(${e.id})" style="cursor:pointer">
         <div class="item-body">
-          <div class="item-title">${esc(e.name)}</div>
+          <div class="item-title">${esc(e.name)}${e.vendorId?'<span style="font-size:10px;color:var(--text3);margin-left:6px">🔗 廠商連動</span>':''}</div>
           <div class="item-sub">
             <span class="tag">${e.cat}</span>
-            ${paid?`<span style="font-size:11px;color:var(--green)">已付 $${paid.toLocaleString()}</span>`:''}
-            ${unpaid?`<span style="font-size:11px;color:var(--accent)">待付 $${unpaid.toLocaleString()}</span>`:''}
+            ${paid?`<span style="font-size:11px;color:var(--green)">✅ 已付 $${paid.toLocaleString()}</span>`:''}
+            ${unpaid?`<span style="font-size:11px;color:var(--accent)">⏳ 待付 $${unpaid.toLocaleString()}</span>`:''}
             ${e.note?'<span class="tag">備注</span>':''}
             ${(e.files||[]).length?`<span class="tag">📎 ${e.files.length}</span>`:''}
           </div>
@@ -843,9 +863,19 @@ async function addVendor(){
   db.vendors.push({id:Date.now(),name,type:document.getElementById('v-type').value,contact:document.getElementById('v-contact').value,phone:document.getElementById('v-phone').value,line:document.getElementById('v-line').value,status:document.getElementById('v-status').value,paid:parseFloat(document.getElementById('v-paid').value)||0,unpaid:parseFloat(document.getElementById('v-unpaid').value)||0,note:document.getElementById('v-note').value,files:[]});
   ['v-name','v-contact','v-phone','v-line','v-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('v-paid').value='';document.getElementById('v-unpaid').value='';
-  renderVendors();await saveData();
+  // auto-create linked expense
+  const newV=db.vendors[db.vendors.length-1];
+  if(newV.paid||newV.unpaid)syncVendorToExpense(newV);
+  renderVendors();renderExpenses();await saveData();
 }
-async function deleteVendor(id){db.vendors=db.vendors.filter(v=>v.id!==id);renderVendors();await saveData()}
+async function deleteVendor(id){
+  const v=db.vendors.find(v=>v.id===id);
+  if(!confirm('確定要刪除廠商「'+(v?v.name:'此廠商')+'」嗎？
+（對應的費用記錄也會一起刪除）'))return;
+  db.vendors=db.vendors.filter(v=>v.id!==id);
+  db.expenses=db.expenses.filter(e=>e.vendorId!==id);
+  renderVendors();renderExpenses();await saveData();
+}
 
 function openVendorDetail(id){
   const v=db.vendors.find(v=>v.id===id);if(!v)return;
@@ -875,7 +905,8 @@ function openVendorDetail(id){
     v.paid=parseFloat(document.getElementById('em-paid').value)||0;
     v.unpaid=parseFloat(document.getElementById('em-unpaid').value)||0;
     v.note=document.getElementById('em-note').value;
-    renderVendors();await saveData();
+    syncVendorToExpense(v);
+    renderVendors();renderExpenses();await saveData();
   });
   window._curVendorId=id;
 }
@@ -899,6 +930,7 @@ async function addVendorFile(id){
   };inp.click();
 }
 async function removeVendorFile(id,idx){
+  if(!confirm('確定要刪除此附件嗎？'))return;
   const v=db.vendors.find(v=>v.id===id);if(!v||!v.files)return;v.files.splice(idx,1);
   const el=document.getElementById('vendor-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildVendorFileGrid(v);el.replaceWith(tmp.firstChild)}
   renderVendors();await saveData();
@@ -936,7 +968,7 @@ async function addGuest(){
   ['g-name','g-table','g-diet'].forEach(id=>document.getElementById(id).value='');
   renderGuests();await saveData();
 }
-async function deleteGuest(id){db.guests=db.guests.filter(g=>g.id!==id);renderGuests();await saveData()}
+async function deleteGuest(id){const g=db.guests.find(g=>g.id===id);if(!confirm('確定要刪除賓客「'+(g?g.name:'此賓客')+'」嗎？'))return;db.guests=db.guests.filter(g=>g.id!==id);renderGuests();await saveData()}
 
 function openGuestDetail(id){
   const g=db.guests.find(g=>g.id===id);if(!g)return;
@@ -982,6 +1014,7 @@ async function addGuestFile(id){
   };inp.click();
 }
 async function removeGuestFile(id,idx){
+  if(!confirm('確定要刪除此附件嗎？'))return;
   const g=db.guests.find(g=>g.id===id);if(!g||!g.files)return;g.files.splice(idx,1);
   const el=document.getElementById('guest-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildGuestFileGrid(g);el.replaceWith(tmp.firstChild)}
   renderGuests();await saveData();
@@ -1230,8 +1263,28 @@ async function addCalEvent(){
 }
 
 async function deleteCalEv(id){
+  const e=(db.events||[]).find(e=>e.id===id);
+  if(!confirm('確定要刪除行程「'+(e?e.text:'此行程')+'」嗎？'))return;
   if(!db.events)return;db.events=db.events.filter(e=>e.id!==id);
   renderCalendar();if(selDate)showEvPanel(selDate);await saveData();
+}
+
+function syncVendorToExpense(v){
+  if(!v.name)return;
+  // find matching expense by vendorId or name
+  let e=db.expenses.find(ex=>ex.vendorId===v.id);
+  if(!e&&(v.paid||v.unpaid)){
+    // create new expense linked to this vendor
+    e={id:Date.now()+(Math.random()*100|0),name:v.name,cat:v.type,paid:v.paid||0,unpaid:v.unpaid||0,note:v.note||'',files:[],vendorId:v.id};
+    db.expenses.push(e);
+  } else if(e){
+    // update existing expense
+    e.name=v.name;
+    e.cat=v.type;
+    e.paid=v.paid||0;
+    e.unpaid=v.unpaid||0;
+    e.note=v.note||'';
+  }
 }
 
 function renderAll(){renderTodos();renderExpenses();renderVendors();renderGuests();renderCalendar()}
