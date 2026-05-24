@@ -3,823 +3,731 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>婚禮規劃 💍</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<title>婚禮規劃</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--rose:#c97b63;--blush:#e8c5b0;--sage:#7fa87f;--cream:#fdf6ee;--light:#f5ece3;--dark:#3a2e28;--mid:#7a6458;--white:#fffdf9;--shadow:0 2px 18px rgba(58,46,40,.09);--red:#e74c3c;--gold:#b7860a}
-body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh}
-header{background:var(--white);border-bottom:1px solid var(--blush);padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
-.header-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-h1{font-family:'Noto Serif TC',serif;font-size:19px;color:var(--rose);letter-spacing:2px}
-.sync-badge{margin-left:auto;font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--blush);background:var(--light);color:var(--mid);display:flex;align-items:center;gap:4px}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:#ccc;transition:background .3s}
-.sync-dot.ok{background:var(--sage)}.sync-dot.err{background:var(--red)}.sync-dot.loading{background:var(--blush);animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.date-banners{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.date-banner{background:var(--light);border-radius:10px;padding:8px 12px;cursor:pointer;border:1px solid rgba(232,197,176,.5);transition:background .2s}
-.date-banner:hover{background:var(--blush)}
-.db-label{font-size:10px;color:var(--mid);margin-bottom:2px}
-.db-val{font-family:'Noto Serif TC',serif;font-size:13px;color:var(--dark)}
-.db-countdown{font-size:11px;color:var(--rose);font-weight:500;margin-top:1px}
-nav{display:flex;overflow-x:auto}
-nav button{flex:1;min-width:68px;padding:9px 4px;border:none;background:transparent;font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--mid);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
-nav button.active{color:var(--rose);border-bottom-color:var(--rose);font-weight:500}
-.content{padding:16px;max-width:680px;margin:0 auto}
-.tab-panel{display:none}.tab-panel.active{display:block}
-.card{background:var(--white);border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow);border:1px solid rgba(232,197,176,.3)}
-.section-title{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--rose);margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.input-row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-input[type=text],input[type=number],input[type=date],select,textarea{flex:1;min-width:100px;padding:8px 11px;border:1px solid var(--blush);border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--dark);background:var(--cream);outline:none;transition:border .2s}
-input:focus,select:focus,textarea:focus{border-color:var(--rose);background:var(--white)}
-textarea{resize:vertical;min-height:54px}
-.btn{padding:8px 15px;border:none;border-radius:8px;font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap}
-.btn-primary{background:var(--rose);color:#fff}.btn-primary:hover{background:#b56a52}
-.btn-sm{padding:5px 11px;font-size:12px}
-.btn-del{background:transparent;color:#ccc;border:none;padding:4px 6px;font-size:14px;cursor:pointer;line-height:1;transition:color .2s}.btn-del:hover{color:var(--red)}
-
-/* ── SHARED EXPANDABLE CARD ── */
-.ex-card{background:var(--white);border:1px solid rgba(232,197,176,.4);border-radius:12px;margin-bottom:8px;overflow:hidden;box-shadow:var(--shadow)}
-.ex-main{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none}
-.ex-main:hover{background:rgba(232,197,176,.08)}
-.ex-body{flex:1;min-width:0}
-.ex-arrow{font-size:16px;color:var(--mid);transition:transform .2s;flex-shrink:0}
-.ex-arrow.open{transform:rotate(90deg)}
-.ex-detail{display:none;padding:0 14px 14px;border-top:1px solid var(--light)}
-.ex-detail.open{display:block}
-.ex-field{margin-top:10px}
-.ex-field label{font-size:11px;color:var(--mid);display:block;margin-bottom:4px}
-.ex-field input,.ex-field select,.ex-field textarea{width:100%;min-width:unset}
-.ex-save{margin-top:10px;width:100%}
-.ex-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.ex-col{flex:1;min-width:80px}
-.ex-col label{font-size:11px;color:var(--mid);display:block;margin-bottom:4px}
-.ex-col input,.ex-col select{width:100%;min-width:unset}
-
-/* ── TODOS ── */
-.todo-cb{width:18px;height:18px;min-width:18px;accent-color:var(--sage);cursor:pointer;flex-shrink:0}
-.todo-title{font-size:14px;line-height:1.5;word-break:break-all}
-.todo-title.done{text-decoration:line-through;color:var(--mid);opacity:.5}
-.tags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
-.tag{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--light);color:var(--mid)}
-.tag.urgent{background:#fdecea;color:var(--red)}.tag.done-tag{background:#eaf4ea;color:var(--sage)}
-.progress-wrap{background:var(--light);border-radius:10px;height:7px;margin:10px 0 4px;overflow:hidden}
-.progress-bar{height:100%;background:linear-gradient(90deg,var(--sage),var(--rose));border-radius:10px;transition:width .5s}
-.progress-lbl{font-size:12px;color:var(--mid);text-align:right}
-/* photos */
-.photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.photo-wrap{position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--blush);flex-shrink:0}
-.photo-wrap img{width:100%;height:100%;object-fit:cover}
-.photo-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.photo-add{width:72px;height:72px;border:2px dashed var(--blush);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:11px;color:var(--mid);gap:3px;background:var(--cream);transition:border-color .2s;flex-shrink:0}
-.photo-add:hover{border-color:var(--rose);color:var(--rose)}
-
-/* ── BUDGET ── */
-.budget-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
-.bsum-box{border-radius:12px;padding:14px 16px;text-align:center}
-.bsum-box.paid{background:linear-gradient(135deg,#eaf4ea,#f0f8f0)}
-.bsum-box.pending{background:linear-gradient(135deg,#fff8e1,#fffbf0)}
-.bl{font-size:11px;color:var(--mid);margin-bottom:4px}
-.ba{font-family:'Noto Serif TC',serif;font-size:22px}
-.bsum-box.paid .ba{color:var(--sage)}.bsum-box.pending .ba{color:var(--gold)}
-.btotal-row{text-align:center;padding:10px 0 4px;font-size:13px;color:var(--mid)}
-.btotal-row strong{font-family:'Noto Serif TC',serif;font-size:18px;color:var(--rose);margin-left:6px}
-.exp-name{font-size:14px;word-break:break-all}
-.exp-sub{font-size:11px;color:var(--mid);margin-top:2px}
-.exp-amt{font-size:15px;font-weight:500;white-space:nowrap;margin-right:4px}
-.exp-amt.paid{color:var(--sage)}.exp-amt.unpaid{color:var(--gold)}
-.exp-badge{font-size:10px;padding:2px 8px;border-radius:8px;white-space:nowrap;cursor:pointer;border:none;font-family:'Noto Sans TC',sans-serif}
-.exp-badge.paid{background:#eaf4ea;color:var(--sage)}.exp-badge.unpaid{background:#fff8e1;color:var(--gold)}
-
-/* ── VENDOR ── */
-.vendor-name-txt{font-weight:500;font-size:15px;flex:1;min-width:0;word-break:break-all}
-.vendor-type-tag{font-size:11px;padding:3px 10px;border-radius:10px;background:var(--blush);color:var(--dark);flex-shrink:0}
-.vstatus{display:inline-block;font-size:11px;padding:3px 10px;border-radius:10px}
-.vstatus-confirmed{background:#eaf4ea;color:var(--sage)}.vstatus-pending{background:#fff8e1;color:var(--gold)}.vstatus-cancelled{background:#fdecea;color:var(--red)}
-.vendor-preview{font-size:12px;color:var(--mid);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-/* ── GUEST ── */
-.guest-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.stat-box{background:var(--light);border-radius:10px;padding:10px 6px;text-align:center}
-.stat-box .num{font-family:'Noto Serif TC',serif;font-size:22px;color:var(--rose)}
-.stat-box .lbl{font-size:11px;color:var(--mid)}
-.g-name-txt{font-size:14px;flex:1}
-.g-side-tag{font-size:11px;color:var(--mid)}
-.g-preview{font-size:12px;color:var(--mid);margin-top:2px}
-.rsvp-badge{font-size:11px;padding:3px 10px;border-radius:10px;flex-shrink:0}
-.rsvp-yes{background:#eaf4ea;color:var(--sage)}.rsvp-no{background:#fdecea;color:var(--red)}.rsvp-pending{background:var(--light);color:var(--mid)}
-
-.empty{text-align:center;padding:28px;color:var(--mid);font-size:13px}
-.empty .emoji{font-size:30px;margin-bottom:8px}
-#loadingOverlay{position:fixed;inset:0;background:rgba(253,246,238,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:12px}
-#loadingOverlay .spinner{width:36px;height:36px;border:3px solid var(--blush);border-top-color:var(--rose);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#loadingOverlay p{font-size:14px;color:var(--mid)}
-@media(max-width:400px){.guest-stats{grid-template-columns:repeat(2,1fr)}}
-
-/* ── CALENDAR ── */
-.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.cal-title{font-family:'Noto Serif TC',serif;font-size:16px;color:var(--rose)}
-.cal-nav{background:transparent;border:1px solid var(--blush);border-radius:8px;padding:6px 12px;font-size:14px;color:var(--mid);cursor:pointer}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:16px}
-.cal-dow{text-align:center;font-size:11px;color:var(--mid);padding:4px 0;font-weight:500}
-.cal-day{
-  aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  padding-top:6px;border-radius:8px;cursor:pointer;transition:background .15s;position:relative;
-  font-size:13px;
+:root{
+  --bg:#fff;--bg2:#f8f8f6;--bg3:#f0efe9;
+  --border:#e5e3db;--border2:#ccc9be;
+  --text:#1c1c1a;--text2:#5c5a54;--text3:#9a9890;
+  --accent:#b8956a;--accent-l:#f5ede2;
+  --green:#6a9e72;--green-l:#edf5ee;
+  --red:#c0392b;--blue:#5b8fa8;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --r:10px;--r2:6px;--r3:14px;
 }
-.cal-day:hover{background:var(--light)}
-.cal-day.other-month{color:var(--blush)}
-.cal-day.today{background:var(--light);font-weight:700;color:var(--rose)}
-.cal-day.selected{background:var(--rose)!important;color:#fff!important}
-.cal-day.selected:hover{background:#b56a52!important}
-.cal-day.has-event::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--sage);position:absolute;bottom:4px}
-.cal-day.selected.has-event::after{background:#fff}
-.cal-day.wedding-day{background:linear-gradient(135deg,var(--rose),var(--blush))!important;color:#fff!important;font-weight:700}
-.cal-day.registry-day{background:linear-gradient(135deg,var(--sage),#b5d5b5)!important;color:#fff!important;font-weight:700}
-.cal-dots{display:flex;gap:2px;position:absolute;bottom:3px;left:50%;transform:translateX(-50%)}
-.cal-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg2);color:var(--text);min-height:100vh;font-size:14px}
 
-.event-panel{background:var(--white);border-radius:12px;padding:16px;box-shadow:var(--shadow);border:1px solid rgba(232,197,176,.3)}
-.event-panel-title{font-family:'Noto Serif TC',serif;font-size:14px;color:var(--rose);margin-bottom:12px}
-.event-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--light)}
-.event-item:last-child{border-bottom:none}
-.event-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.event-body{flex:1;min-width:0}
-.event-text{font-size:13px;word-break:break-all}
-.event-text.editing{display:none}
-.event-edit-input{width:100%;padding:4px 8px;border:1px solid var(--blush);border-radius:6px;font-size:13px;font-family:'Noto Sans TC',sans-serif;background:var(--cream)}
-.event-meta{font-size:11px;color:var(--mid);margin-top:2px}
-.event-actions{display:flex;gap:4px;align-items:center;flex-shrink:0}
-.ev-edit-btn{background:transparent;border:1px solid var(--blush);border-radius:6px;padding:3px 8px;font-size:11px;color:var(--mid);cursor:pointer}
-.ev-edit-btn:hover{background:var(--light)}
-.ev-save-btn{background:var(--rose);border:none;border-radius:6px;padding:3px 8px;font-size:11px;color:#fff;cursor:pointer;display:none}
-
-.add-event-form{margin-top:14px;padding-top:14px;border-top:1px solid var(--light)}
-
-/* color picker */
-.color-picker{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
-.color-swatch{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0}
-.color-swatch:hover{transform:scale(1.15)}
-.color-swatch.selected{border-color:var(--dark);transform:scale(1.15)}
-
-.ev-type-sel{font-size:12px;padding:6px 8px;border:1px solid var(--blush);border-radius:8px;background:var(--cream);color:var(--dark);font-family:'Noto Sans TC',sans-serif}
-
+/* ── OVERLAY ── */
+#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:199;backdrop-filter:blur(2px)}
+#sb-overlay.show{display:block}
 
 /* ── SIDEBAR ── */
 #sidebar{
-  position:fixed;top:0;left:-280px;width:260px;height:100vh;
-  background:var(--white);z-index:200;transition:left .3s ease;
-  box-shadow:4px 0 24px rgba(58,46,40,.15);
-  display:flex;flex-direction:column;
-  border-right:1px solid var(--blush);
+  position:fixed;top:0;left:-240px;width:220px;height:100vh;
+  background:var(--bg);border-right:1px solid var(--border);
+  z-index:200;transition:left .25s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,.08);
 }
 #sidebar.open{left:0}
-.sb-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:20px 16px 16px;border-bottom:1px solid var(--blush);
-  flex-shrink:0;
+.sb-top{padding:20px 16px 12px;border-bottom:1px solid var(--border)}
+.sb-logo{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);margin-bottom:14px}
+.sb-date{font-size:12px;color:var(--text2);padding:6px 10px;background:var(--bg2);border-radius:var(--r2);margin-bottom:6px;cursor:pointer;transition:background .15s}
+.sb-date:hover{background:var(--bg3)}
+.sb-date-label{color:var(--text3);font-size:11px;margin-bottom:1px}
+.sb-date-val{color:var(--text);font-weight:500}
+.sb-date-cd{color:var(--accent);font-size:11px}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.sb-btn{
+  display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;
+  border:none;background:transparent;cursor:pointer;border-radius:var(--r2);
+  color:var(--text2);font-family:'Noto Sans TC',sans-serif;font-size:13px;
+  transition:all .15s;text-align:left;margin-bottom:2px;
 }
-.sb-close{background:transparent;border:none;font-size:18px;color:var(--mid);cursor:pointer;padding:4px}
-#sidebar nav{display:flex;flex-direction:column;padding:12px 0;overflow-y:auto;flex:1}
-#sidebar nav button{
-  text-align:left;padding:14px 20px;border:none;background:transparent;
-  font-family:'Noto Sans TC',sans-serif;font-size:14px;color:var(--mid);
-  cursor:pointer;transition:all .15s;border-left:3px solid transparent;
-  white-space:nowrap;
-}
-#sidebar nav button:hover{background:var(--light);color:var(--dark)}
-#sidebar nav button.active{
-  color:var(--rose);background:var(--light);
-  border-left-color:var(--rose);font-weight:500;
-}
-.hamburger{
-  background:transparent;border:none;font-size:22px;color:var(--mid);
-  cursor:pointer;padding:4px 8px;line-height:1;flex-shrink:0;
-}
+.sb-btn:hover{background:var(--bg2);color:var(--text)}
+.sb-btn.active{background:var(--accent-l);color:var(--accent);font-weight:500}
+.sb-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.sb-divider{height:1px;background:var(--border);margin:6px 8px}
+.sb-sync{padding:10px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3)}
+.sync-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:#ccc}
+.sync-dot.ok{background:var(--green)}.sync-dot.err{background:var(--red)}.sync-dot.loading{background:var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;height:52px;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  box-shadow:0 1px 0 var(--border);
+}
+.hamburger{background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);padding:6px;border-radius:var(--r2);transition:background .15s;line-height:1}
+.hamburger:hover{background:var(--bg2)}
+.topbar-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--text)}
+.topbar-chips{display:flex;gap:6px;margin-left:auto}
+.chip{padding:4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .15s}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip-cd{color:var(--accent);font-weight:500}
+
+/* ── CONTENT ── */
+.content{padding:20px 16px;max-width:820px;margin:0 auto}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--shadow)}
+.card-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+/* ── INPUTS ── */
+.field{margin-bottom:0}
+.field label{display:block;font-size:11px;color:var(--text3);margin-bottom:4px;letter-spacing:.4px;text-transform:uppercase}
+.frow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.frow .field{flex:1;min-width:90px}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
+  width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--r2);
+  font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--text);
+  background:var(--bg2);outline:none;transition:border .15s,background .15s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--bg)}
+textarea{resize:vertical;min-height:50px}
+.btn{padding:8px 16px;border:none;border-radius:var(--r2);font-family:'Noto Sans TC',sans-serif;font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#9e7a52}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-ghost:hover{background:var(--bg2)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-del{background:transparent;border:none;color:var(--border2);cursor:pointer;font-size:14px;padding:4px 6px;transition:color .15s;line-height:1}.btn-del:hover{color:var(--red)}
+
+/* ── ROW ITEMS ── */
+.item-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;overflow:hidden;transition:box-shadow .15s}
+.item-card:hover{box-shadow:var(--shadow)}
+.item-row{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.item-body{flex:1;min-width:0}
+.item-title{font-size:14px;color:var(--text);line-height:1.4}
+.item-title.done{text-decoration:line-through;color:var(--text3);opacity:.6}
+.item-sub{font-size:11px;color:var(--text3);margin-top:4px;display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:11px;padding:2px 7px;border-radius:8px;background:var(--bg3);color:var(--text2)}
+.tag.urgent{background:#fdecea;color:var(--red)}.tag.done-t{background:var(--green-l);color:var(--green)}
+.arrow{font-size:14px;color:var(--text3);transition:transform .2s;flex-shrink:0}
+.arrow.open{transform:rotate(90deg)}
+.item-detail{display:none;border-top:1px solid var(--border)}
+.item-detail.open{display:block}
+
+/* Detail view (not edit by default) */
+.detail-view{padding:14px 14px 0}
+.detail-edit{padding:14px;display:none}
+.detail-edit.show{display:block}
+.detail-actions{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);margin-top:4px}
+
+/* ── PHOTOS/FILES ── */
+.attach-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.attach-img{position:relative;width:72px;height:72px;border-radius:var(--r2);overflow:hidden;border:1px solid var(--border);cursor:pointer}
+.attach-img img{width:100%;height:100%;object-fit:cover;transition:opacity .15s}
+.attach-img:hover img{opacity:.85}
+.attach-file{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);font-size:11px;color:var(--text2);cursor:pointer;max-width:160px}
+.attach-file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.attach-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.attach-add{width:72px;height:72px;border:1.5px dashed var(--border2);border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--text3);gap:2px;background:var(--bg2);transition:all .15s;flex-shrink:0}
+.attach-add:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── LIGHTBOX ── */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;align-items:center;justify-content:center}
+#lightbox.show{display:flex}
+#lightbox img{max-width:92vw;max-height:92vh;object-fit:contain;border-radius:var(--r2)}
+#lightbox-close{position:absolute;top:16px;right:20px;background:transparent;border:none;color:#fff;font-size:28px;cursor:pointer;opacity:.7}
+#lightbox-close:hover{opacity:1}
+
+/* ── PROGRESS ── */
+.prog-wrap{background:var(--bg3);border-radius:10px;height:4px;margin:8px 0 4px;overflow:hidden}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:10px;transition:width .5s}
+.prog-lbl{font-size:11px;color:var(--text3);text-align:right}
+
+/* ── BUDGET ── */
+.bsum-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:2px}
+.bsum{border-radius:var(--r);padding:16px;text-align:center;border:1px solid var(--border)}
+.bsum.paid{background:var(--green-l)}.bsum.unpaid{background:var(--accent-l)}
+.bsum .bl{font-size:11px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+.bsum .ba{font-family:'Playfair Display',serif;font-size:24px}
+.bsum.paid .ba{color:var(--green)}.bsum.unpaid .ba{color:var(--accent)}
+.btotal{text-align:center;padding:10px 0;font-size:13px;color:var(--text2)}
+.btotal strong{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-left:6px}
+
+/* ── VENDOR ── */
+.vstatus{font-size:11px;padding:2px 8px;border-radius:8px;display:inline-block}
+.vstatus-confirmed{background:var(--green-l);color:var(--green)}
+.vstatus-pending{background:var(--accent-l);color:var(--accent)}
+.vstatus-cancelled{background:#fdecea;color:var(--red)}
+
+/* ── GUEST ── */
+.g-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.g-stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+.g-stat .gnum{font-family:'Playfair Display',serif;font-size:22px}
+.g-stat .glbl{font-size:11px;color:var(--text3);margin-top:2px}
+.rsvp-yes{background:var(--green-l);color:var(--green)}.rsvp-no{background:#fdecea;color:var(--red)}.rsvp-pending{background:var(--bg3);color:var(--text3)}
+
+/* ── CALENDAR ── */
+.cal-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.cal-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--text);min-width:140px;text-align:center}
+.cal-nav{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:5px 14px;font-size:14px;cursor:pointer;color:var(--text2);transition:all .15s}
+.cal-nav:hover{background:var(--bg3)}
+.cal-today-btn{padding:5px 12px;font-size:12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);cursor:pointer;color:var(--text2);transition:all .15s}
+.cal-today-btn:hover{border-color:var(--accent);color:var(--accent)}
+.view-tabs{display:flex;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-left:auto}
+.view-tab{padding:5px 14px;border:none;background:transparent;font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;font-family:'Noto Sans TC',sans-serif}
+.view-tab.active{background:var(--accent-l);color:var(--accent)}
+.cal-jump{display:flex;gap:6px}
+.cal-jump select{padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:var(--r2);background:var(--bg2);color:var(--text);cursor:pointer}
+
+/* Month */
+.cal-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.cal-dow{background:var(--bg2);text-align:center;font-size:11px;color:var(--text3);padding:7px 4px;letter-spacing:.3px}
+.cal-cell{background:var(--bg);min-height:90px;padding:5px;cursor:pointer;transition:background .1s;position:relative;vertical-align:top}
+.cal-cell:hover{background:var(--bg2)}
+.cal-cell.other{background:var(--bg2)}.cal-cell.other .cnum{color:var(--text3)}
+.cal-cell.today .cnum{background:var(--accent);color:#fff;border-radius:50%}
+.cal-cell.selected{background:var(--accent-l)}
+.cal-cell.wedding-d{background:#fdf3ea}.cal-cell.registry-d{background:var(--green-l)}
+.cnum{width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;margin-bottom:3px}
+.ev-pill{font-size:10px;padding:1px 5px;border-radius:3px;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6}
+.ev-pill.todo-p{background:var(--green)}
+.special-tag{font-size:9px;padding:1px 5px;border-radius:3px;background:var(--accent);color:#fff;margin-bottom:2px;display:inline-block}
+
+/* Week */
+.week-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.week-head{display:grid;grid-template-columns:44px repeat(7,1fr);background:var(--bg2);border-bottom:1px solid var(--border)}
+.wh-cell{text-align:center;padding:7px 4px;font-size:11px;color:var(--text3)}
+.wh-cell .wdate{font-size:15px;font-weight:500;color:var(--text);margin-top:1px}
+.wh-cell.today-c .wdate{background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;margin:2px auto 0}
+.week-body{display:grid;grid-template-columns:44px repeat(7,1fr)}
+.wtime-col{border-right:1px solid var(--border)}
+.wtime{font-size:10px;color:var(--text3);padding:0 5px;height:40px;display:flex;align-items:flex-start;padding-top:2px;border-bottom:1px solid var(--border)}
+.wday-col{border-right:1px solid var(--border);position:relative;cursor:pointer;transition:background .1s}
+.wday-col:last-child{border-right:none}
+.wday-col:hover{background:var(--bg2)}
+.wslot{height:40px;border-bottom:1px solid var(--border)}
+.wev{position:absolute;left:2px;right:2px;border-radius:3px;font-size:10px;padding:2px 4px;color:#fff;z-index:2;cursor:pointer;line-height:1.4;overflow:hidden}
+
+/* List */
+.list-date-h{font-size:12px;color:var(--text3);padding:8px 0 5px;border-bottom:1px solid var(--border);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px}
+.list-ev{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.list-ev:last-child{border-bottom:none}
+.list-ev-bar{width:3px;border-radius:2px;flex-shrink:0;min-height:18px;align-self:stretch}
+.list-ev-title{font-size:13px;color:var(--text)}
+.list-ev-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.list-ev-note{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* Event panel */
+.ev-panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-top:14px;box-shadow:var(--shadow);overflow:hidden}
+.ev-panel-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ev-panel-title{font-family:'Playfair Display',serif;font-size:15px;flex:1}
+.ev-item{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.ev-item:hover{background:var(--bg2)}
+.ev-item:last-child{border-bottom:none}
+.ev-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ev-body{flex:1;min-width:0}
+.ev-title{font-size:13px;color:var(--text)}
+.ev-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.ev-note{font-size:11px;color:var(--text2);margin-top:2px}
+.ev-actions-row{display:flex;gap:6px;flex-shrink:0;align-items:flex-start}
+.ev-edit-b{background:transparent;border:1px solid var(--border);border-radius:var(--r2);padding:3px 8px;font-size:11px;color:var(--text2);cursor:pointer;font-family:'Noto Sans TC',sans-serif}
+.ev-add-form{padding:14px 16px;border-top:1px solid var(--border)}
+.color-row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.cswatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.cswatch:hover{transform:scale(1.2)}.cswatch.sel{border-color:var(--text);transform:scale(1.1)}
+
+/* Edit overlay modal */
+#edit-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;align-items:flex-end;justify-content:center}
+#edit-modal.show{display:flex}
+.edit-sheet{background:var(--bg);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:20px}
+.edit-sheet-title{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+
+/* Loading */
+#loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:12px}
+.spinner{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.empty{text-align:center;padding:36px 20px;color:var(--text3);font-size:13px}
+.empty .emoji{font-size:26px;margin-bottom:8px}
+
+@media(max-width:560px){
+  .g-stats{grid-template-columns:repeat(2,1fr)}
+  .bsum-grid{grid-template-columns:1fr}
+  .topbar-chips{gap:4px}
+  .chip{padding:3px 7px;font-size:10px}
+  .cal-jump select{font-size:11px}
+}
 </style>
 </head>
 <body>
-<div id="loadingOverlay"><div class="spinner"></div><p>載入婚禮資料中…</p></div>
+<div id="loadingOverlay"><div class="spinner"></div><p style="font-size:13px;color:var(--text3)">載入中…</p></div>
+<div id="lightbox"><button id="lightbox-close" onclick="closeLightbox()">✕</button><img id="lightbox-img" src="" alt=""></div>
+<div id="sb-overlay" onclick="closeSidebar()"></div>
 
-<header>
-  <div class="header-top"><button class="hamburger" onclick="openSidebar()">☰</button>
-    <span style="font-size:24px">💍</span>
-    <h1>婚禮規劃</h1>
-    <div class="sync-badge"><div class="sync-dot loading" id="syncDot"></div><span id="syncLabel">同步中</span></div>
-  </div>
-  <div class="date-banners">
-    <div class="date-banner" onclick="editDate('wedding')">
-      <div class="db-label">💒 婚禮日期</div>
-      <div class="db-val" id="weddingDateVal">點擊設定</div>
-      <div class="db-countdown" id="weddingCountdown"></div>
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-top">
+    <div class="sb-logo">💍 婚禮規劃</div>
+    <div class="sb-date" onclick="editDate('wedding')">
+      <div class="sb-date-label">💒 婚禮日期</div>
+      <div class="sb-date-val" id="sb-w-val">點擊設定</div>
+      <div class="sb-date-cd" id="sb-w-cd"></div>
     </div>
-    <div class="date-banner" onclick="editDate('registry')">
-      <div class="db-label">📋 登記日期</div>
-      <div class="db-val" id="registryDateVal">點擊設定</div>
-      <div class="db-countdown" id="registryCountdown"></div>
+    <div class="sb-date" onclick="editDate('registry')">
+      <div class="sb-date-label">📋 登記日期</div>
+      <div class="sb-date-val" id="sb-r-val">點擊設定</div>
+      <div class="sb-date-cd" id="sb-r-cd"></div>
     </div>
   </div>
-  <div id="sidebar-overlay" onclick="closeSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:199"></div>
-  <div id="sidebar">
-    <div class="sb-header">
-      <div style="font-family:'Noto Serif TC',serif;font-size:16px;color:var(--rose)">💍 婚禮規劃</div>
-      <button onclick="closeSidebar()" class="sb-close">✕</button>
-    </div>
-    <nav>
-      <button class="active" onclick="switchTab('todo',this)">✅ 待辦事項</button>
-      <button onclick="switchTab('budget',this)">💰 費用明細</button>
-      <button onclick="switchTab('vendor',this)">🏪 廠商資訊</button>
-      <button onclick="switchTab('guest',this)">👥 賓客名單</button>
-      <button onclick="switchTab('calendar',this)">📅 行事曆</button>
-    </nav>
+  <div class="sb-nav">
+    <button class="sb-btn active" onclick="switchTab('todo',this)"><span class="sb-icon">✅</span>待辦事項</button>
+    <button class="sb-btn" onclick="switchTab('budget',this)"><span class="sb-icon">💰</span>費用明細</button>
+    <button class="sb-btn" onclick="switchTab('vendor',this)"><span class="sb-icon">🏪</span>廠商資訊</button>
+    <button class="sb-btn" onclick="switchTab('guest',this)"><span class="sb-icon">👥</span>賓客名單</button>
+    <div class="sb-divider"></div>
+    <button class="sb-btn" onclick="switchTab('calendar',this)"><span class="sb-icon">📅</span>行事曆</button>
   </div>
-</header>
-
-<div class="content">
-  <!-- TODO -->
-  <div id="tab-todo" class="tab-panel active">
-    <div class="card">
-      <div class="section-title">📋 新增待辦</div>
-      <div class="input-row">
-        <input type="text" id="todo-text" placeholder="待辦事項名稱">
-        <select id="todo-cat" onchange="handleCatChange(this,'todo-cat')"></select>
-      </div>
-      <div class="input-row">
-        <input type="date" id="todo-due">
-        <select id="todo-priority"><option value="">一般</option><option value="urgent">緊急</option></select>
-        <button class="btn btn-primary" onclick="addTodo()">新增</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-title">📌 完成進度</div>
-      <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
-      <div class="progress-lbl" id="progressLbl">0 / 0 完成</div>
-    </div>
-    <div id="todo-list"></div>
-  </div>
-
-  <!-- BUDGET -->
-  <div id="tab-budget" class="tab-panel">
-    <div class="card">
-      <div class="budget-summary">
-        <div class="bsum-box paid"><div class="bl">✅ 已付總計</div><div class="ba" id="b-paid">$0</div></div>
-        <div class="bsum-box pending"><div class="bl">⏳ 待付總計</div><div class="ba" id="b-unpaid">$0</div></div>
-      </div>
-      <div class="btotal-row">所有費用合計<strong id="b-total">$0</strong></div>
-    </div>
-    <div class="card">
-      <div class="section-title">➕ 新增費用</div>
-      <div class="input-row">
-        <input type="text" id="exp-name" placeholder="費用名稱（例：婚攝Fanson）">
-        <select id="exp-cat" onchange="handleCatChange(this,'exp-cat')"></select>
-      </div>
-      <div class="input-row">
-        <div style="flex:1;min-width:100px"><label style="font-size:11px;color:var(--mid);display:block;margin-bottom:4px">✅ 已付金額</label><input type="number" id="exp-paid" placeholder="0"></div>
-        <div style="flex:1;min-width:100px"><label style="font-size:11px;color:var(--mid);display:block;margin-bottom:4px">⏳ 待付金額</label><input type="number" id="exp-unpaid" placeholder="0"></div>
-        <button class="btn btn-primary" style="align-self:flex-end" onclick="addExpense()">新增</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-title">📊 費用明細 <span style="font-size:11px;color:var(--mid);font-family:'Noto Sans TC'">(點項目可編輯)</span></div>
-      <div id="expense-list"><div class="empty"><div class="emoji">💵</div>還沒有費用記錄</div></div>
-    </div>
-  </div>
-
-  <!-- VENDOR -->
-  <div id="tab-vendor" class="tab-panel">
-    <div class="card">
-      <div class="section-title">🏪 新增廠商</div>
-      <div class="input-row">
-        <input type="text" id="v-name" placeholder="廠商名稱">
-        <select id="v-type" onchange="handleCatChange(this,'v-type')"></select>
-      </div>
-      <div class="input-row">
-        <input type="text" id="v-contact" placeholder="聯絡人">
-        <input type="text" id="v-phone" placeholder="電話">
-        <input type="text" id="v-line" placeholder="LINE ID">
-      </div>
-      <div class="input-row">
-        <select id="v-status"><option value="pending">洽談中</option><option value="confirmed">已確認</option><option value="cancelled">已取消</option></select>
-        <button class="btn btn-primary" onclick="addVendor()">新增廠商</button>
-      </div>
-      <div class="input-row"><textarea id="v-note" placeholder="備注（價格、約定等）"></textarea></div>
-    </div>
-    <div id="vendor-list"></div>
-  </div>
-
-  <!-- GUEST -->
-  <div id="tab-guest" class="tab-panel">
-    <div class="card">
-      <div class="guest-stats">
-        <div class="stat-box"><div class="num" id="g-total">0</div><div class="lbl">總人數</div></div>
-        <div class="stat-box"><div class="num" id="g-yes">0</div><div class="lbl">確認出席</div></div>
-        <div class="stat-box"><div class="num" id="g-no">0</div><div class="lbl">無法出席</div></div>
-        <div class="stat-box"><div class="num" id="g-pending">0</div><div class="lbl">待確認</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-title">👤 新增賓客</div>
-      <div class="input-row">
-        <input type="text" id="g-name" placeholder="賓客姓名">
-        <select id="g-side"><option>新郎方</option><option>新娘方</option><option>共同</option></select>
-      </div>
-      <div class="input-row">
-        <input type="text" id="g-table" placeholder="桌次（選填）">
-        <select id="g-rsvp"><option value="pending">待確認</option><option value="yes">確認出席</option><option value="no">無法出席</option></select>
-        <input type="text" id="g-diet" placeholder="飲食需求（選填）">
-      </div>
-      <button class="btn btn-primary" onclick="addGuest()">新增賓客</button>
-    </div>
-    <div class="card">
-      <div class="section-title">📋 賓客名單 <span style="font-size:11px;color:var(--mid);font-family:'Noto Sans TC'">(點項目可編輯)</span></div>
-      <div id="guest-list"><div class="empty"><div class="emoji">🎊</div>還沒有賓客</div></div>
-    </div>
-  </div>
-
-  <!-- CALENDAR -->
-  <div id="tab-calendar" class="tab-panel">
-    <div class="card">
-      <div class="cal-header">
-        <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
-        <div class="cal-title" id="cal-title"></div>
-        <button class="cal-nav" onclick="changeMonth(1)">›</button>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
-    </div>
-    <div class="event-panel" id="event-panel">
-      <div class="event-panel-title" id="event-panel-title">選擇日期查看行程</div>
-      <div id="event-list-day"></div>
-      <div class="add-event-form" id="add-event-form" style="display:none">
-        <div class="input-row" style="margin-bottom:6px">
-          <input type="text" id="ev-text" placeholder="新增行程（例：試婚紗、場地看場）">
-          <select class="ev-type-sel" id="ev-type">
-            <option value="custom">自訂</option>
-            <option value="vendor">廠商約定</option>
-            <option value="todo">待辦提醒</option>
-          </select>
-        </div>
-        <div style="font-size:11px;color:var(--mid);margin-bottom:4px">選擇顏色</div>
-        <div class="color-picker" id="ev-color-picker"></div>
-        <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="addCalEvent()">➕ 新增行程</button>
-      </div>
-    </div>
-  </div>
-
+  <div class="sb-sync"><div class="sync-dot loading" id="syncDot"></div><span id="syncLabel">同步中</span></div>
 </div>
 
-<script>
-// ── Supabase 設定 ──────────────────────────────
-const SUPABASE_URL = 'https://blgxdxapxagnqbkcvmzd.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_VCzd0zINstH1sko8H3pKXQ_8NCJrIK2';
-const DB_ROW_KEY   = 'wedding-main';
-// ──────────────────────────────────────────────
-async function sbFetch(path, method='GET', body=null){
-  const res = await fetch(SUPABASE_URL + path, {
-    method,
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method==='POST' ? 'resolution=merge-duplicates' : ''
-    },
-    body: body ? JSON.stringify(body) : null
-  });
-  if(!res.ok) throw new Error(await res.text());
-  return res.status===204 ? null : res.json();
-}
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="hamburger" onclick="openSidebar()">☰</button>
+  <div class="topbar-title">婚禮規劃</div>
+  <div class="topbar-chips">
+    <div class="chip" onclick="editDate('wedding')">💒 <span id="chip-w">設定婚禮</span><span class="chip-cd" id="chip-w-cd"></span></div>
+    <div class="chip" onclick="editDate('registry')">📋 <span id="chip-r">設定登記</span><span class="chip-cd" id="chip-r-cd"></span></div>
+  </div>
+</div>
 
+<!-- EDIT MODAL -->
+<div id="edit-modal" onclick="handleModalBg(event)">
+  <div class="edit-sheet" id="edit-sheet">
+    <div class="edit-sheet-title"><span id="edit-title">編輯</span><button onclick="closeEditModal()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text3)">✕</button></div>
+    <div id="edit-body"></div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeEditModal()">取消</button>
+      <button class="btn btn-primary" style="flex:1" id="edit-save-btn">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- TODO -->
+<div id="tab-todo" class="tab-panel active">
+  <div class="card">
+    <div class="card-title">新增待辦</div>
+    <div class="frow">
+      <div class="field" style="flex:2"><label>事項名稱</label><input type="text" id="todo-text" placeholder="輸入待辦事項"></div>
+      <div class="field"><label>類別</label><select id="todo-cat" onchange="handleCatChange(this)"></select></div>
+      <div class="field"><label>優先度</label><select id="todo-priority"><option value="">一般</option><option value="urgent">緊急</option></select></div>
+    </div>
+    <div class="frow">
+      <div class="field"><label>截止日</label><input type="date" id="todo-due"></div>
+      <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" style="width:100%" onclick="addTodo()">新增</button></div>
+    </div>
+  </div>
+  <div class="card" style="padding:14px 20px">
+    <div class="prog-wrap"><div class="prog-bar" id="progressBar" style="width:0%"></div></div>
+    <div class="prog-lbl" id="progressLbl">0 / 0 完成</div>
+  </div>
+  <div id="todo-list"></div>
+</div>
+
+<!-- BUDGET -->
+<div id="tab-budget" class="tab-panel">
+  <div class="card">
+    <div class="bsum-grid">
+      <div class="bsum paid"><div class="bl">已付</div><div class="ba" id="b-paid">$0</div></div>
+      <div class="bsum unpaid"><div class="bl">待付</div><div class="ba" id="b-unpaid">$0</div></div>
+    </div>
+    <div class="btotal">費用合計<strong id="b-total">$0</strong></div>
+  </div>
+  <div class="card">
+    <div class="card-title">新增費用</div>
+    <div class="frow">
+      <div class="field" style="flex:2"><label>費用名稱</label><input type="text" id="exp-name" placeholder="費用名稱"></div>
+      <div class="field"><label>類別</label><select id="exp-cat" onchange="handleCatChange(this)"></select></div>
+    </div>
+    <div class="frow">
+      <div class="field"><label>已付金額</label><input type="number" id="exp-paid" placeholder="0"></div>
+      <div class="field"><label>待付金額</label><input type="number" id="exp-unpaid" placeholder="0"></div>
+      <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" style="width:100%" onclick="addExpense()">新增</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">費用明細</div>
+    <div id="expense-list"><div class="empty"><div class="emoji">💵</div>還沒有費用記錄</div></div>
+  </div>
+</div>
+
+<!-- VENDOR -->
+<div id="tab-vendor" class="tab-panel">
+  <div class="card">
+    <div class="card-title">新增廠商</div>
+    <div class="frow">
+      <div class="field" style="flex:2"><label>廠商名稱</label><input type="text" id="v-name" placeholder="廠商名稱"></div>
+      <div class="field"><label>類型</label><select id="v-type" onchange="handleVtypeChange(this)"></select></div>
+      <div class="field"><label>狀態</label><select id="v-status"><option value="pending">洽談中</option><option value="confirmed">已確認</option><option value="cancelled">已取消</option></select></div>
+    </div>
+    <div class="frow">
+      <div class="field"><label>聯絡人</label><input type="text" id="v-contact"></div>
+      <div class="field"><label>電話</label><input type="text" id="v-phone"></div>
+      <div class="field"><label>LINE</label><input type="text" id="v-line"></div>
+    </div>
+    <div class="frow"><div class="field" style="flex:1"><label>備注</label><textarea id="v-note" placeholder="價格、約定…"></textarea></div></div>
+    <button class="btn btn-primary" style="width:100%" onclick="addVendor()">新增廠商</button>
+  </div>
+  <div id="vendor-list"></div>
+</div>
+
+<!-- GUEST -->
+<div id="tab-guest" class="tab-panel">
+  <div class="g-stats">
+    <div class="g-stat"><div class="gnum" id="g-total">0</div><div class="glbl">總人數</div></div>
+    <div class="g-stat"><div class="gnum" id="g-yes">0</div><div class="glbl">確認出席</div></div>
+    <div class="g-stat"><div class="gnum" id="g-no">0</div><div class="glbl">無法出席</div></div>
+    <div class="g-stat"><div class="gnum" id="g-pending">0</div><div class="glbl">待確認</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">新增賓客</div>
+    <div class="frow">
+      <div class="field" style="flex:2"><label>姓名</label><input type="text" id="g-name"></div>
+      <div class="field"><label>方</label><select id="g-side"><option>新郎方</option><option>新娘方</option><option>共同</option></select></div>
+      <div class="field"><label>出席</label><select id="g-rsvp"><option value="pending">待確認</option><option value="yes">確認出席</option><option value="no">無法出席</option></select></div>
+    </div>
+    <div class="frow">
+      <div class="field"><label>桌次</label><input type="text" id="g-table"></div>
+      <div class="field"><label>飲食需求</label><input type="text" id="g-diet"></div>
+      <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" style="width:100%" onclick="addGuest()">新增</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">賓客名單</div>
+    <div id="guest-list"><div class="empty"><div class="emoji">🎊</div>還沒有賓客</div></div>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div id="tab-calendar" class="tab-panel">
+  <div class="card">
+    <div class="cal-toolbar">
+      <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+      <div class="cal-title" id="cal-title"></div>
+      <button class="cal-nav" onclick="changeMonth(1)">›</button>
+      <button class="cal-today-btn" onclick="goToday()">今天</button>
+      <div class="cal-jump">
+        <select id="cal-year-sel" onchange="jumpYear()"></select>
+        <select id="cal-month-sel" onchange="jumpMonth()"></select>
+      </div>
+      <div class="view-tabs">
+        <button class="view-tab active" id="vt-month" onclick="setView('month')">月</button>
+        <button class="view-tab" id="vt-week" onclick="setView('week')">週</button>
+        <button class="view-tab" id="vt-list" onclick="setView('list')">清單</button>
+      </div>
+    </div>
+    <div id="cal-body"></div>
+  </div>
+  <div class="ev-panel" id="ev-panel" style="display:none">
+    <div class="ev-panel-head">
+      <div class="ev-panel-title" id="ev-panel-title">行程</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeEvPanel()">✕</button>
+    </div>
+    <div id="ev-list"></div>
+    <div class="ev-add-form" id="ev-add-form" style="display:none">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">新增行程</div>
+      <div class="frow">
+        <div class="field" style="flex:2"><label>行程名稱</label><input type="text" id="ev-text" placeholder="例：試婚紗、場地勘查"></div>
+        <div class="field"><label>類型</label><select id="ev-type"><option value="custom">自訂</option><option value="vendor">廠商約定</option><option value="todo">待辦</option></select></div>
+      </div>
+      <div class="frow">
+        <div class="field"><label>開始時間</label><input type="time" id="ev-start"></div>
+        <div class="field"><label>結束時間</label><input type="time" id="ev-end"></div>
+      </div>
+      <div class="frow"><div class="field" style="flex:1"><label>廠商 / 備注</label><textarea id="ev-note" placeholder="例：憶起幸福、Fanson…" style="min-height:44px"></textarea></div></div>
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">顏色</div>
+      <div class="color-row" id="ev-color-picker"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="addCalEvent()">新增行程</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const SUPABASE_URL='https://blgxdxapxagnqbkcvmzd.supabase.co';
+const SUPABASE_KEY='sb_publishable_VCzd0zINstH1sko8H3pKXQ_8NCJrIK2';
+const DB_KEY='wedding-v9';
+const EV_COLORS=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#b87a5b','#9e8a5b','#7a6ea8','#5b8a6b'];
 const DEFAULT_CATS=['場地','婚紗','餐飲','攝影','花藝','喜帖','蜜月','其他'];
 const VTYPES=['場地','婚紗','攝影','錄影','花藝','餐飲','喜帖','主持人','其他'];
-let db={todos:[],expenses:[],vendors:[],guests:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS]};
-let saving=false,lastSavedJSON='';
-function getCats(){return(db.cats&&db.cats.length)?db.cats:[...DEFAULT_CATS];}
-function catOpts(cur){return[...getCats(),'＋新增類別'].map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
-function vtypeOpts(cur){const all=[...VTYPES,...getCats().filter(c=>!VTYPES.includes(c)),'＋新增類別'];return all.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
+let db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS]};
+let saving=false,lastJSON='';
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calView='month',selDate=null,selColor=EV_COLORS[0];
+let editCtx=null; // {type, id, save}
 
-function setSyncState(s,t){document.getElementById('syncDot').className='sync-dot '+s;document.getElementById('syncLabel').textContent=t}
+// ── HELPERS ──────────────────────────────────────────────
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function selOpts(opts,cur){return opts.map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
+function getCats(){return db.cats&&db.cats.length?db.cats:[...DEFAULT_CATS]}
+function catOpts(cur){return[...getCats(),'＋新增類別'].map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
+function vtypeOpts(cur){return[...VTYPES,...getCats().filter(c=>!VTYPES.includes(c)),'＋新增類別'].map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
+function setSyncState(s,t){document.getElementById('syncDot').className='sync-dot '+s;document.getElementById('syncLabel').textContent=t}
+function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)})}
+function dateKey(y,m,d){return y+'/'+(String(m+1).padStart(2,'0'))+'/'+String(d).padStart(2,'0')}
+function parseDate(s){const[y,m,d]=s.split(/[-\/]/).map(Number);return new Date(y,m-1,d)}
 
+// ── SUPABASE ─────────────────────────────────────────────
+async function sbFetch(path,method='GET',body=null){
+  const res=await fetch(SUPABASE_URL+path,{method,headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'resolution=merge-duplicates':''},body:body?JSON.stringify(body):null});
+  if(!res.ok)throw new Error(await res.text());
+  return res.status===204?null:res.json();
+}
+async function saveData(){
+  if(saving)return;saving=true;setSyncState('loading','儲存中');
+  const timer=setTimeout(()=>{saving=false},8000);
+  try{const j=JSON.stringify(db);await sbFetch('/rest/v1/wedding_data','POST',{key:DB_KEY,value:db,updated_at:new Date().toISOString()});lastJSON=j;setSyncState('ok','已同步')}
+  catch(e){setSyncState('err','儲存失敗')}
+  finally{clearTimeout(timer);saving=false}
+}
+async function loadData(){
+  setSyncState('loading','載入中');
+  try{
+    const rows=await sbFetch('/rest/v1/wedding_data?key=eq.'+DB_KEY+'&select=value');
+    if(rows&&rows.length){
+      const p=rows[0].value;
+      db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
+      db.expenses=db.expenses.map(e=>e.paid===undefined?{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0}:e);
+      lastJSON=JSON.stringify(db);
+    }else{db=JSON.parse(JSON.stringify(SEED));await saveData()}
+    setSyncState('ok','已同步');
+  }catch(e){console.error(e);db=JSON.parse(JSON.stringify(SEED));setSyncState('err','載入失敗')}
+  document.getElementById('loadingOverlay').style.display='none';
+  renderAll();updateDates();populateSelects();
+  setInterval(async()=>{if(saving)return;try{const rows=await sbFetch('/rest/v1/wedding_data?key=eq.'+DB_KEY+'&select=value,updated_at');if(rows&&rows.length){const j=JSON.stringify(rows[0].value);if(j!==lastJSON){db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...rows[0].value};lastJSON=j;renderAll();updateDates();populateSelects()}}}catch(e){}},8000);
+}
+
+// ── SEED DATA ────────────────────────────────────────────
 const SEED={
-  weddingDate:'2027-01-17',registryDate:'',
-  cats:[...DEFAULT_CATS],
+  weddingDate:'2027-01-17',registryDate:'',cats:[...DEFAULT_CATS],events:[],
   todos:[
-    {id:1001,text:'喜餅',cat:'其他',due:'',priority:'',done:false,note:'',photos:[]},
-    {id:1002,text:'互動：似顏繪山山總',cat:'其他',due:'',priority:'',done:false,note:'總價28600，已付18600，尾款10000待付（新人婚紗緊緻1000，車馬2800，4.5hr）',photos:[]},
-    {id:1003,text:'互動：拍拍印',cat:'其他',due:'',priority:'',done:false,note:'訂金3000，尾款23499待付，另贈拍拍印送2',photos:[]},
-    {id:1004,text:'外包商確認',cat:'其他',due:'',priority:'',done:false,note:'',photos:[]},
-    {id:1005,text:'婚紗選定',cat:'婚紗',due:'',priority:'urgent',done:false,note:'候選：verdi / mydear / 後生 / Juno / Lucian',photos:[]},
-    {id:1006,text:'婚禮小物準備',cat:'其他',due:'',priority:'',done:false,note:'',photos:[]},
-    {id:1007,text:'婚禮遊戲：拍拍印送2',cat:'其他',due:'',priority:'',done:false,note:'',photos:[]},
-    {id:1008,text:'六禮：皮鞋、西裝、金飾（婚戒1）、部分喜餅',cat:'其他',due:'',priority:'',done:false,note:'男生已給：金飾260000（項鍊1手鐲2戒指1）婚戒Cartier×1',photos:[]},
-    {id:1009,text:'燈光：長榮（待確認）',cat:'場地',due:'',priority:'',done:false,note:'',photos:[]},
-    {id:1010,text:'喜帖：電子喜帖拍拍印 ＋ 紙本',cat:'喜帖',due:'',priority:'',done:false,note:'紙本待印',photos:[]},
-    {id:1011,text:'婚禮影片：不留白（待簽約）',cat:'攝影',due:'',priority:'',done:false,note:'',photos:[]},
-    {id:1012,text:'婚攝Fanson 尾款18200 待付',cat:'攝影',due:'',priority:'urgent',done:false,note:'另加攝影跟錄影',photos:[]},
-    {id:1013,text:'主持斯杰 尾款13000 待付',cat:'其他',due:'',priority:'urgent',done:false,note:'',photos:[]},
-    {id:1014,text:'婚紗攝影時尚芭莎澳門 加價15000 待付',cat:'婚紗',due:'',priority:'urgent',done:false,note:'所有照片+初修+精修78張，大框1中框3小框3相本2',photos:[]},
-    {id:1015,text:'婚紗照：澳門拍（照片待出）',cat:'攝影',due:'',priority:'',done:true,note:'澳門拍，還沒出來',photos:[]},
-    {id:1016,text:'戒指：Cartier',cat:'其他',due:'',priority:'',done:true,note:'女53000 男43000 我出50000',photos:[]},
-    {id:1017,text:'婚佈：憶起幸福 訂金8000',cat:'場地',due:'',priority:'',done:true,note:'',photos:[]},
-    {id:1018,text:'新秘：Yibi 訂金7200',cat:'其他',due:'',priority:'',done:true,note:'',photos:[]},
-    {id:1019,text:'婚攝：Fanson 訂金7800',cat:'攝影',due:'',priority:'',done:true,note:'',photos:[]},
-    {id:1020,text:'主持：斯杰 訂金8800',cat:'其他',due:'',priority:'',done:true,note:'',photos:[]},
-    {id:1021,text:'場地：長榮文苑 訂金9萬',cat:'場地',due:'',priority:'',done:true,note:'',photos:[]},
-    {id:1022,text:'婚紗攝影：時尚芭莎澳門 付款4萬6',cat:'婚紗',due:'',priority:'',done:true,note:'',photos:[]},
-    {id:1023,text:'和八字：楊雅晴 1200',cat:'其他',due:'',priority:'',done:true,note:'',photos:[]},
+    {id:1001,text:'喜餅',cat:'其他',due:'',priority:'',done:false,note:'',files:[]},
+    {id:1002,text:'互動：似顏繪山山總',cat:'其他',due:'',priority:'',done:false,note:'總價28600，已付18600，尾款10000待付',files:[]},
+    {id:1003,text:'互動：拍拍印',cat:'其他',due:'',priority:'',done:false,note:'訂金3000，尾款23499待付',files:[]},
+    {id:1004,text:'外包商確認',cat:'其他',due:'',priority:'',done:false,note:'',files:[]},
+    {id:1005,text:'婚紗選定',cat:'婚紗',due:'',priority:'urgent',done:false,note:'候選：verdi / mydear / 後生 / Juno / Lucian',files:[]},
+    {id:1006,text:'婚禮小物準備',cat:'其他',due:'',priority:'',done:false,note:'',files:[]},
+    {id:1007,text:'婚禮遊戲：拍拍印送2',cat:'其他',due:'',priority:'',done:false,note:'',files:[]},
+    {id:1008,text:'六禮：皮鞋、西裝、金飾、部分喜餅',cat:'其他',due:'',priority:'',done:false,note:'男生已給：金飾260000（項鍊1手鐲2戒指1）婚戒Cartier×1',files:[]},
+    {id:1009,text:'燈光：長榮（待確認）',cat:'場地',due:'',priority:'',done:false,note:'',files:[]},
+    {id:1010,text:'喜帖：電子喜帖拍拍印＋紙本',cat:'喜帖',due:'',priority:'',done:false,note:'紙本待印',files:[]},
+    {id:1011,text:'婚禮影片：不留白（待簽約）',cat:'攝影',due:'',priority:'',done:false,note:'',files:[]},
+    {id:1012,text:'婚攝Fanson 尾款18200 待付',cat:'攝影',due:'',priority:'urgent',done:false,note:'另加攝影跟錄影',files:[]},
+    {id:1013,text:'主持斯杰 尾款13000 待付',cat:'其他',due:'',priority:'urgent',done:false,note:'',files:[]},
+    {id:1014,text:'婚紗攝影時尚芭莎澳門 加價15000 待付',cat:'婚紗',due:'',priority:'urgent',done:false,note:'精修78張，大框1中框3小框3相本2',files:[]},
+    {id:1015,text:'婚紗照：澳門（照片待出）',cat:'攝影',due:'',priority:'',done:true,note:'',files:[]},
+    {id:1016,text:'戒指：Cartier',cat:'其他',due:'',priority:'',done:true,note:'女53000 男43000 我出50000',files:[]},
+    {id:1017,text:'婚佈：憶起幸福 訂金8000',cat:'場地',due:'',priority:'',done:true,note:'',files:[]},
+    {id:1018,text:'新秘：Yibi 訂金7200',cat:'其他',due:'',priority:'',done:true,note:'',files:[]},
+    {id:1019,text:'婚攝：Fanson 訂金7800',cat:'攝影',due:'',priority:'',done:true,note:'',files:[]},
+    {id:1020,text:'主持：斯杰 訂金8800',cat:'其他',due:'',priority:'',done:true,note:'',files:[]},
+    {id:1021,text:'場地：長榮文苑 訂金9萬',cat:'場地',due:'',priority:'',done:true,note:'',files:[]},
+    {id:1022,text:'婚紗攝影：時尚芭莎澳門 付款4萬6',cat:'婚紗',due:'',priority:'',done:true,note:'',files:[]},
+    {id:1023,text:'和八字：楊雅晴 1200',cat:'其他',due:'',priority:'',done:true,note:'',files:[]},
   ],
   expenses:[
-    {id:2001,name:'場地：長榮文苑',cat:'場地',paid:90000,unpaid:0,note:'訂金已付，尾款待確認'},
-    {id:2002,name:'婚紗攝影：時尚芭莎澳門',cat:'婚紗',paid:46000,unpaid:15000,note:'已付4萬6，加價1萬5待付（所有照片+初修+精修78張，大框1中框3小框3相本2）'},
-    {id:2004,name:'金飾（項鍊1手鐲2戒指1）',cat:'其他',paid:260000,unpaid:0,note:'男生已給'},
-    {id:2005,name:'戒指 Cartier',cat:'其他',paid:50000,unpaid:0,note:'女53000 男43000，我出50000'},
-    {id:2006,name:'婚攝：Fanson',cat:'攝影',paid:7800,unpaid:18200,note:'訂金7800已付，尾款18200待付，另加攝影跟錄影'},
-    {id:2008,name:'主持：斯杰',cat:'其他',paid:8800,unpaid:13000,note:'訂金8800已付，尾款13000待付'},
-    {id:2010,name:'婚佈：憶起幸福',cat:'場地',paid:8000,unpaid:0,note:'訂金已付'},
-    {id:2011,name:'新秘：Yibi',cat:'其他',paid:7200,unpaid:0,note:'訂金已付'},
-    {id:2012,name:'互動：似顏繪山山總',cat:'其他',paid:18600,unpaid:10000,note:'總價28600，已付18600，尾款10000待付（新人婚紗緊緻1000，車馬2800）'},
-    {id:2014,name:'互動：拍拍印',cat:'其他',paid:3000,unpaid:23499,note:'訂金3000，尾款23499待付'},
-    {id:2016,name:'和八字：楊雅晴',cat:'其他',paid:1200,unpaid:0,note:''},
+    {id:2001,name:'場地：長榮文苑',cat:'場地',paid:90000,unpaid:0,note:'',files:[]},
+    {id:2002,name:'婚紗攝影：時尚芭莎澳門',cat:'婚紗',paid:46000,unpaid:15000,note:'精修78張，大框1中框3小框3相本2',files:[]},
+    {id:2004,name:'金飾（項鍊1手鐲2戒指1）',cat:'其他',paid:260000,unpaid:0,note:'男生已給',files:[]},
+    {id:2005,name:'戒指 Cartier',cat:'其他',paid:50000,unpaid:0,note:'女53000 男43000',files:[]},
+    {id:2006,name:'婚攝：Fanson',cat:'攝影',paid:7800,unpaid:18200,note:'另加攝影跟錄影',files:[]},
+    {id:2008,name:'主持：斯杰',cat:'其他',paid:8800,unpaid:13000,note:'',files:[]},
+    {id:2010,name:'婚佈：憶起幸福',cat:'場地',paid:8000,unpaid:0,note:'',files:[]},
+    {id:2011,name:'新秘：Yibi',cat:'其他',paid:7200,unpaid:0,note:'',files:[]},
+    {id:2012,name:'互動：似顏繪山山總',cat:'其他',paid:18600,unpaid:10000,note:'',files:[]},
+    {id:2014,name:'互動：拍拍印',cat:'其他',paid:3000,unpaid:23499,note:'',files:[]},
+    {id:2016,name:'和八字：楊雅晴',cat:'其他',paid:1200,unpaid:0,note:'',files:[]},
   ],
   vendors:[
-    {id:3001,name:'長榮文苑',type:'場地',contact:'',phone:'',line:'',status:'confirmed',note:'婚禮日期2027/1/17，訂金9萬已付，燈光待確認'},
-    {id:3002,name:'憶起幸福',type:'花藝',contact:'',phone:'',line:'',status:'confirmed',note:'婚佈，訂金8000已付'},
-    {id:3003,name:'Yibi',type:'其他',contact:'Yibi',phone:'',line:'',status:'confirmed',note:'新秘，訂金7200已付'},
-    {id:3004,name:'Fanson',type:'攝影',contact:'Fanson',phone:'',line:'',status:'confirmed',note:'婚攝，訂金7800已付，尾款18200待付，另加攝影跟錄影'},
-    {id:3005,name:'斯杰',type:'主持人',contact:'斯杰',phone:'',line:'',status:'confirmed',note:'訂金8800已付，尾款13000待付'},
-    {id:3006,name:'時尚芭莎澳門',type:'攝影',contact:'',phone:'',line:'',status:'confirmed',note:'婚紗攝影，付款4萬6，加價1萬5待付（精修78張，大框1中框3小框3相本2）'},
-    {id:3007,name:'楊雅晴',type:'其他',contact:'楊雅晴',phone:'',line:'',status:'confirmed',note:'和八字，1200已付'},
-    {id:3008,name:'不留白',type:'錄影',contact:'',phone:'',line:'',status:'pending',note:'婚禮影片，洽談中'},
-    {id:3009,name:'似顏繪山山總',type:'其他',contact:'',phone:'',line:'',status:'confirmed',note:'互動，總價28600，已付18600，尾款10000待付'},
-    {id:3010,name:'拍拍印',type:'其他',contact:'',phone:'',line:'',status:'confirmed',note:'互動+電子喜帖，訂金3000，尾款23499待付'},
+    {id:3001,name:'長榮文苑',type:'場地',contact:'',phone:'',line:'',status:'confirmed',note:'婚禮日期2027/1/17，訂金9萬已付',files:[]},
+    {id:3002,name:'憶起幸福',type:'花藝',contact:'',phone:'',line:'',status:'confirmed',note:'婚佈，訂金8000已付',files:[]},
+    {id:3003,name:'Yibi',type:'其他',contact:'Yibi',phone:'',line:'',status:'confirmed',note:'新秘，訂金7200已付',files:[]},
+    {id:3004,name:'Fanson',type:'攝影',contact:'Fanson',phone:'',line:'',status:'confirmed',note:'訂金7800已付，尾款18200待付',files:[]},
+    {id:3005,name:'斯杰',type:'主持人',contact:'斯杰',phone:'',line:'',status:'confirmed',note:'訂金8800已付，尾款13000待付',files:[]},
+    {id:3006,name:'時尚芭莎澳門',type:'攝影',contact:'',phone:'',line:'',status:'confirmed',note:'付款4萬6，加價1萬5待付',files:[]},
+    {id:3007,name:'楊雅晴',type:'其他',contact:'楊雅晴',phone:'',line:'',status:'confirmed',note:'和八字，1200已付',files:[]},
+    {id:3008,name:'不留白',type:'錄影',contact:'',phone:'',line:'',status:'pending',note:'婚禮影片洽談中',files:[]},
+    {id:3009,name:'似顏繪山山總',type:'其他',contact:'',phone:'',line:'',status:'confirmed',note:'互動，總28600，已付18600',files:[]},
+    {id:3010,name:'拍拍印',type:'其他',contact:'',phone:'',line:'',status:'confirmed',note:'互動+喜帖，訂金3000，尾款23499待付',files:[]},
   ],
   guests:[]
 };
 
-
-// ── CALENDAR ──────────────────────────────────────────────────
-let calYear=new Date().getFullYear();
-let calMonth=new Date().getMonth();
-let selectedDate=null;
-let selectedColor='#c97b63';
-
-const EVENT_COLORS=[
-  '#c97b63','#7fa87f','#b7860a','#6b9cc7','#a67cb8',
-  '#e07b7b','#5b9e9e','#d4956a','#7a6458','#4a8c6f'
-];
-
-function initColorPicker(){
-  const picker=document.getElementById('ev-color-picker');
-  if(!picker)return;
-  picker.innerHTML=EVENT_COLORS.map(c=>
-    `<div class="color-swatch${c===selectedColor?' selected':''}" style="background:${c}" onclick="selectColor('${c}')"></div>`
-  ).join('');
-}
-
-function selectColor(c){
-  selectedColor=c;
-  document.querySelectorAll('.color-swatch').forEach(s=>{
-    s.classList.toggle('selected', s.style.background===c||s.style.backgroundColor===c);
-  });
-}
-
-function changeMonth(dir){
-  calMonth+=dir;
-  if(calMonth>11){calMonth=0;calYear++;}
-  if(calMonth<0){calMonth=11;calYear--;}
-  renderCalendar();
-}
-
-function renderCalendar(){
-  const months=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  document.getElementById('cal-title').textContent=calYear+'年 '+months[calMonth];
-  const grid=document.getElementById('cal-grid');
-  const dows=['日','一','二','三','四','五','六'];
-  const today=new Date();today.setHours(0,0,0,0);
-  const weddingDs=db.weddingDate?db.weddingDate.replace(/-/g,'/'):null;
-  const registryDs=db.registryDate?db.registryDate.replace(/-/g,'/'):null;
-  let h=dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
-  const firstDay=new Date(calYear,calMonth,1).getDay();
-  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  const daysInPrev=new Date(calYear,calMonth,0).getDate();
-  for(let i=firstDay-1;i>=0;i--) h+=`<div class="cal-day other-month">${daysInPrev-i}</div>`;
-  for(let d=1;d<=daysInMonth;d++){
-    const dateStr=calYear+'/'+(String(calMonth+1).padStart(2,'0'))+'/'+String(d).padStart(2,'0');
-    const dt=new Date(calYear,calMonth,d);
-    const isToday=dt.getTime()===today.getTime();
-    const isSelected=selectedDate===dateStr;
-    const isWedding=weddingDs&&dateStr===weddingDs;
-    const isRegistry=registryDs&&dateStr===registryDs;
-    const dayEvs=(db.events||[]).filter(e=>e.date===dateStr);
-    const hasTodo=db.todos.some(t=>t.due&&t.due.replace(/-/g,'/')===dateStr);
-    let cls='cal-day';
-    if(isWedding)cls+=' wedding-day';
-    else if(isRegistry)cls+=' registry-day';
-    else if(isToday)cls+=' today';
-    if(isSelected)cls+=' selected';
-    // colored dots
-    let dotsHtml='';
-    if(dayEvs.length||hasTodo){
-      const dots=[...dayEvs.map(e=>`<div class="cal-dot" style="background:${e.color||'var(--sage)'}"></div>`),
-        hasTodo?`<div class="cal-dot" style="background:var(--sage)"></div>`:''].join('');
-      dotsHtml=`<div class="cal-dots">${dots}</div>`;
-    }
-    h+=`<div class="${cls}" onclick="selectDate('${dateStr}')">${d}${dotsHtml}</div>`;
-  }
-  const total=firstDay+daysInMonth;
-  const rem=total%7===0?0:7-(total%7);
-  for(let d=1;d<=rem;d++) h+=`<div class="cal-day other-month">${d}</div>`;
-  grid.innerHTML=h;
-}
-
-function selectDate(dateStr){
-  selectedDate=dateStr;
-  renderCalendar();
-  renderDayEvents(dateStr);
-  initColorPicker();
-}
-
-function renderDayEvents(dateStr){
-  const panel=document.getElementById('event-panel-title');
-  const list=document.getElementById('event-list-day');
-  const form=document.getElementById('add-event-form');
-  panel.textContent=dateStr+' 的行程';
-  form.style.display='block';
-  initColorPicker();
-  const customEvs=(db.events||[]).filter(e=>e.date===dateStr);
-  const todoEvs=db.todos.filter(t=>t.due&&t.due.replace(/-/g,'/')===dateStr);
-  if(!customEvs.length&&!todoEvs.length){
-    list.innerHTML='<div style="text-align:center;padding:16px;color:var(--mid);font-size:13px">這天還沒有行程 ✨</div>';
-    return;
-  }
-  const typeLabel={custom:'自訂',vendor:'廠商',todo:'待辦'};
-  list.innerHTML=[
-    ...customEvs.map(e=>`
-      <div class="event-item" id="ev-item-${e.id}">
-        <div class="event-dot" style="background:${e.color||'var(--sage)'}"></div>
-        <div class="event-body">
-          <div class="event-text" id="ev-txt-${e.id}">${esc(e.text)}</div>
-          <input class="event-edit-input" id="ev-inp-${e.id}" value="${esc(e.text)}" style="display:none">
-          <div class="event-meta">${typeLabel[e.type||'custom']}</div>
-          <div class="color-picker" id="ev-cp-${e.id}" style="display:none;margin-top:6px">
-            ${EVENT_COLORS.map(c=>`<div class="color-swatch${c===(e.color||'#c97b63')?' selected':''}" style="background:${c}" onclick="setEvColor(${e.id},'${c}')"></div>`).join('')}
-          </div>
-        </div>
-        <div class="event-actions">
-          <button class="ev-edit-btn" id="ev-edt-${e.id}" onclick="startEditEv(${e.id})">✏️ 編輯</button>
-          <button class="ev-save-btn" id="ev-sav-${e.id}" onclick="saveEditEv(${e.id})">💾 存</button>
-          <button class="btn-del" onclick="deleteCalEvent(${e.id})">✕</button>
-        </div>
-      </div>`),
-    ...todoEvs.map(t=>`
-      <div class="event-item">
-        <div class="event-dot" style="background:var(--sage)"></div>
-        <div class="event-body">
-          <div class="event-text">${esc(t.text)}${t.done?' ✓':''}</div>
-          <div class="event-meta">待辦</div>
-        </div>
-      </div>`)
-  ].join('');
-}
-
-function startEditEv(id){
-  document.getElementById('ev-txt-'+id).style.display='none';
-  document.getElementById('ev-inp-'+id).style.display='block';
-  document.getElementById('ev-cp-'+id).style.display='flex';
-  document.getElementById('ev-edt-'+id).style.display='none';
-  document.getElementById('ev-sav-'+id).style.display='inline-block';
-}
-
-function setEvColor(id,color){
-  const e=db.events&&db.events.find(e=>e.id===id);
-  if(e)e.color=color;
-  document.querySelectorAll(`#ev-cp-${id} .color-swatch`).forEach(s=>{
-    s.classList.toggle('selected',s.style.background===color||s.style.backgroundColor===color);
-  });
-  document.querySelector(`#ev-item-${id} .event-dot`).style.background=color;
-}
-
-async function saveEditEv(id){
-  const e=db.events&&db.events.find(e=>e.id===id);
-  if(!e)return;
-  const newText=document.getElementById('ev-inp-'+id).value.trim();
-  if(newText)e.text=newText;
-  renderCalendar();
-  renderDayEvents(selectedDate);
-  await saveData();
-}
-
-async function addCalEvent(){
-  if(!selectedDate)return;
-  const text=document.getElementById('ev-text').value.trim();
-  if(!text)return;
-  if(!db.events)db.events=[];
-  db.events.push({id:Date.now(),date:selectedDate,text,type:document.getElementById('ev-type').value,color:selectedColor});
-  document.getElementById('ev-text').value='';
-  renderCalendar();
-  renderDayEvents(selectedDate);
-  await saveData();
-}
-
-async function deleteCalEvent(id){
-  if(!db.events)return;
-  db.events=db.events.filter(e=>e.id!==id);
-  renderCalendar();
-  if(selectedDate)renderDayEvents(selectedDate);
-  await saveData();
-}
-
-
-function openSidebar(){
-  document.getElementById('sidebar').classList.add('open');
-  document.getElementById('sidebar-overlay').style.display='block';
-  document.body.style.overflow='hidden';
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').style.display='none';
-  document.body.style.overflow='';
-}
-
-// ── STORAGE ────────────────────────────────────────────────────
-async function loadData(){
-  setSyncState('loading','載入中');
-  try{
-    const rows=await sbFetch('/rest/v1/wedding_data?key=eq.'+DB_ROW_KEY+'&select=value');
-    if(rows&&rows.length){
-      const p=rows[0].value;
-      db={todos:[],expenses:[],vendors:[],guests:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
-      db.expenses=db.expenses.map(e=>{
-        if(e.paid===undefined) return{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0};
-        return e;
-      });
-      lastSavedJSON=JSON.stringify(db);
-    } else {
-      db=JSON.parse(JSON.stringify(SEED));
-      await saveData();
-    }
-    setSyncState('ok','已同步');
-  }catch(e){
-    console.error('load error',e);
-    db=JSON.parse(JSON.stringify(SEED));
-    setSyncState('err','載入失敗');
-  }
-  document.getElementById('loadingOverlay').style.display='none';
-  renderAll();updateDateBanners();populateCatSelects();
-  setInterval(pollData,8000);
-}
-
-async function saveData(){
-  if(saving)return;
-  saving=true; setSyncState('loading','儲存中');
-  const timer=setTimeout(()=>{saving=false;},8000);
-  try{
-    const j=JSON.stringify(db);
-    await sbFetch('/rest/v1/wedding_data','POST',{key:DB_ROW_KEY,value:db,updated_at:new Date().toISOString()});
-    lastSavedJSON=j;
-    setSyncState('ok','已同步');
-  } catch(e){
-    setSyncState('err','儲存失敗');
-    console.error(e);
-  } finally {
-    clearTimeout(timer);
-    saving=false;
-  }
-}
-
-async function pollData(){
-  if(saving)return;
-  try{
-    const rows=await sbFetch('/rest/v1/wedding_data?key=eq.'+DB_ROW_KEY+'&select=value,updated_at');
-    if(rows&&rows.length){
-      const j=JSON.stringify(rows[0].value);
-      if(j!==lastSavedJSON){
-        db={todos:[],expenses:[],vendors:[],guests:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...rows[0].value};
-        lastSavedJSON=j;
-        renderAll();updateDateBanners();populateCatSelects();
-      }
-    }
-  }catch(e){}
-}
-
+// ── UI ───────────────────────────────────────────────────
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sb-overlay').classList.add('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-overlay').classList.remove('show')}
 function switchTab(name,btn){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  document.querySelectorAll('nav button').forEach(b=>{
-    if(b.getAttribute('onclick')&&b.getAttribute('onclick').includes("'"+name+"'"))b.classList.add('active');
-  });
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');
   closeSidebar();
+  if(name==='calendar')renderCalendar();
 }
-
-// ── DATES ──────────────────────────────────────────────────────
 function editDate(type){
   const cur=type==='wedding'?db.weddingDate:db.registryDate;
-  const val=prompt('設定'+(type==='wedding'?'婚禮':'登記')+'日期（格式：YYYY-MM-DD）',cur||'');
-  if(val===null)return;
-  if(type==='wedding')db.weddingDate=val.trim();else db.registryDate=val.trim();
-  updateDateBanners();saveData();
+  const v=prompt('設定'+(type==='wedding'?'婚禮':'登記')+'日期（YYYY-MM-DD）：',cur||'');
+  if(v===null)return;
+  if(type==='wedding')db.weddingDate=v.trim();else db.registryDate=v.trim();
+  updateDates();saveData();
 }
-function updateDateBanners(){
-  banner('weddingDateVal','weddingCountdown',db.weddingDate,'婚禮');
-  banner('registryDateVal','registryCountdown',db.registryDate,'登記');
+function updateDates(){
+  setDateUI('sb-w-val','sb-w-cd','chip-w','chip-w-cd',db.weddingDate,'婚禮');
+  setDateUI('sb-r-val','sb-r-cd','chip-r','chip-r-cd',db.registryDate,'登記');
 }
-function banner(vId,cId,ds,label){
+function setDateUI(vId,cId,cvId,ccId,ds,label){
   const v=document.getElementById(vId),c=document.getElementById(cId);
-  if(!ds){v.textContent='點擊設定';c.textContent='';return;}
-  v.textContent=ds.replace(/-/g,'/');
+  const cv=document.getElementById(cvId),cc=document.getElementById(ccId);
+  if(!ds){if(v)v.textContent='點擊設定';if(c)c.textContent='';if(cv)cv.textContent='設定'+label;if(cc)cc.textContent='';return;}
+  const disp=ds.replace(/-/g,'/');
+  if(v)v.textContent=disp;if(cv)cv.textContent=disp;
   const d=Math.ceil((new Date(ds)-new Date())/86400000);
-  c.textContent=d>0?`距離${label}還有 ${d} 天`:d===0?`今天就是${label}！🎉`:`${label}已過 ${-d} 天`;
+  const cd=d>0?` · 倒數${d}天`:d===0?' · 今天':'';
+  if(c)c.textContent=d>0?`倒數${d}天`:'';if(cc)cc.textContent=cd;
 }
 
-// ── EXPAND HELPER ──────────────────────────────────────────────
-function toggleEx(id){
-  const d=document.getElementById('ex-detail-'+id);
-  const a=document.getElementById('ex-arrow-'+id);
-  if(!d)return;
-  d.classList.toggle('open');
-  if(a)a.classList.toggle('open');
+// ── LIGHTBOX ─────────────────────────────────────────────
+function openLightbox(src){const lb=document.getElementById('lightbox');document.getElementById('lightbox-img').src=src;lb.classList.add('show')}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('show')}
+document.getElementById('lightbox').addEventListener('click',e=>{if(e.target.id==='lightbox')closeLightbox()})
+
+// ── EDIT MODAL ───────────────────────────────────────────
+function openEditModal(title,bodyHtml,saveFn){
+  document.getElementById('edit-title').textContent=title;
+  document.getElementById('edit-body').innerHTML=bodyHtml;
+  editCtx={saveFn};
+  document.getElementById('edit-save-btn').onclick=async()=>{await saveFn();closeEditModal();};
+  document.getElementById('edit-modal').classList.add('show');
+}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('show');editCtx=null}
+function handleModalBg(e){if(e.target.id==='edit-modal')closeEditModal()}
+
+// ── CATEGORIES ───────────────────────────────────────────
+function populateSelects(){
+  ['todo-cat','exp-cat'].forEach(id=>{const el=document.getElementById(id);if(el){const c=el.value;el.innerHTML=catOpts(c||getCats()[0])}});
+  const vt=document.getElementById('v-type');if(vt){const c=vt.value;vt.innerHTML=vtypeOpts(c||VTYPES[0])}
+}
+async function handleCatChange(sel){
+  if(sel.value!=='＋新增類別')return;
+  const name=prompt('新增類別名稱：','');if(!name||!name.trim()){sel.value=getCats()[0];return}
+  const t=name.trim();if(!db.cats)db.cats=[...DEFAULT_CATS];if(!db.cats.includes(t))db.cats.push(t);
+  sel.innerHTML=catOpts(t);sel.value=t;populateSelects();await saveData();
+}
+async function handleVtypeChange(sel){
+  if(sel.value!=='＋新增類別')return;
+  const name=prompt('新增類別名稱：','');if(!name||!name.trim()){sel.value=VTYPES[0];return}
+  const t=name.trim();if(!db.cats)db.cats=[...DEFAULT_CATS];if(!db.cats.includes(t))db.cats.push(t);
+  sel.innerHTML=vtypeOpts(t);sel.value=t;populateSelects();await saveData();
 }
 
-// ── TODOS ──────────────────────────────────────────────────────
+// ── FILE ATTACHMENTS ─────────────────────────────────────
+function attachGrid(files,onDel,onAdd,onView){
+  const imgs=(files||[]).filter(f=>f.type==='img');
+  const docs=(files||[]).filter(f=>f.type==='doc');
+  let h='<div class="attach-grid">';
+  imgs.forEach((f,i)=>`${h+=`<div class="attach-img" onclick="${onView}(${i})"><img src="${f.data}"><button class="attach-del" onclick="event.stopPropagation();${onDel}(${i})">✕</button></div>`}`);
+  docs.forEach((f,i)=>`${h+=`<div class="attach-file" title="${esc(f.name)}"><span style="font-size:16px">📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="event.stopPropagation();${onDel}(${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:12px;flex-shrink:0">✕</button></div>`}`);
+  h+=`<div class="attach-add" onclick="${onAdd}()"><span style="font-size:18px">＋</span><span>加附件</span></div>`;
+  h+='</div>';
+  return h;
+}
+
+// ── TODOS ────────────────────────────────────────────────
 async function addTodo(){
   const text=document.getElementById('todo-text').value.trim();if(!text)return;
-  db.todos.push({id:Date.now(),text,cat:document.getElementById('todo-cat').value,due:document.getElementById('todo-due').value,priority:document.getElementById('todo-priority').value,done:false,note:'',photos:[]});
+  db.todos.push({id:Date.now(),text,cat:document.getElementById('todo-cat').value,due:document.getElementById('todo-due').value,priority:document.getElementById('todo-priority').value,done:false,note:'',files:[]});
   document.getElementById('todo-text').value='';document.getElementById('todo-due').value='';
   renderTodos();await saveData();
 }
-async function toggleDone(id){
-  const t=db.todos.find(t=>t.id===id);if(t){t.done=!t.done;renderTodos();await saveData();}
-}
-async function saveTodo(id){
+async function toggleDone(id){const t=db.todos.find(t=>t.id===id);if(t){t.done=!t.done;renderTodos();await saveData()}}
+async function deleteTodo(id){if(!confirm('確定刪除？'))return;db.todos=db.todos.filter(t=>t.id!==id);renderTodos();await saveData()}
+
+function openTodoDetail(id){
   const t=db.todos.find(t=>t.id===id);if(!t)return;
-  const nt=document.getElementById('td-title-'+id).value.trim();if(nt)t.text=nt;
-  t.cat=document.getElementById('td-cat-'+id).value;
-  t.due=document.getElementById('td-due-'+id).value;
-  t.priority=document.getElementById('td-pri-'+id).value;
-  t.note=document.getElementById('td-note-'+id).value;
-  renderTodos();await saveData();
+  const bodyHtml=`
+    <div class="frow"><div class="field" style="flex:1"><label>事項名稱</label><input type="text" id="em-title" value="${esc(t.text)}"></div></div>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>類別</label><select id="em-cat" onchange="handleCatChange(this)">${catOpts(t.cat)}</select></div>
+      <div class="field"><label>截止日</label><input type="date" id="em-due" value="${t.due||''}"></div>
+      <div class="field"><label>優先度</label><select id="em-pri"><option value=""${!t.priority?' selected':''}>一般</option><option value="urgent"${t.priority==='urgent'?' selected':''}>緊急</option></select></div>
+    </div>
+    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(t.note||'')}</textarea></div></div>
+    <div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件</div>
+    ${buildTodoFileGrid(t)}</div>`;
+  openEditModal(t.text, bodyHtml, async()=>{
+    const nt=document.getElementById('em-title').value.trim();if(nt)t.text=nt;
+    t.cat=document.getElementById('em-cat').value;
+    t.due=document.getElementById('em-due').value;
+    t.priority=document.getElementById('em-pri').value;
+    t.note=document.getElementById('em-note').value;
+    renderTodos();await saveData();
+  });
+  // store ref
+  window._curTodoId=id;
 }
-async function deleteTodo(id){
-  if(!confirm('確定要刪除？'))return;
-  db.todos=db.todos.filter(t=>t.id!==id);renderTodos();await saveData();
+
+function buildTodoFileGrid(t){
+  if(!t.files)t.files=[];
+  const imgs=t.files.filter(f=>f.type==='img');
+  const docs=t.files.filter(f=>f.type==='doc');
+  let h='<div class="attach-grid" id="todo-attach-'+t.id+'">';
+  imgs.forEach((f,i)=>h+=`<div class="attach-img" onclick="openLightbox('${f.data}')"><img src="${f.data}"><button class="attach-del" onclick="event.stopPropagation();removeTodoFile(${t.id},${i})">✕</button></div>`);
+  docs.forEach((f,i)=>h+=`<div class="attach-file"><span style="font-size:16px">📄</span><span class="attach-file-name" title="${esc(f.name)}">${esc(f.name)}</span><button onclick="removeTodoFile(${t.id},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:12px">✕</button></div>`);
+  h+=`<div class="attach-add" onclick="addTodoFile(${t.id})"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
+  return h;
 }
-function addTodoPhoto(id){
-  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.multiple=true;
+
+async function addTodoFile(id){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt';inp.multiple=true;
   inp.onchange=async(e)=>{
-    const t=db.todos.find(t=>t.id===id);if(!t)return;if(!t.photos)t.photos=[];
-    for(const f of e.target.files)t.photos.push(await toB64(f));
+    const t=db.todos.find(t=>t.id===id);if(!t)return;if(!t.files)t.files=[];
+    for(const f of e.target.files){
+      const isImg=f.type.startsWith('image/');
+      const data=await toB64(f);
+      t.files.push({type:isImg?'img':'doc',name:f.name,data});
+    }
+    // refresh modal body
+    const el=document.getElementById('todo-attach-'+id);
+    if(el){const t2=db.todos.find(t=>t.id===id);if(t2){const tmp=document.createElement('div');tmp.innerHTML=buildTodoFileGrid(t2);el.replaceWith(tmp.firstChild)}}
     renderTodos();await saveData();
   };inp.click();
 }
-async function removeTodoPhoto(tid,idx){
-  const t=db.todos.find(t=>t.id===tid);if(t&&t.photos){t.photos.splice(idx,1);renderTodos();await saveData();}
+async function removeTodoFile(id,idx){
+  const t=db.todos.find(t=>t.id===id);if(!t||!t.files)return;t.files.splice(idx,1);
+  const el=document.getElementById('todo-attach-'+id);
+  if(el){const tmp=document.createElement('div');tmp.innerHTML=buildTodoFileGrid(t);el.replaceWith(tmp.firstChild)}
+  renderTodos();await saveData();
 }
-function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)})}
 
 function renderTodos(){
   const list=document.getElementById('todo-list');
   const arr=[...db.todos.filter(t=>!t.done),...db.todos.filter(t=>t.done)];
-  if(!arr.length){list.innerHTML='<div class="card"><div class="empty"><div class="emoji">🌸</div>還沒有待辦事項</div></div>';updateProgress();return;}
-  list.innerHTML=arr.map(t=>{
-    const photos=t.photos||[];
-    return`<div class="ex-card">
-      <div class="ex-main" onclick="toggleEx(${t.id})">
-        <input type="checkbox" class="todo-cb" ${t.done?'checked':''} onclick="event.stopPropagation();toggleDone(${t.id})">
-        <div class="ex-body">
-          <div class="todo-title${t.done?' done':''}">${esc(t.text)}</div>
-          <div class="tags">
+  if(!arr.length){list.innerHTML='<div class="empty"><div class="emoji">🌸</div>還沒有待辦事項</div>';updateProgress();return}
+  list.innerHTML=arr.map(t=>`
+    <div class="item-card">
+      <div class="item-row">
+        <input type="checkbox" style="width:16px;height:16px;accent-color:var(--green);cursor:pointer;flex-shrink:0" ${t.done?'checked':''} onchange="toggleDone(${t.id})">
+        <div class="item-body" onclick="openTodoDetail(${t.id})" style="cursor:pointer">
+          <div class="item-title${t.done?' done':''}">${esc(t.text)}</div>
+          <div class="item-sub">
             <span class="tag">${t.cat}</span>
             ${t.due?`<span class="tag">📅 ${t.due}</span>`:''}
-            ${t.priority==='urgent'?'<span class="tag urgent">🔴 緊急</span>':''}
-            ${t.done?'<span class="tag done-tag">✓ 完成</span>':''}
-            ${t.note?'<span class="tag">📝 備注</span>':''}
-            ${photos.length?`<span class="tag">🖼 ${photos.length}張</span>`:''}
+            ${t.priority==='urgent'?'<span class="tag urgent">緊急</span>':''}
+            ${t.done?'<span class="tag done-t">✓ 完成</span>':''}
+            ${t.note?'<span class="tag">備注</span>':''}
+            ${(t.files||[]).length?`<span class="tag">📎 ${t.files.length}</span>`:''}
           </div>
         </div>
-        <span class="ex-arrow" id="ex-arrow-${t.id}">›</span>
-        <button class="btn-del" onclick="event.stopPropagation();deleteTodo(${t.id})">✕</button>
+        <button class="btn btn-ghost btn-sm" onclick="openTodoDetail(${t.id})" style="flex-shrink:0">詳情</button>
+        <button class="btn-del" onclick="deleteTodo(${t.id})">✕</button>
       </div>
-      <div class="ex-detail" id="ex-detail-${t.id}">
-        <div class="ex-field"><label>事項名稱</label><input type="text" id="td-title-${t.id}" value="${esc(t.text)}"></div>
-        <div class="ex-row">
-          <div class="ex-col"><label>類別</label><select id="td-cat-${t.id}" onchange="handleInlineCat(this,'td-cat-${t.id}')">${catOpts(t.cat)}</select></div>
-          <div class="ex-col"><label>截止日</label><input type="date" id="td-due-${t.id}" value="${t.due||''}"></div>
-          <div class="ex-col"><label>優先度</label><select id="td-pri-${t.id}"><option value=""${!t.priority?' selected':''}>一般</option><option value="urgent"${t.priority==='urgent'?' selected':''}>緊急</option></select></div>
-        </div>
-        <div class="ex-field"><label>備注</label><textarea id="td-note-${t.id}" placeholder="詳細備注、合約內容、聯絡紀錄…">${esc(t.note||'')}</textarea></div>
-        <div class="ex-field"><label>照片</label>
-          <div class="photo-grid">
-            ${photos.map((src,i)=>`<div class="photo-wrap"><img src="${src}"><button class="photo-del" onclick="removeTodoPhoto(${t.id},${i})">✕</button></div>`).join('')}
-            <div class="photo-add" onclick="addTodoPhoto(${t.id})"><span style="font-size:22px">＋</span><span>加照片</span></div>
-          </div>
-        </div>
-        <button class="btn btn-primary ex-save btn-sm" onclick="saveTodo(${t.id})">💾 儲存更改</button>
-      </div>
-    </div>`;
-  }).join('');
+    </div>`).join('');
   updateProgress();
 }
 function updateProgress(){
@@ -828,152 +736,235 @@ function updateProgress(){
   document.getElementById('progressLbl').textContent=`${done} / ${total} 完成（${pct}%）`;
 }
 
-// ── EXPENSES ──────────────────────────────────────────────────
+// ── EXPENSES ──────────────────────────────────────────────
 async function addExpense(){
-  const name=document.getElementById('exp-name').value.trim();
-  if(!name)return;
+  const name=document.getElementById('exp-name').value.trim();if(!name)return;
   const paid=parseFloat(document.getElementById('exp-paid').value)||0;
   const unpaid=parseFloat(document.getElementById('exp-unpaid').value)||0;
-  if(paid===0&&unpaid===0)return;
-  db.expenses.push({id:Date.now(),name,cat:document.getElementById('exp-cat').value,paid,unpaid,note:''});
-  document.getElementById('exp-name').value='';
-  document.getElementById('exp-paid').value='';
-  document.getElementById('exp-unpaid').value='';
+  if(!paid&&!unpaid)return;
+  db.expenses.push({id:Date.now(),name,cat:document.getElementById('exp-cat').value,paid,unpaid,note:'',files:[]});
+  document.getElementById('exp-name').value='';document.getElementById('exp-paid').value='';document.getElementById('exp-unpaid').value='';
   renderExpenses();await saveData();
 }
-async function saveExpense(id){
+async function deleteExpense(id){db.expenses=db.expenses.filter(e=>e.id!==id);renderExpenses();await saveData()}
+
+function openExpDetail(id){
   const e=db.expenses.find(e=>e.id===id);if(!e)return;
-  const nn=document.getElementById('ee-name-'+id).value.trim();if(nn)e.name=nn;
-  e.cat=document.getElementById('ee-cat-'+id).value;
-  e.paid=parseFloat(document.getElementById('ee-paid-'+id).value)||0;
-  e.unpaid=parseFloat(document.getElementById('ee-unpaid-'+id).value)||0;
-  e.note=document.getElementById('ee-note-'+id).value;
-  renderExpenses();await saveData();
+  const bodyHtml=`
+    <div class="frow"><div class="field" style="flex:1"><label>費用名稱</label><input type="text" id="em-name" value="${esc(e.name)}"></div></div>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>類別</label><select id="em-cat" onchange="handleCatChange(this)">${catOpts(e.cat)}</select></div>
+      <div class="field"><label>已付</label><input type="number" id="em-paid" value="${e.paid||0}"></div>
+      <div class="field"><label>待付</label><input type="number" id="em-unpaid" value="${e.unpaid||0}"></div>
+    </div>
+    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(e.note||'')}</textarea></div></div>
+    <div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件</div>
+    ${buildExpFileGrid(e)}</div>`;
+  openEditModal(e.name, bodyHtml, async()=>{
+    const nn=document.getElementById('em-name').value.trim();if(nn)e.name=nn;
+    e.cat=document.getElementById('em-cat').value;
+    e.paid=parseFloat(document.getElementById('em-paid').value)||0;
+    e.unpaid=parseFloat(document.getElementById('em-unpaid').value)||0;
+    e.note=document.getElementById('em-note').value;
+    renderExpenses();await saveData();
+  });
+  window._curExpId=id;
 }
-async function deleteExpense(id){
-  db.expenses=db.expenses.filter(e=>e.id!==id);renderExpenses();await saveData();
+
+function buildExpFileGrid(e){
+  if(!e.files)e.files=[];
+  const imgs=e.files.filter(f=>f.type==='img');
+  const docs=e.files.filter(f=>f.type==='doc');
+  let h='<div class="attach-grid" id="exp-attach-'+e.id+'">';
+  imgs.forEach((f,i)=>h+=`<div class="attach-img" onclick="openLightbox('${f.data}')"><img src="${f.data}"><button class="attach-del" onclick="event.stopPropagation();removeExpFile(${e.id},${i})">✕</button></div>`);
+  docs.forEach((f,i)=>h+=`<div class="attach-file"><span style="font-size:16px">📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="removeExpFile(${e.id},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:12px">✕</button></div>`);
+  h+=`<div class="attach-add" onclick="addExpFile(${e.id})"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
+  return h;
+}
+async function addExpFile(id){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*,application/pdf,.doc,.docx,.txt';inp.multiple=true;
+  inp.onchange=async(ev)=>{
+    const e=db.expenses.find(e=>e.id===id);if(!e)return;if(!e.files)e.files=[];
+    for(const f of ev.target.files){const isImg=f.type.startsWith('image/');const data=await toB64(f);e.files.push({type:isImg?'img':'doc',name:f.name,data})}
+    const el=document.getElementById('exp-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildExpFileGrid(e);el.replaceWith(tmp.firstChild)}
+    renderExpenses();await saveData();
+  };inp.click();
+}
+async function removeExpFile(id,idx){
+  const e=db.expenses.find(e=>e.id===id);if(!e||!e.files)return;e.files.splice(idx,1);
+  const el=document.getElementById('exp-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildExpFileGrid(e);el.replaceWith(tmp.firstChild)}
+  renderExpenses();await saveData();
 }
 
 function renderExpenses(){
-  const totalPaid=db.expenses.reduce((s,e)=>s+(e.paid||0),0);
-  const totalUnpaid=db.expenses.reduce((s,e)=>s+(e.unpaid||0),0);
-  document.getElementById('b-paid').textContent='$'+totalPaid.toLocaleString();
-  document.getElementById('b-unpaid').textContent='$'+totalUnpaid.toLocaleString();
-  document.getElementById('b-total').textContent='$'+(totalPaid+totalUnpaid).toLocaleString();
+  const tp=db.expenses.reduce((s,e)=>s+(e.paid||0),0);
+  const tu=db.expenses.reduce((s,e)=>s+(e.unpaid||0),0);
+  document.getElementById('b-paid').textContent='$'+tp.toLocaleString();
+  document.getElementById('b-unpaid').textContent='$'+tu.toLocaleString();
+  document.getElementById('b-total').textContent='$'+(tp+tu).toLocaleString();
   const list=document.getElementById('expense-list');
-  if(!db.expenses.length){list.innerHTML='<div class="empty"><div class="emoji">💵</div>還沒有費用記錄</div>';return;}
+  if(!db.expenses.length){list.innerHTML='<div class="empty"><div class="emoji">💵</div>還沒有費用</div>';return}
   list.innerHTML=db.expenses.map(e=>{
-    const paid=e.paid||0,unpaid=e.unpaid||0,total=paid+unpaid;
-    const hasBoth=paid>0&&unpaid>0;
-    return`<div class="ex-card">
-      <div class="ex-main" onclick="toggleEx('e${e.id}')">
-        <div class="ex-body">
-          <div class="exp-name">${esc(e.name)}</div>
-          <div class="exp-sub" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:3px">
-            <span style="color:var(--mid);font-size:11px">${e.cat}</span>
-            ${paid>0?`<span style="color:var(--sage);font-size:11px">✅ 已付 $${paid.toLocaleString()}</span>`:''}
-            ${unpaid>0?`<span style="color:var(--gold);font-size:11px">⏳ 待付 $${unpaid.toLocaleString()}</span>`:''}
+    const paid=e.paid||0,unpaid=e.unpaid||0;
+    return`<div class="item-card">
+      <div class="item-row" onclick="openExpDetail(${e.id})" style="cursor:pointer">
+        <div class="item-body">
+          <div class="item-title">${esc(e.name)}</div>
+          <div class="item-sub">
+            <span class="tag">${e.cat}</span>
+            ${paid?`<span style="font-size:11px;color:var(--green)">已付 $${paid.toLocaleString()}</span>`:''}
+            ${unpaid?`<span style="font-size:11px;color:var(--accent)">待付 $${unpaid.toLocaleString()}</span>`:''}
+            ${e.note?'<span class="tag">備注</span>':''}
+            ${(e.files||[]).length?`<span class="tag">📎 ${e.files.length}</span>`:''}
           </div>
         </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:14px;font-weight:500;color:var(--dark)">$${total.toLocaleString()}</div>
-          ${hasBoth?'<div style="font-size:10px;color:var(--mid)">合計</div>':unpaid>0?'<div class="exp-badge unpaid" style="margin-top:2px">待付</div>':'<div class="exp-badge paid" style="margin-top:2px">已付</div>'}
-        </div>
-        <span class="ex-arrow" id="ex-arrow-e${e.id}">›</span>
+        <div style="font-family:'Playfair Display',serif;font-size:16px;color:var(--text);white-space:nowrap;flex-shrink:0">$${(paid+unpaid).toLocaleString()}</div>
         <button class="btn-del" onclick="event.stopPropagation();deleteExpense(${e.id})">✕</button>
-      </div>
-      <div class="ex-detail" id="ex-detail-e${e.id}">
-        <div class="ex-field"><label>費用名稱</label><input type="text" id="ee-name-${e.id}" value="${esc(e.name)}"></div>
-        <div class="ex-row">
-          <div class="ex-col"><label>類別</label><select id="ee-cat-${e.id}" onchange="handleInlineCat(this,'ee-cat-${e.id}')">${catOpts(e.cat)}</select></div>
-        </div>
-        <div class="ex-row">
-          <div class="ex-col"><label>✅ 已付金額</label><input type="number" id="ee-paid-${e.id}" value="${paid}"></div>
-          <div class="ex-col"><label>⏳ 待付金額</label><input type="number" id="ee-unpaid-${e.id}" value="${unpaid}"></div>
-        </div>
-        <div class="ex-field"><label>備注</label><textarea id="ee-note-${e.id}" placeholder="付款時間、合約備注…">${esc(e.note||'')}</textarea></div>
-        <button class="btn btn-primary ex-save btn-sm" onclick="saveExpense(${e.id})">💾 儲存更改</button>
       </div>
     </div>`;
   }).join('');
 }
 
-
-// ── VENDORS ──────────────────────────────────────────────────
+// ── VENDORS ───────────────────────────────────────────────
 async function addVendor(){
   const name=document.getElementById('v-name').value.trim();if(!name)return;
-  db.vendors.push({id:Date.now(),name,type:document.getElementById('v-type').value,contact:document.getElementById('v-contact').value,phone:document.getElementById('v-phone').value,line:document.getElementById('v-line').value,status:document.getElementById('v-status').value,note:document.getElementById('v-note').value});
+  db.vendors.push({id:Date.now(),name,type:document.getElementById('v-type').value,contact:document.getElementById('v-contact').value,phone:document.getElementById('v-phone').value,line:document.getElementById('v-line').value,status:document.getElementById('v-status').value,note:document.getElementById('v-note').value,files:[]});
   ['v-name','v-contact','v-phone','v-line','v-note'].forEach(id=>document.getElementById(id).value='');
   renderVendors();await saveData();
 }
-async function saveVendor(id){
+async function deleteVendor(id){db.vendors=db.vendors.filter(v=>v.id!==id);renderVendors();await saveData()}
+
+function openVendorDetail(id){
   const v=db.vendors.find(v=>v.id===id);if(!v)return;
-  const nn=document.getElementById('vv-name-'+id).value.trim();if(nn)v.name=nn;
-  v.type=document.getElementById('vv-type-'+id).value;
-  v.contact=document.getElementById('vv-contact-'+id).value;
-  v.phone=document.getElementById('vv-phone-'+id).value;
-  v.line=document.getElementById('vv-line-'+id).value;
-  v.status=document.getElementById('vv-st-'+id).value;
-  v.note=document.getElementById('vv-note-'+id).value;
+  const sl={confirmed:'已確認',pending:'洽談中',cancelled:'已取消'};
+  const bodyHtml=`
+    <div class="frow">
+      <div class="field" style="flex:2"><label>廠商名稱</label><input type="text" id="em-name" value="${esc(v.name)}"></div>
+      <div class="field"><label>類型</label><select id="em-type" onchange="handleVtypeChange(this)">${vtypeOpts(v.type)}</select></div>
+      <div class="field"><label>狀態</label><select id="em-st"><option value="pending"${v.status==='pending'?' selected':''}>洽談中</option><option value="confirmed"${v.status==='confirmed'?' selected':''}>已確認</option><option value="cancelled"${v.status==='cancelled'?' selected':''}>已取消</option></select></div>
+    </div>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>聯絡人</label><input type="text" id="em-contact" value="${esc(v.contact)}"></div>
+      <div class="field"><label>電話</label><input type="text" id="em-phone" value="${esc(v.phone)}"></div>
+      <div class="field"><label>LINE</label><input type="text" id="em-line" value="${esc(v.line)}"></div>
+    </div>
+    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(v.note||'')}</textarea></div></div>
+    <div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件</div>
+    ${buildVendorFileGrid(v)}</div>`;
+  openEditModal(v.name, bodyHtml, async()=>{
+    const nn=document.getElementById('em-name').value.trim();if(nn)v.name=nn;
+    v.type=document.getElementById('em-type').value;v.status=document.getElementById('em-st').value;
+    v.contact=document.getElementById('em-contact').value;v.phone=document.getElementById('em-phone').value;v.line=document.getElementById('em-line').value;
+    v.note=document.getElementById('em-note').value;
+    renderVendors();await saveData();
+  });
+  window._curVendorId=id;
+}
+
+function buildVendorFileGrid(v){
+  if(!v.files)v.files=[];
+  const imgs=v.files.filter(f=>f.type==='img');const docs=v.files.filter(f=>f.type==='doc');
+  let h='<div class="attach-grid" id="vendor-attach-'+v.id+'">';
+  imgs.forEach((f,i)=>h+=`<div class="attach-img" onclick="openLightbox('${f.data}')"><img src="${f.data}"><button class="attach-del" onclick="event.stopPropagation();removeVendorFile(${v.id},${i})">✕</button></div>`);
+  docs.forEach((f,i)=>h+=`<div class="attach-file"><span style="font-size:16px">📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="removeVendorFile(${v.id},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:12px">✕</button></div>`);
+  h+=`<div class="attach-add" onclick="addVendorFile(${v.id})"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
+  return h;
+}
+async function addVendorFile(id){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*,application/pdf,.doc,.docx,.txt';inp.multiple=true;
+  inp.onchange=async(ev)=>{
+    const v=db.vendors.find(v=>v.id===id);if(!v)return;if(!v.files)v.files=[];
+    for(const f of ev.target.files){const isImg=f.type.startsWith('image/');const data=await toB64(f);v.files.push({type:isImg?'img':'doc',name:f.name,data})}
+    const el=document.getElementById('vendor-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildVendorFileGrid(v);el.replaceWith(tmp.firstChild)}
+    renderVendors();await saveData();
+  };inp.click();
+}
+async function removeVendorFile(id,idx){
+  const v=db.vendors.find(v=>v.id===id);if(!v||!v.files)return;v.files.splice(idx,1);
+  const el=document.getElementById('vendor-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildVendorFileGrid(v);el.replaceWith(tmp.firstChild)}
   renderVendors();await saveData();
 }
-async function deleteVendor(id){db.vendors=db.vendors.filter(v=>v.id!==id);renderVendors();await saveData();}
 
 function renderVendors(){
   const list=document.getElementById('vendor-list');
-  if(!db.vendors.length){list.innerHTML='<div class="card"><div class="empty"><div class="emoji">🏪</div>還沒有廠商資訊</div></div>';return;}
+  if(!db.vendors.length){list.innerHTML='<div class="empty"><div class="emoji">🏪</div>還沒有廠商</div>';return}
   const sl={confirmed:'已確認',pending:'洽談中',cancelled:'已取消'};
   list.innerHTML=db.vendors.map(v=>`
-    <div class="ex-card">
-      <div class="ex-main" onclick="toggleEx('v${v.id}')">
-        <div class="ex-body">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span class="vendor-name-txt">${esc(v.name)}</span>
-            <span class="vendor-type-tag">${v.type}</span>
+    <div class="item-card">
+      <div class="item-row" onclick="openVendorDetail(${v.id})" style="cursor:pointer">
+        <div class="item-body">
+          <div class="item-title">${esc(v.name)}</div>
+          <div class="item-sub">
+            <span class="tag">${v.type}</span>
             <span class="vstatus vstatus-${v.status}">${sl[v.status]}</span>
+            ${v.contact?`<span class="tag">👤 ${esc(v.contact)}</span>`:''}
+            ${v.phone?`<span class="tag">📞 ${esc(v.phone)}</span>`:''}
+            ${v.note?'<span class="tag">備注</span>':''}
+            ${(v.files||[]).length?`<span class="tag">📎 ${v.files.length}</span>`:''}
           </div>
-          ${v.contact||v.phone?`<div class="vendor-preview">${[v.contact,v.phone].filter(Boolean).join(' · ')}</div>`:''}
         </div>
-        <span class="ex-arrow" id="ex-arrow-v${v.id}">›</span>
         <button class="btn-del" onclick="event.stopPropagation();deleteVendor(${v.id})">✕</button>
-      </div>
-      <div class="ex-detail" id="ex-detail-v${v.id}">
-        <div class="ex-row">
-          <div class="ex-col" style="flex:2"><label>廠商名稱</label><input type="text" id="vv-name-${v.id}" value="${esc(v.name)}"></div>
-          <div class="ex-col"><label>類型</label><select id="vv-type-${v.id}" onchange="handleInlineCat(this,'vv-type-${v.id}')">${vtypeOpts(v.type)}</select></div>
-        </div>
-        <div class="ex-row">
-          <div class="ex-col"><label>聯絡人</label><input type="text" id="vv-contact-${v.id}" value="${esc(v.contact)}"></div>
-          <div class="ex-col"><label>電話</label><input type="text" id="vv-phone-${v.id}" value="${esc(v.phone)}"></div>
-          <div class="ex-col"><label>LINE ID</label><input type="text" id="vv-line-${v.id}" value="${esc(v.line)}"></div>
-        </div>
-        <div class="ex-row">
-          <div class="ex-col"><label>狀態</label><select id="vv-st-${v.id}"><option value="pending"${v.status==='pending'?' selected':''}>洽談中</option><option value="confirmed"${v.status==='confirmed'?' selected':''}>已確認</option><option value="cancelled"${v.status==='cancelled'?' selected':''}>已取消</option></select></div>
-        </div>
-        <div class="ex-field"><label>備注</label><textarea id="vv-note-${v.id}" placeholder="價格、約定、付款紀錄…">${esc(v.note||'')}</textarea></div>
-        <button class="btn btn-primary ex-save btn-sm" onclick="saveVendor(${v.id})">💾 儲存更改</button>
       </div>
     </div>`).join('');
 }
 
-// ── GUESTS ──────────────────────────────────────────────────
+// ── GUESTS ────────────────────────────────────────────────
 async function addGuest(){
   const name=document.getElementById('g-name').value.trim();if(!name)return;
-  db.guests.push({id:Date.now(),name,side:document.getElementById('g-side').value,table:document.getElementById('g-table').value,rsvp:document.getElementById('g-rsvp').value,diet:document.getElementById('g-diet').value,note:''});
+  db.guests.push({id:Date.now(),name,side:document.getElementById('g-side').value,table:document.getElementById('g-table').value,rsvp:document.getElementById('g-rsvp').value,diet:document.getElementById('g-diet').value,note:'',files:[]});
   ['g-name','g-table','g-diet'].forEach(id=>document.getElementById(id).value='');
   renderGuests();await saveData();
 }
-async function saveGuest(id){
+async function deleteGuest(id){db.guests=db.guests.filter(g=>g.id!==id);renderGuests();await saveData()}
+
+function openGuestDetail(id){
   const g=db.guests.find(g=>g.id===id);if(!g)return;
-  const nn=document.getElementById('gg-name-'+id).value.trim();if(nn)g.name=nn;
-  g.side=document.getElementById('gg-side-'+id).value;
-  g.table=document.getElementById('gg-table-'+id).value;
-  g.rsvp=document.getElementById('gg-rsvp-'+id).value;
-  g.diet=document.getElementById('gg-diet-'+id).value;
-  g.note=document.getElementById('gg-note-'+id).value;
+  const bodyHtml=`
+    <div class="frow">
+      <div class="field" style="flex:2"><label>姓名</label><input type="text" id="em-name" value="${esc(g.name)}"></div>
+      <div class="field"><label>方</label><select id="em-side"><option${g.side==='新郎方'?' selected':''}>新郎方</option><option${g.side==='新娘方'?' selected':''}>新娘方</option><option${g.side==='共同'?' selected':''}>共同</option></select></div>
+    </div>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>出席確認</label><select id="em-rsvp"><option value="pending"${g.rsvp==='pending'?' selected':''}>待確認</option><option value="yes"${g.rsvp==='yes'?' selected':''}>確認出席</option><option value="no"${g.rsvp==='no'?' selected':''}>無法出席</option></select></div>
+      <div class="field"><label>桌次</label><input type="text" id="em-table" value="${esc(g.table||'')}"></div>
+      <div class="field"><label>飲食需求</label><input type="text" id="em-diet" value="${esc(g.diet||'')}"></div>
+    </div>
+    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(g.note||'')}</textarea></div></div>
+    <div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件</div>
+    ${buildGuestFileGrid(g)}</div>`;
+  openEditModal(g.name, bodyHtml, async()=>{
+    const nn=document.getElementById('em-name').value.trim();if(nn)g.name=nn;
+    g.side=document.getElementById('em-side').value;g.rsvp=document.getElementById('em-rsvp').value;
+    g.table=document.getElementById('em-table').value;g.diet=document.getElementById('em-diet').value;
+    g.note=document.getElementById('em-note').value;
+    renderGuests();await saveData();
+  });
+  window._curGuestId=id;
+}
+
+function buildGuestFileGrid(g){
+  if(!g.files)g.files=[];
+  const imgs=g.files.filter(f=>f.type==='img');const docs=g.files.filter(f=>f.type==='doc');
+  let h='<div class="attach-grid" id="guest-attach-'+g.id+'">';
+  imgs.forEach((f,i)=>h+=`<div class="attach-img" onclick="openLightbox('${f.data}')"><img src="${f.data}"><button class="attach-del" onclick="event.stopPropagation();removeGuestFile(${g.id},${i})">✕</button></div>`);
+  docs.forEach((f,i)=>h+=`<div class="attach-file"><span style="font-size:16px">📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="removeGuestFile(${g.id},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:12px">✕</button></div>`);
+  h+=`<div class="attach-add" onclick="addGuestFile(${g.id})"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
+  return h;
+}
+async function addGuestFile(id){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*,application/pdf,.doc,.docx,.txt';inp.multiple=true;
+  inp.onchange=async(ev)=>{
+    const g=db.guests.find(g=>g.id===id);if(!g)return;if(!g.files)g.files=[];
+    for(const f of ev.target.files){const isImg=f.type.startsWith('image/');const data=await toB64(f);g.files.push({type:isImg?'img':'doc',name:f.name,data})}
+    const el=document.getElementById('guest-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildGuestFileGrid(g);el.replaceWith(tmp.firstChild)}
+    renderGuests();await saveData();
+  };inp.click();
+}
+async function removeGuestFile(id,idx){
+  const g=db.guests.find(g=>g.id===id);if(!g||!g.files)return;g.files.splice(idx,1);
+  const el=document.getElementById('guest-attach-'+id);if(el){const tmp=document.createElement('div');tmp.innerHTML=buildGuestFileGrid(g);el.replaceWith(tmp.firstChild)}
   renderGuests();await saveData();
 }
-async function deleteGuest(id){db.guests=db.guests.filter(g=>g.id!==id);renderGuests();await saveData();}
 
 function renderGuests(){
   document.getElementById('g-total').textContent=db.guests.length;
@@ -981,77 +972,248 @@ function renderGuests(){
   document.getElementById('g-no').textContent=db.guests.filter(g=>g.rsvp==='no').length;
   document.getElementById('g-pending').textContent=db.guests.filter(g=>g.rsvp==='pending').length;
   const list=document.getElementById('guest-list');
-  if(!db.guests.length){list.innerHTML='<div class="empty"><div class="emoji">🎊</div>還沒有賓客</div>';return;}
+  if(!db.guests.length){list.innerHTML='<div class="empty"><div class="emoji">🎊</div>還沒有賓客</div>';return}
   const rl={yes:'rsvp-yes',no:'rsvp-no',pending:'rsvp-pending'};
   const rt={yes:'確認出席',no:'無法出席',pending:'待確認'};
   list.innerHTML=db.guests.map(g=>`
-    <div class="ex-card">
-      <div class="ex-main" onclick="toggleEx('g${g.id}')">
-        <div class="ex-body">
-          <div style="display:flex;align-items:center;gap:8px">
-            <span class="g-name-txt">${esc(g.name)}</span>
-            <span class="g-side-tag">${g.side}</span>
-            <span class="rsvp-badge ${rl[g.rsvp]||'rsvp-pending'}">${rt[g.rsvp]||'待確認'}</span>
+    <div class="item-card">
+      <div class="item-row" onclick="openGuestDetail(${g.id})" style="cursor:pointer">
+        <div class="item-body">
+          <div class="item-title">${esc(g.name)}</div>
+          <div class="item-sub">
+            <span class="tag">${g.side}</span>
+            <span class="tag ${rl[g.rsvp]||'rsvp-pending'}">${rt[g.rsvp]||'待確認'}</span>
+            ${g.table?`<span class="tag">桌次 ${esc(g.table)}</span>`:''}
+            ${g.diet?`<span class="tag">${esc(g.diet)}</span>`:''}
+            ${(g.files||[]).length?`<span class="tag">📎 ${g.files.length}</span>`:''}
           </div>
-          ${g.table||g.diet?`<div class="g-preview">${[g.table?'桌次：'+g.table:'',g.diet].filter(Boolean).join('　')}</div>`:''}
         </div>
-        <span class="ex-arrow" id="ex-arrow-g${g.id}">›</span>
         <button class="btn-del" onclick="event.stopPropagation();deleteGuest(${g.id})">✕</button>
-      </div>
-      <div class="ex-detail" id="ex-detail-g${g.id}">
-        <div class="ex-row">
-          <div class="ex-col" style="flex:2"><label>賓客姓名</label><input type="text" id="gg-name-${g.id}" value="${esc(g.name)}"></div>
-          <div class="ex-col"><label>方</label><select id="gg-side-${g.id}"><option${g.side==='新郎方'?' selected':''}>新郎方</option><option${g.side==='新娘方'?' selected':''}>新娘方</option><option${g.side==='共同'?' selected':''}>共同</option></select></div>
-        </div>
-        <div class="ex-row">
-          <div class="ex-col"><label>出席確認</label><select id="gg-rsvp-${g.id}"><option value="pending"${g.rsvp==='pending'?' selected':''}>待確認</option><option value="yes"${g.rsvp==='yes'?' selected':''}>確認出席</option><option value="no"${g.rsvp==='no'?' selected':''}>無法出席</option></select></div>
-          <div class="ex-col"><label>桌次</label><input type="text" id="gg-table-${g.id}" value="${esc(g.table||'')}"></div>
-          <div class="ex-col"><label>飲食需求</label><input type="text" id="gg-diet-${g.id}" value="${esc(g.diet||'')}"></div>
-        </div>
-        <div class="ex-field"><label>備注</label><textarea id="gg-note-${g.id}" placeholder="禮金、特殊需求、座位備注…">${esc(g.note||'')}</textarea></div>
-        <button class="btn btn-primary ex-save btn-sm" onclick="saveGuest(${g.id})">💾 儲存更改</button>
       </div>
     </div>`).join('');
 }
 
-function populateCatSelects(){
-  ['todo-cat','exp-cat','v-type'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el)return;
-    const cur=el.value;
-    if(id==='v-type'){el.innerHTML=vtypeOpts(el.value||VTYPES[0]);}
-    else{el.innerHTML=catOpts(cur)||catOpts('');}
+// ── CALENDAR ──────────────────────────────────────────────
+function setView(v){
+  calView=v;['month','week','list'].forEach(x=>document.getElementById('vt-'+x).classList.toggle('active',x===v));
+  renderCalendar();
+}
+function changeMonth(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++}if(calMonth<0){calMonth=11;calYear--}renderCalendar()}
+function goToday(){const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();selDate=dateKey(calYear,calMonth,n.getDate());renderCalendar();showEvPanel(selDate)}
+function jumpYear(){calYear=parseInt(document.getElementById('cal-year-sel').value);renderCalendar()}
+function jumpMonth(){calMonth=parseInt(document.getElementById('cal-month-sel').value);renderCalendar()}
+
+function updateCalJump(){
+  const ySel=document.getElementById('cal-year-sel');
+  const mSel=document.getElementById('cal-month-sel');
+  if(!ySel||!mSel)return;
+  const curY=calYear;
+  const years=Array.from({length:10},(_,i)=>curY-3+i);
+  ySel.innerHTML=years.map(y=>`<option${y===calYear?' selected':''}>${y}</option>`).join('');
+  const mns=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  mSel.innerHTML=mns.map((m,i)=>`<option value="${i}"${i===calMonth?' selected':''}>${m}</option>`).join('');
+}
+
+function getEvForDate(ds){
+  const evs=(db.events||[]).filter(e=>e.date===ds);
+  const todos=db.todos.filter(t=>t.due&&t.due.replace(/-/g,'/')===ds);
+  const isW=db.weddingDate&&db.weddingDate.replace(/-/g,'/')===ds;
+  const isR=db.registryDate&&db.registryDate.replace(/-/g,'/')===ds;
+  return{evs,todos,isW,isR};
+}
+
+function renderCalendar(){
+  const mns=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('cal-title').textContent=calYear+'年 '+mns[calMonth];
+  updateCalJump();
+  if(calView==='month')renderMonth();
+  else if(calView==='week')renderWeek();
+  else renderList();
+}
+
+function renderMonth(){
+  const body=document.getElementById('cal-body');
+  const today=new Date();today.setHours(0,0,0,0);
+  const fd=new Date(calYear,calMonth,1).getDay();
+  const dim=new Date(calYear,calMonth+1,0).getDate();
+  const dip=new Date(calYear,calMonth,0).getDate();
+  const dows=['日','一','二','三','四','五','六'];
+  let h='<div class="cal-month-grid">';
+  dows.forEach(d=>h+=`<div class="cal-dow">${d}</div>`);
+  for(let i=fd-1;i>=0;i--)h+=`<div class="cal-cell other"><div class="cnum">${dip-i}</div></div>`;
+  for(let d=1;d<=dim;d++){
+    const ds=dateKey(calYear,calMonth,d);
+    const dt=new Date(calYear,calMonth,d);
+    const isT=dt.getTime()===today.getTime();
+    const isSel=selDate===ds;
+    const {evs,todos,isW,isR}=getEvForDate(ds);
+    let cls='cal-cell';
+    if(isW)cls+=' wedding-d';else if(isR)cls+=' registry-d';
+    if(isT)cls+=' today';if(isSel)cls+=' selected';
+    const sorted=evs.sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+    const pills=[
+      isW?`<div class="special-tag">💒婚禮</div>`:'',
+      isR?`<div class="special-tag" style="background:var(--green)">📋登記</div>`:'',
+      ...sorted.slice(0,2).map(e=>`<div class="ev-pill" style="background:${e.color||'var(--accent)'}">${e.start?e.start.slice(0,5)+' ':''}${esc(e.text)}</div>`),
+      sorted.length>2?`<div style="font-size:9px;color:var(--text3);padding-left:2px">+${sorted.length-2}項</div>`:'',
+      ...todos.slice(0,1).map(t=>`<div class="ev-pill todo-p">✅ ${esc(t.text)}</div>`),
+    ].filter(Boolean);
+    h+=`<div class="${cls}" onclick="selectCalDate('${ds}')"><div class="cnum">${d}</div>${pills.join('')}</div>`;
+  }
+  const total=fd+dim;const rem=total%7===0?0:7-(total%7);
+  for(let d=1;d<=rem;d++)h+=`<div class="cal-cell other"><div class="cnum">${d}</div></div>`;
+  h+='</div>';body.innerHTML=h;
+}
+
+function renderWeek(){
+  const body=document.getElementById('cal-body');
+  const today=new Date();today.setHours(0,0,0,0);
+  const ref=selDate?parseDate(selDate):new Date();
+  const sow=new Date(ref);sow.setDate(ref.getDate()-ref.getDay());
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(sow);d.setDate(sow.getDate()+i);return d});
+  const dows=['日','一','二','三','四','五','六'];
+  const hours=Array.from({length:24},(_,i)=>i);
+  let h=`<div class="week-wrap"><div class="week-head"><div class="wh-cell" style="border-right:1px solid var(--border)"></div>`;
+  days.forEach((d,i)=>{
+    const isT=d.getTime()===today.getTime();
+    h+=`<div class="wh-cell${isT?' today-c':''}"><div>${dows[i]}</div><div class="wdate">${d.getDate()}</div></div>`;
+  });
+  h+=`</div><div class="week-body"><div class="wtime-col">${hours.map(h=>`<div class="wtime">${String(h).padStart(2,'0')}:00</div>`).join('')}</div>`;
+  days.forEach(d=>{
+    const ds=dateKey(d.getFullYear(),d.getMonth(),d.getDate());
+    const {evs,todos,isW,isR}=getEvForDate(ds);
+    const slots=hours.map(()=>'<div class="wslot"></div>').join('');
+    const wevs=evs.filter(e=>e.start).map(e=>{
+      const[sh,sm]=e.start.split(':').map(Number);
+      const top=sh*40+Math.floor(sm/60*40);
+      let ht=40;if(e.end){const[eh,em]=e.end.split(':').map(Number);ht=Math.max(20,(eh*60+em-sh*60-sm)/60*40)}
+      return`<div class="wev" style="top:${top}px;height:${ht}px;background:${e.color||'var(--accent)'}" onclick="event.stopPropagation();selectCalDate('${ds}')">${e.start.slice(0,5)} ${esc(e.text)}</div>`;
+    }).join('');
+    const sp=(isW||isR)?`<div style="background:${isW?'var(--accent)':'var(--green)'};color:#fff;font-size:9px;padding:2px 4px;position:absolute;top:0;left:2px;right:2px;border-radius:2px;z-index:3">${isW?'💒婚禮':'📋登記'}</div>`:'';
+    h+=`<div class="wday-col" onclick="selectCalDate('${ds}')" style="position:relative">${sp}${slots}${wevs}</div>`;
+  });
+  h+=`</div></div>`;body.innerHTML=h;
+}
+
+function renderList(){
+  const body=document.getElementById('cal-body');
+  const allEvs=[];
+  for(let mi=0;mi<3;mi++){
+    const y=calMonth+mi>11?calYear+1:calYear;
+    const m=(calMonth+mi)%12;
+    const dim=new Date(y,m+1,0).getDate();
+    for(let d=1;d<=dim;d++){
+      const ds=dateKey(y,m,d);
+      const {evs,todos,isW,isR}=getEvForDate(ds);
+      if(evs.length||todos.length||isW||isR)allEvs.push({ds,evs,todos,isW,isR});
+    }
+  }
+  if(!allEvs.length){body.innerHTML='<div class="empty"><div class="emoji">📅</div>未來3個月沒有行程</div>';return}
+  const dows=['日','一','二','三','四','五','六'];
+  let h='<div style="padding:4px 0">';
+  allEvs.forEach(({ds,evs,todos,isW,isR})=>{
+    const dt=parseDate(ds);
+    const label=`${ds.replace(/\//g,'-')} ${dows[dt.getDay()]}`;
+    h+=`<div class="list-date-h">${label}</div>`;
+    if(isW)h+=`<div class="list-ev"><div class="list-ev-bar" style="background:var(--accent)"></div><div><div class="list-ev-title">💒 婚禮</div></div></div>`;
+    if(isR)h+=`<div class="list-ev"><div class="list-ev-bar" style="background:var(--green)"></div><div><div class="list-ev-title">📋 登記</div></div></div>`;
+    evs.sort((a,b)=>(a.start||'').localeCompare(b.start||'')).forEach(e=>{
+      h+=`<div class="list-ev" onclick="selectCalDate('${ds}')">
+        <div class="list-ev-bar" style="background:${e.color||'var(--accent)'}"></div>
+        <div><div class="list-ev-title">${e.start?`<span style="color:var(--text3);font-size:11px">${e.start}${e.end?'–'+e.end:''} </span>`:''}${esc(e.text)}</div>
+        ${e.note?`<div class="list-ev-note">📝 ${esc(e.note)}</div>`:''}</div></div>`;
+    });
+    todos.forEach(t=>h+=`<div class="list-ev"><div class="list-ev-bar" style="background:var(--green)"></div><div><div class="list-ev-title${t.done?' done':''}">✅ ${esc(t.text)}</div></div></div>`);
+  });
+  h+='</div>';body.innerHTML=h;
+}
+
+function selectCalDate(ds){
+  selDate=ds;
+  if(calView==='month')renderMonth();
+  else if(calView==='week'){const d=parseDate(ds);calYear=d.getFullYear();calMonth=d.getMonth();renderWeek();}
+  showEvPanel(ds);
+}
+
+function closeEvPanel(){document.getElementById('ev-panel').style.display='none';selDate=null;if(calView==='month')renderMonth()}
+
+function showEvPanel(ds){
+  const panel=document.getElementById('ev-panel');
+  const title=document.getElementById('ev-panel-title');
+  const list=document.getElementById('ev-list');
+  const form=document.getElementById('ev-add-form');
+  panel.style.display='block';
+  const dt=parseDate(ds);
+  const dows=['日','一','二','三','四','五','六'];
+  title.textContent=ds.replace(/\//g,'-')+' ('+dows[dt.getDay()]+')';
+  form.style.display='block';
+  initColorPicker();
+  const {evs,todos,isW,isR}=getEvForDate(ds);
+  if(!evs.length&&!todos.length&&!isW&&!isR){list.innerHTML='<div style="padding:10px 16px;font-size:13px;color:var(--text3)">這天還沒有行程</div>';return}
+  const sorted=evs.sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+  list.innerHTML=[
+    isW?`<div class="ev-item"><div class="ev-dot" style="background:var(--accent)"></div><div class="ev-body"><div class="ev-title">💒 婚禮</div></div></div>`:'',
+    isR?`<div class="ev-item"><div class="ev-dot" style="background:var(--green)"></div><div class="ev-body"><div class="ev-title">📋 登記</div></div></div>`:'',
+    ...sorted.map(e=>`
+      <div class="ev-item" onclick="openCalEvEdit(${e.id},'${ds}')">
+        <div class="ev-dot" style="background:${e.color||'var(--accent)'}"></div>
+        <div class="ev-body">
+          <div class="ev-title">${e.start?`<span style="color:var(--text3);font-size:11px">${e.start}${e.end?'–'+e.end:''} </span>`:''}${esc(e.text)}</div>
+          ${e.note?`<div class="ev-note">📝 ${esc(e.note)}</div>`:''}
+        </div>
+        <div class="ev-actions-row">
+          <button class="ev-edit-b" onclick="event.stopPropagation();openCalEvEdit(${e.id},'${ds}')">✏️ 編輯</button>
+          <button class="btn-del" onclick="event.stopPropagation();deleteCalEv(${e.id})">✕</button>
+        </div>
+      </div>`),
+    ...todos.map(t=>`<div class="ev-item"><div class="ev-dot" style="background:var(--green)"></div><div class="ev-body"><div class="ev-title${t.done?' done':''}">✅ ${esc(t.text)}</div></div></div>`),
+  ].filter(Boolean).join('');
+}
+
+function openCalEvEdit(id,ds){
+  const e=(db.events||[]).find(e=>e.id===id);if(!e)return;
+  const bodyHtml=`
+    <div class="frow"><div class="field" style="flex:1"><label>行程名稱</label><input type="text" id="em-text" value="${esc(e.text)}"></div></div>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>開始</label><input type="time" id="em-start" value="${e.start||''}"></div>
+      <div class="field"><label>結束</label><input type="time" id="em-end" value="${e.end||''}"></div>
+      <div class="field"><label>類型</label><select id="em-type"><option value="custom"${e.type==='custom'?' selected':''}>自訂</option><option value="vendor"${e.type==='vendor'?' selected':''}>廠商</option><option value="todo"${e.type==='todo'?' selected':''}>待辦</option></select></div>
+    </div>
+    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(e.note||'')}</textarea></div></div>
+    <div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">顏色</div>
+    <div class="color-row">${EV_COLORS.map(c=>`<div class="cswatch${c===(e.color||EV_COLORS[0])?' sel':''}" style="background:${c}" onclick="this.parentElement.querySelectorAll('.cswatch').forEach(s=>s.classList.remove('sel'));this.classList.add('sel');window._editEvColor='${c}'"></div>`).join('')}</div></div>`;
+  window._editEvColor=e.color||EV_COLORS[0];
+  openEditModal(e.text, bodyHtml, async()=>{
+    const nt=document.getElementById('em-text').value.trim();if(nt)e.text=nt;
+    e.start=document.getElementById('em-start').value;
+    e.end=document.getElementById('em-end').value;
+    e.type=document.getElementById('em-type').value;
+    e.note=document.getElementById('em-note').value;
+    e.color=window._editEvColor||e.color;
+    renderCalendar();showEvPanel(ds);await saveData();
   });
 }
 
-async function handleInlineCat(sel, elId){
-  if(sel.value!=='＋新增類別')return;
-  const name=prompt('新增類別名稱：','');
-  if(!name||!name.trim()){sel.value=getCats()[0];return;}
-  const trimmed=name.trim();
-  if(!db.cats)db.cats=[...DEFAULT_CATS];
-  if(!db.cats.includes(trimmed))db.cats.push(trimmed);
-  sel.innerHTML=catOpts(trimmed);
-  sel.value=trimmed;
-  populateCatSelects();
-  await saveData();
+function initColorPicker(){
+  const p=document.getElementById('ev-color-picker');if(!p)return;
+  p.innerHTML=EV_COLORS.map(c=>`<div class="cswatch${c===selColor?' sel':''}" style="background:${c}" onclick="selColor='${c}';this.parentElement.querySelectorAll('.cswatch').forEach(s=>s.classList.remove('sel'));this.classList.add('sel')"></div>`).join('');
 }
 
-async function handleCatChange(sel, elId){
-  if(sel.value!=='＋新增類別')return;
-  const name=prompt('新增類別名稱：','');
-  if(!name||!name.trim()){sel.value=getCats()[0];return;}
-  const trimmed=name.trim();
-  if(!db.cats)db.cats=[...DEFAULT_CATS];
-  if(!db.cats.includes(trimmed))db.cats.push(trimmed);
-  if(elId==='v-type')sel.innerHTML=vtypeOpts(trimmed);
-  else sel.innerHTML=catOpts(trimmed);
-  sel.value=trimmed;
-  populateCatSelects();
-  await saveData();
+async function addCalEvent(){
+  if(!selDate)return;
+  const text=document.getElementById('ev-text').value.trim();if(!text)return;
+  if(!db.events)db.events=[];
+  db.events.push({id:Date.now(),date:selDate,text,type:document.getElementById('ev-type').value,color:selColor,start:document.getElementById('ev-start').value,end:document.getElementById('ev-end').value,note:document.getElementById('ev-note').value.trim()});
+  document.getElementById('ev-text').value='';document.getElementById('ev-start').value='';document.getElementById('ev-end').value='';document.getElementById('ev-note').value='';
+  renderCalendar();showEvPanel(selDate);await saveData();
 }
 
-function renderAll(){renderTodos();renderExpenses();renderVendors();renderGuests();populateCatSelects();}
+async function deleteCalEv(id){
+  if(!db.events)return;db.events=db.events.filter(e=>e.id!==id);
+  renderCalendar();if(selDate)showEvPanel(selDate);await saveData();
+}
+
+function renderAll(){renderTodos();renderExpenses();renderVendors();renderGuests();renderCalendar()}
 loadData();
 </script>
 </body>
