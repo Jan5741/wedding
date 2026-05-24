@@ -372,6 +372,10 @@ textarea{resize:vertical;min-height:50px}
       <div class="field"><label>電話</label><input type="text" id="v-phone"></div>
       <div class="field"><label>LINE</label><input type="text" id="v-line"></div>
     </div>
+    <div class="frow">
+      <div class="field"><label>已付金額</label><input type="number" id="v-paid" placeholder="0"></div>
+      <div class="field"><label>待付金額</label><input type="number" id="v-unpaid" placeholder="0"></div>
+    </div>
     <div class="frow"><div class="field" style="flex:1"><label>備注</label><textarea id="v-note" placeholder="價格、約定…"></textarea></div></div>
     <button class="btn btn-primary" style="width:100%" onclick="addVendor()">新增廠商</button>
   </div>
@@ -455,7 +459,7 @@ textarea{resize:vertical;min-height:50px}
 // ── CONFIG ──────────────────────────────────────────────
 const SUPABASE_URL='https://blgxdxapxagnqbkcvmzd.supabase.co';
 const SUPABASE_KEY='sb_publishable_VCzd0zINstH1sko8H3pKXQ_8NCJrIK2';
-const DB_KEY='wedding-v9';
+const DB_KEY='wedding-v10';
 const EV_COLORS=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#b87a5b','#9e8a5b','#7a6ea8','#5b8a6b'];
 const DEFAULT_CATS=['場地','婚紗','餐飲','攝影','花藝','喜帖','蜜月','其他'];
 const VTYPES=['場地','婚紗','攝影','錄影','花藝','餐飲','喜帖','主持人','其他'];
@@ -546,16 +550,16 @@ const SEED={
     {id:2016,name:'和八字：楊雅晴',cat:'其他',paid:1200,unpaid:0,note:'',files:[]},
   ],
   vendors:[
-    {id:3001,name:'長榮文苑',type:'場地',contact:'',phone:'',line:'',status:'confirmed',note:'婚禮日期2027/1/17，訂金9萬已付',files:[]},
-    {id:3002,name:'憶起幸福',type:'花藝',contact:'',phone:'',line:'',status:'confirmed',note:'婚佈，訂金8000已付',files:[]},
-    {id:3003,name:'Yibi',type:'其他',contact:'Yibi',phone:'',line:'',status:'confirmed',note:'新秘，訂金7200已付',files:[]},
-    {id:3004,name:'Fanson',type:'攝影',contact:'Fanson',phone:'',line:'',status:'confirmed',note:'訂金7800已付，尾款18200待付',files:[]},
-    {id:3005,name:'斯杰',type:'主持人',contact:'斯杰',phone:'',line:'',status:'confirmed',note:'訂金8800已付，尾款13000待付',files:[]},
-    {id:3006,name:'時尚芭莎澳門',type:'攝影',contact:'',phone:'',line:'',status:'confirmed',note:'付款4萬6，加價1萬5待付',files:[]},
-    {id:3007,name:'楊雅晴',type:'其他',contact:'楊雅晴',phone:'',line:'',status:'confirmed',note:'和八字，1200已付',files:[]},
-    {id:3008,name:'不留白',type:'錄影',contact:'',phone:'',line:'',status:'pending',note:'婚禮影片洽談中',files:[]},
-    {id:3009,name:'似顏繪山山總',type:'其他',contact:'',phone:'',line:'',status:'confirmed',note:'互動，總28600，已付18600',files:[]},
-    {id:3010,name:'拍拍印',type:'其他',contact:'',phone:'',line:'',status:'confirmed',note:'互動+喜帖，訂金3000，尾款23499待付',files:[]},
+    {id:3001,name:'長榮文苑',type:'場地',contact:'',phone:'',line:'',status:'confirmed',paid:90000,unpaid:0,note:'婚禮日期2027/1/17',files:[]},
+    {id:3002,name:'憶起幸福',type:'花藝',contact:'',phone:'',line:'',status:'confirmed',paid:8000,unpaid:0,note:'婚佈',files:[]},
+    {id:3003,name:'Yibi',type:'其他',contact:'Yibi',phone:'',line:'',status:'confirmed',paid:7200,unpaid:0,note:'新秘',files:[]},
+    {id:3004,name:'Fanson',type:'攝影',contact:'Fanson',phone:'',line:'',status:'confirmed',paid:7800,unpaid:18200,note:'另加攝影跟錄影',files:[]},
+    {id:3005,name:'斯杰',type:'主持人',contact:'斯杰',phone:'',line:'',status:'confirmed',paid:8800,unpaid:13000,note:'',files:[]},
+    {id:3006,name:'時尚芭莎澳門',type:'攝影',contact:'',phone:'',line:'',status:'confirmed',paid:46000,unpaid:15000,note:'精修78張，大框1中框3小框3相本2',files:[]},
+    {id:3007,name:'楊雅晴',type:'其他',contact:'楊雅晴',phone:'',line:'',status:'confirmed',paid:1200,unpaid:0,note:'和八字',files:[]},
+    {id:3008,name:'不留白',type:'錄影',contact:'',phone:'',line:'',status:'pending',paid:0,unpaid:0,note:'婚禮影片洽談中',files:[]},
+    {id:3009,name:'似顏繪山山總',type:'其他',contact:'',phone:'',line:'',status:'confirmed',paid:18600,unpaid:10000,note:'互動，總28600',files:[]},
+    {id:3010,name:'拍拍印',type:'其他',contact:'',phone:'',line:'',status:'confirmed',paid:3000,unpaid:23499,note:'互動+喜帖',files:[]},
   ],
   guests:[]
 };
@@ -828,8 +832,9 @@ function renderExpenses(){
 // ── VENDORS ───────────────────────────────────────────────
 async function addVendor(){
   const name=document.getElementById('v-name').value.trim();if(!name)return;
-  db.vendors.push({id:Date.now(),name,type:document.getElementById('v-type').value,contact:document.getElementById('v-contact').value,phone:document.getElementById('v-phone').value,line:document.getElementById('v-line').value,status:document.getElementById('v-status').value,note:document.getElementById('v-note').value,files:[]});
+  db.vendors.push({id:Date.now(),name,type:document.getElementById('v-type').value,contact:document.getElementById('v-contact').value,phone:document.getElementById('v-phone').value,line:document.getElementById('v-line').value,status:document.getElementById('v-status').value,paid:parseFloat(document.getElementById('v-paid').value)||0,unpaid:parseFloat(document.getElementById('v-unpaid').value)||0,note:document.getElementById('v-note').value,files:[]});
   ['v-name','v-contact','v-phone','v-line','v-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('v-paid').value='';document.getElementById('v-unpaid').value='';
   renderVendors();await saveData();
 }
 async function deleteVendor(id){db.vendors=db.vendors.filter(v=>v.id!==id);renderVendors();await saveData()}
@@ -848,6 +853,10 @@ function openVendorDetail(id){
       <div class="field"><label>電話</label><input type="text" id="em-phone" value="${esc(v.phone)}"></div>
       <div class="field"><label>LINE</label><input type="text" id="em-line" value="${esc(v.line)}"></div>
     </div>
+    <div class="frow" style="margin-top:8px">
+      <div class="field"><label>✅ 已付金額</label><input type="number" id="em-paid" value="${v.paid||0}"></div>
+      <div class="field"><label>⏳ 待付金額</label><input type="number" id="em-unpaid" value="${v.unpaid||0}"></div>
+    </div>
     <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(v.note||'')}</textarea></div></div>
     <div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件</div>
     ${buildVendorFileGrid(v)}</div>`;
@@ -855,6 +864,8 @@ function openVendorDetail(id){
     const nn=document.getElementById('em-name').value.trim();if(nn)v.name=nn;
     v.type=document.getElementById('em-type').value;v.status=document.getElementById('em-st').value;
     v.contact=document.getElementById('em-contact').value;v.phone=document.getElementById('em-phone').value;v.line=document.getElementById('em-line').value;
+    v.paid=parseFloat(document.getElementById('em-paid').value)||0;
+    v.unpaid=parseFloat(document.getElementById('em-unpaid').value)||0;
     v.note=document.getElementById('em-note').value;
     renderVendors();await saveData();
   });
@@ -889,23 +900,25 @@ function renderVendors(){
   const list=document.getElementById('vendor-list');
   if(!db.vendors.length){list.innerHTML='<div class="empty"><div class="emoji">🏪</div>還沒有廠商</div>';return}
   const sl={confirmed:'已確認',pending:'洽談中',cancelled:'已取消'};
-  list.innerHTML=db.vendors.map(v=>`
-    <div class="item-card">
+  list.innerHTML=db.vendors.map(v=>{
+    const paid=v.paid||0,unpaid=v.unpaid||0;
+    return`<div class="item-card">
       <div class="item-row" onclick="openVendorDetail(${v.id})" style="cursor:pointer">
         <div class="item-body">
           <div class="item-title">${esc(v.name)}</div>
           <div class="item-sub">
             <span class="tag">${v.type}</span>
             <span class="vstatus vstatus-${v.status}">${sl[v.status]}</span>
-            ${v.contact?`<span class="tag">👤 ${esc(v.contact)}</span>`:''}
-            ${v.phone?`<span class="tag">📞 ${esc(v.phone)}</span>`:''}
+            ${paid?`<span style="font-size:11px;color:var(--green)">✅ 已付 $${paid.toLocaleString()}</span>`:''}
+            ${unpaid?`<span style="font-size:11px;color:var(--accent)">⏳ 待付 $${unpaid.toLocaleString()}</span>`:''}
             ${v.note?'<span class="tag">備注</span>':''}
             ${(v.files||[]).length?`<span class="tag">📎 ${v.files.length}</span>`:''}
           </div>
         </div>
         <button class="btn-del" onclick="event.stopPropagation();deleteVendor(${v.id})">✕</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ── GUESTS ────────────────────────────────────────────────
