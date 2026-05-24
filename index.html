@@ -493,55 +493,69 @@ async function binFetch(method='GET', body=null){
   return res.json();
 }
 async function saveData(){
-  if(saving)return;saving=true;setSyncState('loading','儲存中');
-  const timer=setTimeout(()=>{saving=false},10000);
+  if(saving)return;saving=true;
   try{
     const j=JSON.stringify(db);
+    // Always save locally first
     localStorage.setItem(DB_KEY,j);
-    await binFetch('PUT',db);
     lastJSON=j;
+    setSyncState('loading','儲存中');
+    // Then try cloud
+    await binFetch('PUT',db);
     setSyncState('ok','已同步');
   }catch(e){
-    setSyncState('err','離線（本機已存）');
-    console.error(e);
-  }finally{clearTimeout(timer);saving=false;}
+    console.error('Save error:',e);
+    setSyncState('err','本機已存');
+  }finally{saving=false;}
 }
 async function loadData(){
-  setSyncState('loading','載入中');
-  // show cached data instantly
+  // Step 1: show something immediately, never block on network
   const cached=localStorage.getItem(DB_KEY);
   if(cached){
     try{
       const p=JSON.parse(cached);
       db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
       migrateData();
-      document.getElementById('loadingOverlay').style.display='none';
-      renderAll();updateDates();populateSelects();
-    }catch(e){}
+      lastJSON=cached;
+    }catch(e){
+      db=JSON.parse(JSON.stringify(SEED));
+    }
+  } else {
+    db=JSON.parse(JSON.stringify(SEED));
   }
-  // load from JSONBin
+  // Show UI right away
+  document.getElementById('loadingOverlay').style.display='none';
+  renderAll();updateDates();populateSelects();
+  setSyncState('loading','同步中');
+
+  // Step 2: try JSONBin in background
   try{
     const res=await binFetch('GET');
     const p=res.record||res;
-    if(p&&!p.init){
-      db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
-      migrateData();
-      const j=JSON.stringify(db);
-      localStorage.setItem(DB_KEY,j);
-      lastJSON=j;
-    }else if(!cached){
-      db=JSON.parse(JSON.stringify(SEED));
+    if(p&&Object.keys(p).length>1&&!p.init){
+      const j=JSON.stringify(p);
+      if(j!==lastJSON){
+        db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
+        migrateData();
+        lastJSON=j;
+        localStorage.setItem(DB_KEY,j);
+        renderAll();updateDates();populateSelects();
+      }
+    } else if(!cached){
+      // First time: save SEED to JSONBin
       await saveData();
     }
     setSyncState('ok','已同步');
   }catch(e){
-    console.error('JSONBin error:',e);
-    if(!cached){db=JSON.parse(JSON.stringify(SEED));}
+    console.error('JSONBin:',e);
     setSyncState('err','離線模式');
+    if(!cached){
+      // save locally at least
+      localStorage.setItem(DB_KEY,JSON.stringify(db));
+    }
   }
-  document.getElementById('loadingOverlay').style.display='none';
-  renderAll();updateDates();populateSelects();
-  // poll every 10s for changes from other users
+
+  // Step 3: poll every 10s
   setInterval(async()=>{
     if(saving)return;
     try{
@@ -554,9 +568,10 @@ async function loadData(){
           migrateData();lastJSON=j;
           localStorage.setItem(DB_KEY,j);
           renderAll();updateDates();populateSelects();
+          setSyncState('ok','已同步');
         }
       }
-    }catch(e){}
+    }catch(e){setSyncState('err','離線模式');}
   },10000);
 }
 
