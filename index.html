@@ -457,8 +457,7 @@ textarea{resize:vertical;min-height:50px}
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────
-const BIN_ID='6a130745ee5a733b1210d76d';
-const API_KEY="$2a$10$HSLHfBpQBbhWeLWI8Yq8VOX8kyHjgjM6Mkkj0YgnZlQUsMfqOZkfS";
+const FIREBASE_URL='https://wedding-94cc0-default-rtdb.asia-southeast1.firebasedatabase.app';
 const DB_KEY='wedding-main-permanent';
 const EV_COLORS=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#b87a5b','#9e8a5b','#7a6ea8','#5b8a6b'];
 const DEFAULT_CATS=['場地','婚紗','餐飲','攝影','花藝','喜帖','蜜月','其他'];
@@ -478,16 +477,17 @@ function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onlo
 function dateKey(y,m,d){return y+'/'+(String(m+1).padStart(2,'0'))+'/'+String(d).padStart(2,'0')}
 function parseDate(s){const[y,m,d]=s.split(/[-\/]/).map(Number);return new Date(y,m-1,d)}
 
-// ── JSONBIN STORAGE ──────────────────────────────────────
-async function binFetch(method='GET', body=null){
-  const res=await fetch('https://api.jsonbin.io/v3/b/'+BIN_ID+(method==='GET'?'/latest':''),{
-    method,
-    headers:{
-      'Content-Type':'application/json',
-      'X-Master-Key':API_KEY,
-      'X-Bin-Versioning':'false'
-    },
-    body:body?JSON.stringify(body):null
+// ── FIREBASE STORAGE ─────────────────────────────────────
+async function fbGet(){
+  const res=await fetch(FIREBASE_URL+'/wedding.json');
+  if(!res.ok)throw new Error(await res.text());
+  return res.json();
+}
+async function fbSet(data){
+  const res=await fetch(FIREBASE_URL+'/wedding.json',{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
   });
   if(!res.ok)throw new Error(await res.text());
   return res.json();
@@ -496,12 +496,10 @@ async function saveData(){
   if(saving)return;saving=true;
   try{
     const j=JSON.stringify(db);
-    // Always save locally first
     localStorage.setItem(DB_KEY,j);
     lastJSON=j;
     setSyncState('loading','儲存中');
-    // Then try cloud
-    await binFetch('PUT',db);
+    await fbSet(db);
     setSyncState('ok','已同步');
   }catch(e){
     console.error('Save error:',e);
@@ -530,9 +528,8 @@ async function loadData(){
 
   // Step 2: try JSONBin in background
   try{
-    const res=await binFetch('GET');
-    const p=res.record||res;
-    if(p&&Object.keys(p).length>1&&!p.init){
+    const p=await fbGet();
+    if(p&&Object.keys(p).length>1){
       const j=JSON.stringify(p);
       if(j!==lastJSON){
         db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
@@ -542,7 +539,6 @@ async function loadData(){
         renderAll();updateDates();populateSelects();
       }
     } else if(!cached){
-      // First time: save SEED to JSONBin
       await saveData();
     }
     setSyncState('ok','已同步');
@@ -559,9 +555,8 @@ async function loadData(){
   setInterval(async()=>{
     if(saving)return;
     try{
-      const res=await binFetch('GET');
-      const p=res.record||res;
-      if(p&&!p.init){
+      const p=await fbGet();
+      if(p&&Object.keys(p).length>1){
         const j=JSON.stringify(p);
         if(j!==lastJSON){
           db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
