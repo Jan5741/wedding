@@ -691,25 +691,38 @@ async function handleVtypeChange(sel){
 }
 
 // ── ATTACHMENTS ───────────────────────────────────────
-// Global file action registry
-const _fileActions={};
-let _fileActIdx=0;
-function regAction(fn){const k='_fa'+(++_fileActIdx);_fileActions[k]=fn;return k}
-function callAction(k,...args){if(_fileActions[k])_fileActions[k](...args)}
+// ── FILE STORAGE ─────────────────────────────────────
+// Files stored in localStorage separately (too large for Firebase)
+// Firebase only stores metadata
+function saveFilesLocally(key, files){
+  try{localStorage.setItem('wf_'+key, JSON.stringify(files));}catch(e){console.error('File save error',e);}
+}
+function loadFilesLocally(key){
+  try{const d=localStorage.getItem('wf_'+key);return d?JSON.parse(d):[];}catch(e){return[];}
+}
+function getItemFiles(item){
+  if(!item)return[];
+  // Load from localStorage using item id as key
+  return loadFilesLocally(item.id);
+}
+function setItemFiles(item, files){
+  if(!item)return;
+  saveFilesLocally(item.id, files);
+  item.files=files.map(f=>({type:f.type,name:f.name})); // only metadata in db
+}
 
-function buildFileGrid(files,delFn,addFn){
-  if(!files)files=[];
+function buildFileGrid(item, onDelName, onAddName){
+  // onDelName/onAddName are global function name strings
+  const files=getItemFiles(item);
   const imgs=files.filter(f=>f.type==='img');
   const docs=files.filter(f=>f.type==='doc');
-  const delKey=regAction(delFn);
-  const addKey=regAction(addFn);
   let h='<div class="attach-grid">';
   imgs.forEach((f,i)=>{
-    const safeData=f.data.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    h+=`<div class="attach-img" onclick="openLightbox('${safeData}')"><img src="${f.data}"><button class="attach-del" onclick="event.stopPropagation();callAction('${delKey}',${i})">✕</button></div>`;
+    const safeData=(f.data||'').replace(/'/g,"\'");
+    h+=`<div class="attach-img" onclick="openLightbox('${safeData}')"><img src="${f.data||''}"><button class="attach-del" onclick="event.stopPropagation();${onDelName}(${item.id},${i})">✕</button></div>`;
   });
-  docs.forEach((f,i)=>h+=`<div class="attach-file"><span>📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="callAction('${delKey}',${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px">✕</button></div>`);
-  h+=`<div class="attach-add" onclick="callAction('${addKey}')"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
+  docs.forEach((f,i)=>h+=`<div class="attach-file"><span>📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="${onDelName}(${item.id},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px">✕</button></div>`);
+  h+=`<div class="attach-add" onclick="${onAddName}(${item.id})"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
   return h;
 }
 function addFilesToItem(files,newFiles){
@@ -807,7 +820,7 @@ function openVendorDetail(id){
     </div>
     <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(v.note||'')}</textarea></div></div>
     <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件</div>
-    <div id="vendor-files-${v.id}">${buildFileGrid(v.files,(idx)=>removeVendorFile(v.id,idx),()=>addVendorFile(v.id))}</div></div>`;
+    <div id="vendor-files-${v.id}">${buildFileGrid(v,'removeVendorFile','addVendorFile')}</div></div>`;
   openEditModal(v.name, bodyHtml, async()=>{
     const nn=document.getElementById('em-name').value.trim();if(nn)v.name=nn;
     v.type=document.getElementById('em-type').value;
@@ -871,7 +884,7 @@ function renderVendors(){
               ${paid?`<span style="font-size:10px;color:var(--green)">✅ $${paid.toLocaleString()}</span>`:''}
               ${unpaid?`<span style="font-size:10px;color:var(--accent)">⏳ $${unpaid.toLocaleString()}</span>`:''}
               ${v.note?`<span class="tag" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.note.slice(0,20))}</span>`:''}
-              ${(v.files||[]).length?`<span class="tag">📎 ${v.files.length}</span>`:''}
+              ${loadFilesLocally(v.id).length?`<span class="tag">📎 ${loadFilesLocally(v.id).length}</span>`:''}
             </div>
           </div>
           <button class="btn-del" onclick="event.stopPropagation();deleteVendor(${v.id})">✕</button>
@@ -917,7 +930,7 @@ function openExpDetail(id){
     </div>
     <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(e.note||'')}</textarea></div></div>
     <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件${isLinked?'（與廠商共用）':''}</div>
-    <div id="exp-files-${e.id}">${buildFileGrid(e.files,(idx)=>removeExpFile(e.id,idx),()=>addExpFile(e.id))}</div></div>`;
+    <div id="exp-files-${e.id}">${buildFileGrid(e,'removeExpFile','addExpFile')}</div></div>`;
   openEditModal(e.name, bodyHtml, async()=>{
     const nn=document.getElementById('em-name').value.trim();if(nn)e.name=nn;
     e.cat=document.getElementById('em-cat').value;
@@ -976,7 +989,7 @@ function renderExpenses(){
             ${paid?`<span style="font-size:10px;color:var(--green)">✅ $${paid.toLocaleString()}</span>`:''}
             ${unpaid?`<span style="font-size:10px;color:var(--accent)">⏳ $${unpaid.toLocaleString()}</span>`:''}
             ${e.note?'<span class="tag">備注</span>':''}
-            ${(e.files||[]).length?`<span class="tag">📎 ${e.files.length}</span>`:''}
+            ${loadFilesLocally(e.id).length?`<span class="tag">📎 ${loadFilesLocally(e.id).length}</span>`:''}
           </div>
         </div>
         <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--text);white-space:nowrap;flex-shrink:0">$${(paid+unpaid).toLocaleString()}</div>
@@ -1049,7 +1062,7 @@ function renderTodos(){
             ${t.priority==='urgent'?'<span class="tag urgent">緊急</span>':''}
             ${t.done?'<span class="tag done-t">✓</span>':''}
             ${t.note?'<span class="tag">備注</span>':''}
-            ${(t.files||[]).length?`<span class="tag">📎 ${t.files.length}</span>`:''}
+            ${loadFilesLocally(t.id).length?`<span class="tag">📎 ${loadFilesLocally(t.id).length}</span>`:''}
           </div>
         </div>
         <button class="btn btn-ghost btn-sm" onclick="openTodoDetail(${t.id})" style="flex-shrink:0;font-size:11px">詳情</button>
@@ -1099,18 +1112,20 @@ function openGuestDetail(id){
   });
 }
 async function addGuestFile(id){
+  const g=db.guests.find(g=>g.id===id);if(!g)return;
   pickFiles(async results=>{
-    const g=db.guests.find(g=>g.id===id);if(!g)return;if(!g.files)g.files=[];g.files.push(...results);
+    const files=getItemFiles(g);files.push(...results);setItemFiles(g,files);
     renderGuests();const el=document.getElementById('guest-files-'+id);
-    if(el)el.innerHTML=buildFileGrid(g.files,(idx)=>removeGuestFile(id,idx),()=>addGuestFile(id));
+    if(el)el.innerHTML=buildFileGrid(g,'removeGuestFile','addGuestFile');
     await saveData();
   });
 }
 async function removeGuestFile(id,idx){
   if(!confirm('確定要刪除此附件嗎？'))return;
-  const g=db.guests.find(g=>g.id===id);if(!g||!g.files)return;g.files.splice(idx,1);
+  const g=db.guests.find(g=>g.id===id);if(!g)return;
+  const files=getItemFiles(g);files.splice(idx,1);setItemFiles(g,files);
   renderGuests();const el=document.getElementById('guest-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(g.files,(idx)=>removeGuestFile(id,idx),()=>addGuestFile(id));
+  if(el)el.innerHTML=buildFileGrid(g,'removeGuestFile','addGuestFile');
   await saveData();
 }
 function renderGuests(){
@@ -1132,7 +1147,7 @@ function renderGuests(){
             <span class="tag ${rl[g.rsvp]||'rsvp-pending'}">${rt[g.rsvp]||'待確認'}</span>
             ${g.table?`<span class="tag">桌 ${esc(g.table)}</span>`:''}
             ${g.diet?`<span class="tag">${esc(g.diet)}</span>`:''}
-            ${(g.files||[]).length?`<span class="tag">📎 ${g.files.length}</span>`:''}
+            ${loadFilesLocally(g.id).length?`<span class="tag">📎 ${loadFilesLocally(g.id).length}</span>`:''}
           </div>
         </div>
         <button class="btn-del" onclick="event.stopPropagation();deleteGuest(${g.id})">✕</button>
