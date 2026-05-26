@@ -691,14 +691,25 @@ async function handleVtypeChange(sel){
 }
 
 // ── ATTACHMENTS ───────────────────────────────────────
-function buildFileGrid(files,onDel,onAdd){
+// Global file action registry
+const _fileActions={};
+let _fileActIdx=0;
+function regAction(fn){const k='_fa'+(++_fileActIdx);_fileActions[k]=fn;return k}
+function callAction(k,...args){if(_fileActions[k])_fileActions[k](...args)}
+
+function buildFileGrid(files,delFn,addFn){
   if(!files)files=[];
   const imgs=files.filter(f=>f.type==='img');
   const docs=files.filter(f=>f.type==='doc');
+  const delKey=regAction(delFn);
+  const addKey=regAction(addFn);
   let h='<div class="attach-grid">';
-  imgs.forEach((f,i)=>h+=`<div class="attach-img" onclick="openLightbox('${f.data}')"><img src="${f.data}"><button class="attach-del" onclick="event.stopPropagation();${onDel}(${i})">✕</button></div>`);
-  docs.forEach((f,i)=>h+=`<div class="attach-file"><span>📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="${onDel}(${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px">✕</button></div>`);
-  h+=`<div class="attach-add" onclick="${onAdd}()"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
+  imgs.forEach((f,i)=>{
+    const safeData=f.data.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    h+=`<div class="attach-img" onclick="openLightbox('${safeData}')"><img src="${f.data}"><button class="attach-del" onclick="event.stopPropagation();callAction('${delKey}',${i})">✕</button></div>`;
+  });
+  docs.forEach((f,i)=>h+=`<div class="attach-file"><span>📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="callAction('${delKey}',${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px">✕</button></div>`);
+  h+=`<div class="attach-add" onclick="callAction('${addKey}')"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
   return h;
 }
 function addFilesToItem(files,newFiles){
@@ -796,10 +807,7 @@ function openVendorDetail(id){
     </div>
     <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(v.note||'')}</textarea></div></div>
     <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件</div>
-    <div id="vendor-files-${v.id}">${buildFileGrid(v.files,
-      `(idx)=>{removeVendorFile(${v.id},idx)}`,
-      `()=>{addVendorFile(${v.id})}`
-    )}</div></div>`;
+    <div id="vendor-files-${v.id}">${buildFileGrid(v.files,(idx)=>removeVendorFile(v.id,idx),()=>addVendorFile(v.id))}</div></div>`;
   openEditModal(v.name, bodyHtml, async()=>{
     const nn=document.getElementById('em-name').value.trim();if(nn)v.name=nn;
     v.type=document.getElementById('em-type').value;
@@ -826,7 +834,7 @@ async function addVendorFile(id){
     renderVendors();renderExpenses();
     // refresh modal file grid if open
     const el=document.getElementById('vendor-files-'+id);
-    if(el)el.innerHTML=buildFileGrid(v.files,`(idx)=>{removeVendorFile(${id},idx)}`,`()=>{addVendorFile(${id})}`);
+    if(el)el.innerHTML=buildFileGrid(v.files,(idx)=>removeVendorFile(v.id,idx),()=>addVendorFile(v.id));
     await saveData();
   });
 }
@@ -837,7 +845,7 @@ async function removeVendorFile(id,idx){
   syncVendorToExpense(v);
   renderVendors();renderExpenses();
   const el=document.getElementById('vendor-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(v.files,`(idx)=>{removeVendorFile(${id},idx)}`,`()=>{addVendorFile(${id})}`);
+  if(el)el.innerHTML=buildFileGrid(v.files,(idx)=>removeVendorFile(id,idx),()=>addVendorFile(id));
   await saveData();
 }
 
@@ -845,26 +853,33 @@ function renderVendors(){
   const list=document.getElementById('vendor-list');
   if(!db.vendors.length){list.innerHTML='<div class="empty"><div class="emoji">🏪</div>還沒有廠商</div>';return}
   const sl={confirmed:'已確認',pending:'洽談中',cancelled:'已取消'};
-  list.innerHTML=db.vendors.map(v=>{
-    const col=getVendorColor(v.id);
-    const paid=v.paid||0,unpaid=v.unpaid||0;
-    return`<div class="item-card" style="border-left:4px solid ${col}">
-      <div class="item-row" onclick="openVendorDetail(${v.id})" style="cursor:pointer">
-        <div class="item-body">
-          <div class="item-title">${esc(v.name)}</div>
-          <div class="item-sub">
-            <span class="tag">${v.type}</span>
-            <span class="vstatus vstatus-${v.status}">${sl[v.status]}</span>
-            ${paid?`<span style="font-size:10px;color:var(--green)">✅ $${paid.toLocaleString()}</span>`:''}
-            ${unpaid?`<span style="font-size:10px;color:var(--accent)">⏳ $${unpaid.toLocaleString()}</span>`:''}
-            ${v.note?'<span class="tag">備注</span>':''}
-            ${(v.files||[]).length?`<span class="tag">📎 ${v.files.length}</span>`:''}
+  // Group by type
+  const types=[...new Set(db.vendors.map(v=>v.type))].sort();
+  let html='';
+  types.forEach(type=>{
+    const group=db.vendors.filter(v=>v.type===type);
+    html+=`<div style="font-size:10px;font-weight:500;color:var(--text3);letter-spacing:.5px;padding:8px 4px 4px;text-transform:uppercase">${type}</div>`;
+    html+=group.map(v=>{
+      const col=getVendorColor(v.id);
+      const paid=v.paid||0,unpaid=v.unpaid||0;
+      return`<div class="item-card" style="border-left:4px solid ${col};margin-bottom:5px">
+        <div class="item-row" onclick="openVendorDetail(${v.id})" style="cursor:pointer">
+          <div class="item-body">
+            <div class="item-title">${esc(v.name)}</div>
+            <div class="item-sub">
+              <span class="vstatus vstatus-${v.status}">${sl[v.status]}</span>
+              ${paid?`<span style="font-size:10px;color:var(--green)">✅ $${paid.toLocaleString()}</span>`:''}
+              ${unpaid?`<span style="font-size:10px;color:var(--accent)">⏳ $${unpaid.toLocaleString()}</span>`:''}
+              ${v.note?`<span class="tag" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.note.slice(0,20))}</span>`:''}
+              ${(v.files||[]).length?`<span class="tag">📎 ${v.files.length}</span>`:''}
+            </div>
           </div>
+          <button class="btn-del" onclick="event.stopPropagation();deleteVendor(${v.id})">✕</button>
         </div>
-        <button class="btn-del" onclick="event.stopPropagation();deleteVendor(${v.id})">✕</button>
-      </div>
-    </div>`;
-  }).join('');
+      </div>`;
+    }).join('');
+  });
+  list.innerHTML=html;
 }
 
 // ── EXPENSES ──────────────────────────────────────────
@@ -901,11 +916,8 @@ function openExpDetail(id){
       <div class="field"><label>⏳ 待付</label><input type="number" id="em-unpaid" value="${e.unpaid||0}"></div>
     </div>
     <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(e.note||'')}</textarea></div></div>
-    <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件</div>
-    <div id="exp-files-${e.id}">${buildFileGrid(e.files,
-      `(idx)=>{removeExpFile(${e.id},idx)}`,
-      `()=>{addExpFile(${e.id})}`
-    )}</div></div>`;
+    <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件${isLinked?'（與廠商共用）':''}</div>
+    <div id="exp-files-${e.id}">${buildFileGrid(e.files,(idx)=>removeExpFile(e.id,idx),()=>addExpFile(e.id))}</div></div>`;
   openEditModal(e.name, bodyHtml, async()=>{
     const nn=document.getElementById('em-name').value.trim();if(nn)e.name=nn;
     e.cat=document.getElementById('em-cat').value;
@@ -940,7 +952,7 @@ async function removeExpFile(id,idx){
   if(e.vendorId){const v=db.vendors.find(v=>v.id===e.vendorId);if(v){v.files=[...e.files];renderVendors();}}
   renderExpenses();
   const el=document.getElementById('exp-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(e.files,`(idx)=>{removeExpFile(${id},idx)}`,`()=>{addExpFile(${id})}`);
+  if(el)el.innerHTML=buildFileGrid(e.files,(idx)=>removeExpFile(id,idx),()=>addExpFile(id));
   await saveData();
 }
 
@@ -998,7 +1010,7 @@ function openTodoDetail(id){
     </div>
     <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(t.note||'')}</textarea></div></div>
     <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件</div>
-    <div id="todo-files-${t.id}">${buildFileGrid(t.files,`(idx)=>{removeTodoFile(${t.id},idx)}`,`()=>{addTodoFile(${t.id})}`)}</div></div>`;
+    <div id="todo-files-${t.id}">${buildFileGrid(t.files,(idx)=>removeTodoFile(id,idx),()=>addTodoFile(id))}</div></div>`;
   openEditModal(t.text,bodyHtml,async()=>{
     const nt=document.getElementById('em-title').value.trim();if(nt)t.text=nt;
     t.cat=document.getElementById('em-cat').value;t.due=document.getElementById('em-due').value;
@@ -1018,7 +1030,7 @@ async function removeTodoFile(id,idx){
   if(!confirm('確定要刪除此附件嗎？'))return;
   const t=db.todos.find(t=>t.id===id);if(!t||!t.files)return;t.files.splice(idx,1);
   renderTodos();const el=document.getElementById('todo-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(t.files,`(idx)=>{removeTodoFile(${id},idx)}`,`()=>{addTodoFile(${id})}`);
+  if(el)el.innerHTML=buildFileGrid(t.files,(idx)=>removeTodoFile(id,idx),()=>addTodoFile(id));
   await saveData();
 }
 function renderTodos(){
@@ -1078,7 +1090,7 @@ function openGuestDetail(id){
     </div>
     <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(g.note||'')}</textarea></div></div>
     <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件</div>
-    <div id="guest-files-${g.id}">${buildFileGrid(g.files,`(idx)=>{removeGuestFile(${g.id},idx)}`,`()=>{addGuestFile(${g.id})}`)}</div></div>`;
+    <div id="guest-files-${g.id}">${buildFileGrid(g.files,(idx)=>removeGuestFile(id,idx),()=>addGuestFile(id))}</div></div>`;
   openEditModal(g.name,bodyHtml,async()=>{
     const nn=document.getElementById('em-name').value.trim();if(nn)g.name=nn;
     g.side=document.getElementById('em-side').value;g.rsvp=document.getElementById('em-rsvp').value;
@@ -1090,7 +1102,7 @@ async function addGuestFile(id){
   pickFiles(async results=>{
     const g=db.guests.find(g=>g.id===id);if(!g)return;if(!g.files)g.files=[];g.files.push(...results);
     renderGuests();const el=document.getElementById('guest-files-'+id);
-    if(el)el.innerHTML=buildFileGrid(g.files,`(idx)=>{removeGuestFile(${id},idx)}`,`()=>{addGuestFile(${id})}`);
+    if(el)el.innerHTML=buildFileGrid(g.files,(idx)=>removeGuestFile(id,idx),()=>addGuestFile(id));
     await saveData();
   });
 }
@@ -1098,7 +1110,7 @@ async function removeGuestFile(id,idx){
   if(!confirm('確定要刪除此附件嗎？'))return;
   const g=db.guests.find(g=>g.id===id);if(!g||!g.files)return;g.files.splice(idx,1);
   renderGuests();const el=document.getElementById('guest-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(g.files,`(idx)=>{removeGuestFile(${id},idx)}`,`()=>{addGuestFile(${id})}`);
+  if(el)el.innerHTML=buildFileGrid(g.files,(idx)=>removeGuestFile(id,idx),()=>addGuestFile(id));
   await saveData();
 }
 function renderGuests(){
