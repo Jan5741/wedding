@@ -481,30 +481,37 @@ async function fbSet(data){
 
 // ── SAVE (immediate + debounce for rapid changes) ─────
 async function saveData(){
-  const j=JSON.stringify(db);
-  localStorage.setItem(DB_KEY,j);
-  lastJSON=j;
+  // Always save to localStorage immediately
+  try{
+    const j=JSON.stringify(db);
+    localStorage.setItem(DB_KEY,j);
+    lastJSON=j;
+  }catch(e){console.error('localStorage save failed',e);}
   setSyncState('loading','儲存中');
-  if(saving){
-    clearTimeout(saveTimer);
-    saveTimer=setTimeout(()=>pushToFirebase(),500);
-    return;
-  }
-  await pushToFirebase();
+  // Debounce Firebase push
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    if(saving)return;
+    await pushToFirebase();
+  },300);
 }
 
 async function pushToFirebase(){
   if(saving)return;
   saving=true;
+  const timeoutId=setTimeout(()=>{saving=false;setSyncState('err','逾時（本機已存）');},10000);
   try{
     await fbSet(db);
     lastJSON=JSON.stringify(db);
     localStorage.setItem(DB_KEY,lastJSON);
     setSyncState('ok','已同步');
   }catch(e){
-    console.error(e);
+    console.error('Firebase push error:',e);
     setSyncState('err','離線（本機已存）');
-  }finally{saving=false;}
+  }finally{
+    clearTimeout(timeoutId);
+    saving=false;
+  }
 }
 
 // ── LOAD ──────────────────────────────────────────────
@@ -712,33 +719,51 @@ function setItemFiles(item, files){
 }
 
 function buildFileGrid(item, onDelName, onAddName){
-  // onDelName/onAddName are global function name strings
   const files=getItemFiles(item);
   const imgs=files.filter(f=>f.type==='img');
   const docs=files.filter(f=>f.type==='doc');
+  const itemId=item.id;
+  // Store image data in a global registry to avoid quote issues
+  if(!window._imgCache)window._imgCache={};
   let h='<div class="attach-grid">';
   imgs.forEach((f,i)=>{
-    const safeData=(f.data||'').replace(/'/g,"\'");
-    h+=`<div class="attach-img" onclick="openLightbox('${safeData}')"><img src="${f.data||''}"><button class="attach-del" onclick="event.stopPropagation();${onDelName}(${item.id},${i})">✕</button></div>`;
+    const cacheKey='img_'+itemId+'_'+i;
+    window._imgCache[cacheKey]=f.data||'';
+    h+=`<div class="attach-img" onclick="openLightbox(window._imgCache['${cacheKey}'])"><img src="${f.data||''}"><button class="attach-del" onclick="event.stopPropagation();${onDelName}(${itemId},${i})">✕</button></div>`;
   });
-  docs.forEach((f,i)=>h+=`<div class="attach-file"><span>📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="${onDelName}(${item.id},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px">✕</button></div>`);
-  h+=`<div class="attach-add" onclick="${onAddName}(${item.id})"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
+  docs.forEach((f,i)=>h+=`<div class="attach-file"><span style="font-size:14px">📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="${onDelName}(${itemId},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 4px">✕</button></div>`);
+  h+=`<div class="attach-add" onclick="${onAddName}(${itemId})"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
   return h;
 }
 function addFilesToItem(files,newFiles){
   if(!files)files=[];
   return[...files,...newFiles];
 }
-async function pickFiles(cb){
-  const inp=document.createElement('input');inp.type='file';inp.accept='image/*,application/pdf,.doc,.docx,.txt';inp.multiple=true;
-  inp.onchange=async(e)=>{
-    const results=[];
-    for(const f of e.target.files){
-      const r=await compressImage(f);
-      if(r)results.push(r);
-    }
-    cb(results);
-  };inp.click();
+function pickFiles(){
+  return new Promise(resolve=>{
+    const inp=document.createElement('input');
+    inp.type='file';
+    inp.accept='image/*,application/pdf,.doc,.docx,.xlsx,.txt';
+    inp.multiple=true;
+    inp.style.cssText='position:fixed;top:-100px;left:-100px;opacity:0';
+    document.body.appendChild(inp);
+    let resolved=false;
+    inp.onchange=async(e)=>{
+      if(resolved)return;resolved=true;
+      const results=[];
+      for(const f of Array.from(e.target.files||[])){
+        const r=await compressImage(f);
+        if(r)results.push(r);
+      }
+      document.body.removeChild(inp);
+      resolve(results);
+    };
+    // Fallback timeout
+    setTimeout(()=>{
+      if(!resolved){resolved=true;try{document.body.removeChild(inp)}catch(e){}resolve([]);}
+    },60000);
+    inp.click();
+  });
 }
 
 // ── VENDOR ↔ EXPENSE SYNC ─────────────────────────────
@@ -1113,12 +1138,13 @@ function openGuestDetail(id){
 }
 async function addGuestFile(id){
   const g=db.guests.find(g=>g.id===id);if(!g)return;
-  pickFiles(async results=>{
-    const files=getItemFiles(g);files.push(...results);setItemFiles(g,files);
-    renderGuests();const el=document.getElementById('guest-files-'+id);
-    if(el)el.innerHTML=buildFileGrid(g,'removeGuestFile','addGuestFile');
-    await saveData();
-  });
+  const results=await pickFiles();
+  if(!results.length)return;
+  const files=getItemFiles(g);files.push(...results);setItemFiles(g,files);
+  renderGuests();
+  const el=document.getElementById('guest-files-'+id);
+  if(el)el.innerHTML=buildFileGrid(g,'removeGuestFile','addGuestFile');
+  await saveData();
 }
 async function removeGuestFile(id,idx){
   if(!confirm('確定要刪除此附件嗎？'))return;
