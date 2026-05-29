@@ -4,450 +4,434 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>婚禮規劃</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#fff;--bg2:#f8f8f6;--bg3:#f0efe9;
-  --border:#e5e3db;--border2:#ccc9be;
+  --bg:#fff;--bg2:#f8f8f6;--bg3:#f0efe9;--border:#e5e3db;--border2:#ccc9be;
   --text:#1c1c1a;--text2:#5c5a54;--text3:#9a9890;
-  --accent:#b8956a;--accent-l:#f5ede2;
-  --green:#6a9e72;--green-l:#edf5ee;
-  --red:#c0392b;--blue:#5b8fa8;
-  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
-  --r:10px;--r2:6px;--r3:16px;
+  --accent:#b8956a;--accent-l:#f5ede2;--green:#6a9e72;--green-l:#edf5ee;--red:#c0392b;
+  --shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--r:10px;--r2:6px;
 }
-body{font-family:'Noto Sans TC',sans-serif;background:var(--bg2);color:var(--text);min-height:100vh;font-size:14px}
-
+body{font-family:'Noto Sans TC',sans-serif;background:var(--bg2);color:var(--text);font-size:14px;min-height:100vh}
 /* SIDEBAR */
-#sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:199}
-#sb-overlay.show{display:block}
-#sidebar{position:fixed;top:0;left:-220px;width:200px;height:100vh;background:var(--bg);border-right:1px solid var(--border);z-index:200;transition:left .25s ease;display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,.08)}
-#sidebar.open{left:0}
-.sb-top{padding:18px 14px 12px;border-bottom:1px solid var(--border)}
-.sb-logo{font-family:'Playfair Display',serif;font-size:14px;color:var(--text);margin-bottom:12px}
-.sb-date{font-size:11px;color:var(--text2);padding:5px 8px;background:var(--bg2);border-radius:var(--r2);margin-bottom:5px;cursor:pointer;transition:background .15s}
-.sb-date:hover{background:var(--bg3)}
-.sb-date-lbl{color:var(--text3);font-size:10px;margin-bottom:1px}
-.sb-date-val{color:var(--text);font-weight:500;font-size:12px}
-.sb-date-cd{color:var(--accent);font-size:10px}
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:199}
+#ov.on{display:block}
+#sb{position:fixed;top:0;left:-210px;width:195px;height:100vh;background:var(--bg);border-right:1px solid var(--border);z-index:200;transition:left .25s ease;display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,.08)}
+#sb.on{left:0}
+.sb-top{padding:16px 12px 10px;border-bottom:1px solid var(--border)}
+.sb-logo{font-family:'Playfair Display',serif;font-size:14px;margin-bottom:10px}
+.sb-d{font-size:11px;color:var(--text2);padding:5px 8px;background:var(--bg2);border-radius:var(--r2);margin-bottom:4px;cursor:pointer}
+.sb-d:hover{background:var(--bg3)}
+.sb-dl{color:var(--text3);font-size:10px}
+.sb-dv{color:var(--text);font-weight:500;font-size:12px}
+.sb-dc{color:var(--accent);font-size:10px}
 .sb-nav{flex:1;padding:8px 6px;overflow-y:auto}
 .sb-btn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;border:none;background:transparent;cursor:pointer;border-radius:var(--r2);color:var(--text2);font-family:'Noto Sans TC',sans-serif;font-size:12px;transition:all .15s;text-align:left;margin-bottom:2px}
 .sb-btn:hover{background:var(--bg2);color:var(--text)}
-.sb-btn.active{background:var(--accent-l);color:var(--accent);font-weight:500}
-.sb-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
-.sb-divider{height:1px;background:var(--border);margin:5px 6px}
-.sb-sync{padding:8px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3)}
-.sync-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;background:#ccc}
-.sync-dot.ok{background:var(--green)}.sync-dot.err{background:var(--red)}.sync-dot.loading{background:var(--accent);animation:pulse 1s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-
+.sb-btn.on{background:var(--accent-l);color:var(--accent);font-weight:500}
+.sb-sync{padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3)}
+.dot{width:5px;height:5px;border-radius:50%;background:#ccc}
+.dot.ok{background:var(--green)}.dot.err{background:var(--red)}.dot.spin{background:var(--accent);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 /* TOPBAR */
-.topbar{position:sticky;top:0;z-index:100;height:50px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;box-shadow:0 1px 0 var(--border)}
-.hamburger{background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);padding:5px;border-radius:var(--r2);line-height:1}
-.hamburger:hover{background:var(--bg2)}
-.topbar-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--text)}
-.topbar-chips{display:flex;gap:5px;margin-left:auto}
-.chip{padding:3px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;font-size:10px;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all .15s}
+.topbar{position:sticky;top:0;z-index:100;height:50px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px}
+.hbg{background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);padding:5px;border-radius:var(--r2);line-height:1}
+.hbg:hover{background:var(--bg2)}
+.tb-title{font-family:'Playfair Display',serif;font-size:16px}
+.chips{display:flex;gap:5px;margin-left:auto}
+.chip{padding:3px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;font-size:10px;color:var(--text2);cursor:pointer;white-space:nowrap}
 .chip:hover{border-color:var(--accent);color:var(--accent)}
 .chip-cd{color:var(--accent);font-weight:500}
-
 /* CONTENT */
 .content{padding:16px;max-width:800px;margin:0 auto}
-.tab-panel{display:none}.tab-panel.active{display:block}
-
+.tab{display:none}.tab.on{display:block}
 /* CARDS */
 .card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
-.card-title{font-family:'Playfair Display',serif;font-size:14px;color:var(--text);margin-bottom:0;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
-.card-title-arrow{font-size:13px;color:var(--text3);transition:transform .2s}
-.card-title-arrow.open{transform:rotate(90deg)}
-.card-body{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.card-body.open{display:block}
-
+.card-hd{font-family:'Playfair Display',serif;font-size:13px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.card-arr{font-size:12px;color:var(--text3);transition:transform .2s}
+.card-arr.on{transform:rotate(90deg)}
+.card-bd{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.card-bd.on{display:block}
 /* INPUTS */
-.field{margin-bottom:0}
-.field label{display:block;font-size:10px;color:var(--text3);margin-bottom:3px;letter-spacing:.4px;text-transform:uppercase}
-.frow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.frow .field{flex:1;min-width:80px}
-input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r2);font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--text);background:var(--bg2);outline:none;transition:border .15s}
+.fl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.fl .f{flex:1;min-width:80px}
+.f label{display:block;font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px}
+input,select,textarea{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r2);font-family:'Noto Sans TC',sans-serif;font-size:13px;color:var(--text);background:var(--bg2);outline:none;transition:border .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--bg)}
 textarea{resize:vertical;min-height:48px}
 .btn{padding:7px 14px;border:none;border-radius:var(--r2);font-family:'Noto Sans TC',sans-serif;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#9e7a52}
-.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-ghost:hover{background:var(--bg2)}
-.btn-sm{padding:4px 10px;font-size:11px}
-.btn-del{background:transparent;border:none;color:var(--border2);cursor:pointer;font-size:13px;padding:3px 5px;transition:color .15s;line-height:1}.btn-del:hover{color:var(--red)}
-
-/* ITEM CARDS */
-.item-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;overflow:hidden;transition:box-shadow .15s}
-.item-card:hover{box-shadow:var(--shadow)}
-.item-row{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer}
-.item-body{flex:1;min-width:0}
-.item-title{font-size:13px;color:var(--text);line-height:1.4}
-.item-title.done{text-decoration:line-through;color:var(--text3);opacity:.6}
-.item-sub{font-size:11px;color:var(--text3);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:#9e7a52}
+.btn-g{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-g:hover{background:var(--bg2)}
+.btn-s{padding:4px 10px;font-size:11px}
+.btn-x{background:transparent;border:none;color:var(--border2);cursor:pointer;font-size:13px;padding:3px 5px;line-height:1}.btn-x:hover{color:var(--red)}
+/* ITEMS */
+.ic{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;overflow:hidden}
+.ic:hover{box-shadow:var(--shadow)}
+.ir{display:flex;align-items:center;gap:8px;padding:11px 13px;cursor:pointer}
+.ib{flex:1;min-width:0}
+.it{font-size:13px;color:var(--text);line-height:1.4}
+.it.done{text-decoration:line-through;color:var(--text3);opacity:.6}
+.is{font-size:11px;color:var(--text3);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px;align-items:center}
 .tag{font-size:10px;padding:2px 7px;border-radius:8px;background:var(--bg3);color:var(--text2)}
-.tag.urgent{background:#fdecea;color:var(--red)}.tag.done-t{background:var(--green-l);color:var(--green)}
-
-/* VENDOR COLORS */
-.vcolor-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.vendor-color-bar{width:4px;border-radius:2px 0 0 2px;align-self:stretch;flex-shrink:0}
-
-/* EDIT MODAL */
-#edit-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;align-items:flex-end;justify-content:center}
-#edit-modal.show{display:flex}
-.edit-sheet{background:var(--bg);border-radius:var(--r3) var(--r3) 0 0;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;padding:18px}
-.edit-sheet-title{font-family:'Playfair Display',serif;font-size:15px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
-.edit-sheet-title button{background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text3)}
-
+.tag.urg{background:#fdecea;color:var(--red)}.tag.done-t{background:var(--green-l);color:var(--green)}
+/* MODAL */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;align-items:flex-end;justify-content:center}
+#modal.on{display:flex}
+.msheet{background:var(--bg);border-radius:16px 16px 0 0;width:100%;max-width:580px;max-height:88vh;overflow-y:auto;padding:18px}
+.mhd{font-family:'Playfair Display',serif;font-size:15px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.mhd button{background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text3)}
 /* ATTACHMENTS */
-.attach-grid{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
-.attach-img{position:relative;width:66px;height:66px;border-radius:var(--r2);overflow:hidden;border:1px solid var(--border);cursor:pointer;flex-shrink:0}
-.attach-img img{width:100%;height:100%;object-fit:cover}
-.attach-del{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:15px;height:15px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.attach-file{display:flex;align-items:center;gap:5px;padding:5px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);font-size:11px;color:var(--text2);max-width:150px;flex-shrink:0}
-.attach-file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.attach-add{width:66px;height:66px;border:1.5px dashed var(--border2);border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--text3);gap:2px;background:var(--bg2);transition:all .15s;flex-shrink:0}
-.attach-add:hover{border-color:var(--accent);color:var(--accent)}
-
+.ag{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.ai{position:relative;width:68px;height:68px;border-radius:var(--r2);overflow:hidden;border:1px solid var(--border);cursor:pointer;flex-shrink:0}
+.ai img{width:100%;height:100%;object-fit:cover;display:block}
+.ai .ax{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.adoc{display:flex;align-items:center;gap:5px;padding:5px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);font-size:11px;color:var(--text2);max-width:160px;flex-shrink:0}
+.adoc-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px}
+.aadd{width:68px;height:68px;border:1.5px dashed var(--border2);border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--text3);gap:2px;background:var(--bg2);transition:all .15s;flex-shrink:0}
+.aadd:hover{border-color:var(--accent);color:var(--accent)}
 /* LIGHTBOX */
-#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;align-items:center;justify-content:center}
-#lightbox.show{display:flex}
-#lightbox img{max-width:92vw;max-height:92vh;object-fit:contain;border-radius:var(--r2)}
-#lb-close{position:absolute;top:14px;right:18px;background:transparent;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.7}
-#lb-close:hover{opacity:1}
-
+#lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;align-items:center;justify-content:center}
+#lb.on{display:flex}
+#lb img{max-width:92vw;max-height:92vh;object-fit:contain;border-radius:var(--r2)}
+#lb-x{position:absolute;top:14px;right:18px;background:transparent;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.7}
+#lb-x:hover{opacity:1}
 /* PROGRESS */
-.prog-wrap{background:var(--bg3);border-radius:10px;height:4px;margin:8px 0 3px;overflow:hidden}
-.prog-bar{height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:10px;transition:width .5s}
-.prog-lbl{font-size:10px;color:var(--text3);text-align:right}
-
+.pw{background:var(--bg3);border-radius:10px;height:4px;margin:8px 0 3px;overflow:hidden}
+.pb{height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:10px;transition:width .5s}
+.pl{font-size:10px;color:var(--text3);text-align:right}
 /* BUDGET */
-.bsum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:2px}
-.bsum{border-radius:var(--r);padding:13px;text-align:center;border:1px solid var(--border)}
-.bsum.paid{background:var(--green-l)}.bsum.unpaid{background:var(--accent-l)}
-.bsum .bl{font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
-.bsum .ba{font-family:'Playfair Display',serif;font-size:22px}
-.bsum.paid .ba{color:var(--green)}.bsum.unpaid .ba{color:var(--accent)}
-.btotal{text-align:center;padding:8px 0;font-size:12px;color:var(--text2)}
-.btotal strong{font-family:'Playfair Display',serif;font-size:18px;color:var(--text);margin-left:5px}
-
-/* VENDOR STATUS */
-.vstatus{font-size:10px;padding:2px 7px;border-radius:8px;display:inline-block}
-.vstatus-confirmed{background:var(--green-l);color:var(--green)}
-.vstatus-pending{background:var(--accent-l);color:var(--accent)}
-.vstatus-cancelled{background:#fdecea;color:var(--red)}
-
+.bg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:2px}
+.bs{border-radius:var(--r);padding:13px;text-align:center;border:1px solid var(--border)}
+.bs.pd{background:var(--green-l)}.bs.up{background:var(--accent-l)}
+.bs .bl{font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.bs .ba{font-family:'Playfair Display',serif;font-size:22px}
+.bs.pd .ba{color:var(--green)}.bs.up .ba{color:var(--accent)}
+.bt{text-align:center;padding:8px 0;font-size:12px;color:var(--text2)}
+.bt strong{font-family:'Playfair Display',serif;font-size:18px;color:var(--text);margin-left:5px}
+/* VENDOR */
+.vs{font-size:10px;padding:2px 7px;border-radius:8px;display:inline-block}
+.vs-c{background:var(--green-l);color:var(--green)}.vs-p{background:var(--accent-l);color:var(--accent)}.vs-x{background:#fdecea;color:var(--red)}
 /* GUEST */
-.g-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.g-stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
-.g-stat .gnum{font-family:'Playfair Display',serif;font-size:20px}
-.g-stat .glbl{font-size:10px;color:var(--text3);margin-top:1px}
-.rsvp-yes{background:var(--green-l);color:var(--green)}.rsvp-no{background:#fdecea;color:var(--red)}.rsvp-pending{background:var(--bg3);color:var(--text3)}
-
+.gs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.gst{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
+.gst .gn{font-family:'Playfair Display',serif;font-size:20px}
+.gst .gl{font-size:10px;color:var(--text3);margin-top:1px}
+.ryes{background:var(--green-l);color:var(--green)}.rno{background:#fdecea;color:var(--red)}.rpnd{background:var(--bg3);color:var(--text3)}
 /* CALENDAR */
-.cal-toolbar{display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap}
-.cal-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);min-width:130px;text-align:center}
-.cal-nav{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:5px 12px;font-size:13px;cursor:pointer;color:var(--text2);transition:all .15s}
-.cal-nav:hover{background:var(--bg3)}
-.cal-today-btn{padding:5px 10px;font-size:11px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);cursor:pointer;color:var(--text2);transition:all .15s}
-.cal-today-btn:hover{border-color:var(--accent);color:var(--accent)}
-.view-tabs{display:flex;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-left:auto}
-.view-tab{padding:5px 12px;border:none;background:transparent;font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s;font-family:'Noto Sans TC',sans-serif}
-.view-tab.active{background:var(--accent-l);color:var(--accent)}
-.cal-jump{display:flex;gap:5px}
-.cal-jump select{padding:4px 7px;font-size:11px;border:1px solid var(--border);border-radius:var(--r2);background:var(--bg2);color:var(--text)}
-.cal-month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.cal-dow{background:var(--bg2);text-align:center;font-size:10px;color:var(--text3);padding:6px 3px;letter-spacing:.3px}
-.cal-cell{background:var(--bg);min-height:80px;padding:4px;cursor:pointer;transition:background .1s;position:relative}
-.cal-cell:hover{background:var(--bg2)}
-.cal-cell.other{background:var(--bg2)}.cal-cell.other .cnum{color:var(--text3)}
-.cal-cell.today .cnum{background:var(--accent);color:#fff;border-radius:50%}
-.cal-cell.selected{background:var(--accent-l)}
-.cal-cell.wedding-d{background:#fdf3ea}.cal-cell.registry-d{background:var(--green-l)}
-.cnum{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;margin-bottom:2px}
-.ev-pill{font-size:9px;padding:1px 4px;border-radius:3px;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6}
-.ev-pill.todo-p{background:var(--green)}
-.special-tag{font-size:8px;padding:1px 4px;border-radius:3px;background:var(--accent);color:#fff;margin-bottom:2px;display:inline-block}
-.week-wrap{border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.week-head{display:grid;grid-template-columns:42px repeat(7,1fr);background:var(--bg2);border-bottom:1px solid var(--border)}
-.wh-cell{text-align:center;padding:6px 3px;font-size:10px;color:var(--text3)}
-.wh-cell .wdate{font-size:14px;font-weight:500;color:var(--text);margin-top:1px}
-.wh-cell.today-c .wdate{background:var(--accent);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin:2px auto 0}
-.week-body{display:grid;grid-template-columns:42px repeat(7,1fr)}
-.wtime-col{border-right:1px solid var(--border)}
-.wtime{font-size:9px;color:var(--text3);padding:0 4px;height:38px;display:flex;align-items:flex-start;padding-top:2px;border-bottom:1px solid var(--border)}
-.wday-col{border-right:1px solid var(--border);position:relative;cursor:pointer;transition:background .1s}
-.wday-col:last-child{border-right:none}
-.wday-col:hover{background:var(--bg2)}
-.wslot{height:38px;border-bottom:1px solid var(--border)}
-.wev{position:absolute;left:2px;right:2px;border-radius:3px;font-size:9px;padding:2px 3px;color:#fff;z-index:2;cursor:pointer;line-height:1.3;overflow:hidden}
-.list-date-h{font-size:11px;color:var(--text3);padding:7px 0 5px;border-bottom:1px solid var(--border);margin-bottom:7px;text-transform:uppercase;letter-spacing:.4px}
-.list-ev{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer}
-.list-ev:last-child{border-bottom:none}
-.list-ev-bar{width:3px;border-radius:2px;flex-shrink:0;min-height:16px;align-self:stretch}
-.list-ev-title{font-size:12px;color:var(--text)}
-.list-ev-meta{font-size:10px;color:var(--text3);margin-top:1px}
-.ev-panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-top:12px;box-shadow:var(--shadow);overflow:hidden}
-.ev-panel-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
-.ev-panel-title{font-family:'Playfair Display',serif;font-size:14px;flex:1}
-.ev-item{display:flex;gap:8px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
-.ev-item:hover{background:var(--bg2)}.ev-item:last-child{border-bottom:none}
-.ev-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.ev-body{flex:1;min-width:0}
-.ev-title{font-size:12px;color:var(--text)}
-.ev-meta{font-size:10px;color:var(--text3);margin-top:1px}
-.ev-note{font-size:10px;color:var(--text2);margin-top:1px}
-.ev-actions-row{display:flex;gap:4px;flex-shrink:0;align-items:flex-start}
-.ev-edit-b{background:transparent;border:1px solid var(--border);border-radius:var(--r2);padding:2px 7px;font-size:10px;color:var(--text2);cursor:pointer;font-family:'Noto Sans TC',sans-serif}
-.ev-add-form{padding:12px 14px;border-top:1px solid var(--border)}
-.color-row{display:flex;gap:5px;flex-wrap:wrap;margin:5px 0}
-.cswatch{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
-.cswatch:hover{transform:scale(1.2)}.cswatch.sel{border-color:var(--text);transform:scale(1.1)}
-
-/* LOADING */
-#loadingOverlay{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:10px}
-.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty{text-align:center;padding:32px 16px;color:var(--text3);font-size:12px}
-.empty .emoji{font-size:24px;margin-bottom:6px}
-
+.ct{display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.cal-t{font-family:'Playfair Display',serif;font-size:15px;min-width:130px;text-align:center}
+.cnav{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:5px 12px;font-size:13px;cursor:pointer;color:var(--text2)}
+.cnav:hover{background:var(--bg3)}
+.ctd{padding:5px 10px;font-size:11px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);cursor:pointer;color:var(--text2)}
+.ctd:hover{border-color:var(--accent);color:var(--accent)}
+.vtabs{display:flex;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-left:auto}
+.vtab{padding:5px 12px;border:none;background:transparent;font-size:11px;color:var(--text2);cursor:pointer;font-family:'Noto Sans TC',sans-serif}
+.vtab.on{background:var(--accent-l);color:var(--accent)}
+.cj{display:flex;gap:5px}
+.cj select{padding:4px 7px;font-size:11px;border:1px solid var(--border);border-radius:var(--r2);background:var(--bg2);color:var(--text)}
+.cmg{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.cdow{background:var(--bg2);text-align:center;font-size:10px;color:var(--text3);padding:6px 3px}
+.cc{background:var(--bg);min-height:78px;padding:4px;cursor:pointer;transition:background .1s;position:relative}
+.cc:hover{background:var(--bg2)}.cc.oth{background:var(--bg2)}.cc.oth .cn{color:var(--text3)}
+.cc.tod .cn{background:var(--accent);color:#fff;border-radius:50%}.cc.sel{background:var(--accent-l)}
+.cc.wed{background:#fdf3ea}.cc.reg{background:var(--green-l)}
+.cn{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;margin-bottom:2px}
+.ep{font-size:9px;padding:1px 4px;border-radius:3px;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6}
+.ep.tp{background:var(--green)}
+.sptag{font-size:8px;padding:1px 4px;border-radius:3px;background:var(--accent);color:#fff;margin-bottom:2px;display:inline-block}
+/* week */
+.ww{border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.wh{display:grid;grid-template-columns:42px repeat(7,1fr);background:var(--bg2);border-bottom:1px solid var(--border)}
+.whc{text-align:center;padding:6px 3px;font-size:10px;color:var(--text3)}
+.whc .wd{font-size:14px;font-weight:500;color:var(--text);margin-top:1px}
+.whc.tc .wd{background:var(--accent);color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin:2px auto 0}
+.wb{display:grid;grid-template-columns:42px repeat(7,1fr)}
+.wtc{border-right:1px solid var(--border)}
+.wt{font-size:9px;color:var(--text3);padding:0 4px;height:38px;display:flex;align-items:flex-start;padding-top:2px;border-bottom:1px solid var(--border)}
+.wdc{border-right:1px solid var(--border);position:relative;cursor:pointer}
+.wdc:last-child{border-right:none}.wdc:hover{background:var(--bg2)}
+.ws{height:38px;border-bottom:1px solid var(--border)}
+.wev{position:absolute;left:2px;right:2px;border-radius:3px;font-size:9px;padding:2px 3px;color:#fff;z-index:2;cursor:pointer;overflow:hidden}
+/* list */
+.ldh{font-size:11px;color:var(--text3);padding:7px 0 5px;border-bottom:1px solid var(--border);margin-bottom:7px;text-transform:uppercase;letter-spacing:.4px}
+.le{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.le:last-child{border-bottom:none}
+.leb{width:3px;border-radius:2px;flex-shrink:0;min-height:16px;align-self:stretch}
+.let{font-size:12px;color:var(--text)}
+.lem{font-size:10px;color:var(--text3);margin-top:1px}
+/* ev panel */
+.evp{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-top:12px;box-shadow:var(--shadow);overflow:hidden}
+.evph{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.evpt{font-family:'Playfair Display',serif;font-size:14px;flex:1}
+.evi{display:flex;gap:8px;padding:9px 14px;border-bottom:1px solid var(--border);cursor:pointer}
+.evi:hover{background:var(--bg2)}.evi:last-child{border-bottom:none}
+.evd{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.evb{flex:1;min-width:0}
+.evt{font-size:12px;color:var(--text)}
+.evm{font-size:10px;color:var(--text3);margin-top:1px}
+.even{font-size:10px;color:var(--text2);margin-top:1px}
+.evaf{padding:12px 14px;border-top:1px solid var(--border)}
+.cr{display:flex;gap:5px;flex-wrap:wrap;margin:5px 0}
+.cs{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.cs:hover{transform:scale(1.2)}.cs.on{border-color:var(--text);transform:scale(1.1)}
+/* loading */
+#lo{position:fixed;inset:0;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:10px}
+.spin{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:32px;color:var(--text3);font-size:12px}
+.empty .em{font-size:24px;margin-bottom:6px}
 @media(max-width:540px){
-  .g-stats{grid-template-columns:repeat(2,1fr)}
-  .bsum-grid{grid-template-columns:1fr}
-  .topbar-chips{gap:3px}
-  .chip{padding:3px 6px;font-size:9px}
+  .gs{grid-template-columns:repeat(2,1fr)}
+  .bg2{grid-template-columns:1fr}
+  .chips{gap:3px}.chip{font-size:9px;padding:3px 6px}
 }
 </style>
 </head>
 <body>
-<div id="loadingOverlay"><div class="spinner"></div><p style="font-size:12px;color:var(--text3)">載入中…</p></div>
-<div id="lightbox"><button id="lb-close" onclick="closeLightbox()">✕</button><img id="lb-img" src="" alt=""></div>
-<div id="sb-overlay" onclick="closeSidebar()"></div>
-<div id="edit-modal" onclick="handleModalBg(event)"><div class="edit-sheet" id="edit-sheet">
-  <div class="edit-sheet-title"><span id="edit-title">編輯</span><button onclick="closeEditModal()">✕</button></div>
-  <div id="edit-body"></div>
-  <div style="display:flex;gap:8px;margin-top:14px">
-    <button class="btn btn-ghost" style="flex:1" onclick="closeEditModal()">取消</button>
-    <button class="btn btn-primary" style="flex:1" id="edit-save-btn">儲存</button>
+<div id="lo"><div class="spin"></div><p style="font-size:12px;color:var(--text3)">載入中…</p></div>
+<div id="lb"><button id="lb-x" onclick="closeLB()">✕</button><img id="lb-img" src="" alt=""></div>
+<div id="ov" onclick="closeSB()"></div>
+<div id="modal" onclick="if(event.target.id==='modal')closeModal()">
+  <div class="msheet">
+    <div class="mhd"><span id="modal-title">編輯</span><button onclick="closeModal()">✕</button></div>
+    <div id="modal-body"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-g" style="flex:1" onclick="closeModal()">取消</button>
+      <button class="btn btn-p" style="flex:1" id="modal-save">儲存</button>
+    </div>
   </div>
-</div></div>
+</div>
 
-<div id="sidebar">
+<div id="sb">
   <div class="sb-top">
     <div class="sb-logo">💍 婚禮規劃</div>
-    <div class="sb-date" onclick="editDate('wedding')"><div class="sb-date-lbl">💒 婚禮日期</div><div class="sb-date-val" id="sb-w-val">點擊設定</div><div class="sb-date-cd" id="sb-w-cd"></div></div>
-    <div class="sb-date" onclick="editDate('registry')"><div class="sb-date-lbl">📋 登記日期</div><div class="sb-date-val" id="sb-r-val">點擊設定</div><div class="sb-date-cd" id="sb-r-cd"></div></div>
+    <div class="sb-d" onclick="editDate('w')"><div class="sb-dl">💒 婚禮日期</div><div class="sb-dv" id="sw-v">點擊設定</div><div class="sb-dc" id="sw-c"></div></div>
+    <div class="sb-d" onclick="editDate('r')"><div class="sb-dl">📋 登記日期</div><div class="sb-dv" id="sr-v">點擊設定</div><div class="sb-dc" id="sr-c"></div></div>
   </div>
   <div class="sb-nav">
-    <button class="sb-btn active" onclick="switchTab('calendar',this)"><span class="sb-icon">📅</span>行事曆</button>
-    <button class="sb-btn" onclick="switchTab('vendor',this)"><span class="sb-icon">🏪</span>廠商資訊</button>
-    <button class="sb-btn" onclick="switchTab('budget',this)"><span class="sb-icon">💰</span>費用明細</button>
-    <button class="sb-btn" onclick="switchTab('todo',this)"><span class="sb-icon">✅</span>待辦事項</button>
-    <button class="sb-btn" onclick="switchTab('guest',this)"><span class="sb-icon">👥</span>賓客名單</button>
+    <button class="sb-btn on" onclick="goTab('calendar',this)"><span>📅</span>行事曆</button>
+    <button class="sb-btn" onclick="goTab('vendor',this)"><span>🏪</span>廠商資訊</button>
+    <button class="sb-btn" onclick="goTab('budget',this)"><span>💰</span>費用明細</button>
+    <button class="sb-btn" onclick="goTab('todo',this)"><span>✅</span>待辦事項</button>
+    <button class="sb-btn" onclick="goTab('guest',this)"><span>👥</span>賓客名單</button>
   </div>
-  <div class="sb-sync"><div class="sync-dot loading" id="syncDot"></div><span id="syncLabel">同步中</span></div>
+  <div class="sb-sync"><div class="dot spin" id="sdot"></div><span id="slbl">同步中</span></div>
 </div>
 
 <div class="topbar">
-  <button class="hamburger" onclick="openSidebar()">☰</button>
-  <div class="topbar-title">婚禮規劃</div>
-  <div class="topbar-chips">
-    <div class="chip" onclick="editDate('wedding')">💒 <span id="chip-w">設定婚禮</span><span class="chip-cd" id="chip-w-cd"></span></div>
-    <div class="chip" onclick="editDate('registry')">📋 <span id="chip-r">設定登記</span><span class="chip-cd" id="chip-r-cd"></span></div>
+  <button class="hbg" onclick="openSB()">☰</button>
+  <div class="tb-title">婚禮規劃</div>
+  <div class="chips">
+    <div class="chip" onclick="editDate('w')">💒 <span id="cw-v">設定婚禮</span><span class="chip-cd" id="cw-c"></span></div>
+    <div class="chip" onclick="editDate('r')">📋 <span id="cr-v">設定登記</span><span class="chip-cd" id="cr-c"></span></div>
   </div>
 </div>
 
 <div class="content">
 
 <!-- CALENDAR -->
-<div id="tab-calendar" class="tab-panel active">
+<div id="tab-calendar" class="tab on">
   <div class="card">
-    <div class="cal-toolbar">
-      <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
-      <div class="cal-title" id="cal-title"></div>
-      <button class="cal-nav" onclick="changeMonth(1)">›</button>
-      <button class="cal-today-btn" onclick="goToday()">今天</button>
-      <div class="cal-jump"><select id="cal-year-sel" onchange="jumpYear()"></select><select id="cal-month-sel" onchange="jumpMonth()"></select></div>
-      <div class="view-tabs">
-        <button class="view-tab active" id="vt-month" onclick="setView('month')">月</button>
-        <button class="view-tab" id="vt-week" onclick="setView('week')">週</button>
-        <button class="view-tab" id="vt-list" onclick="setView('list')">清單</button>
+    <div class="ct">
+      <button class="cnav" onclick="chMo(-1)">‹</button>
+      <div class="cal-t" id="cal-title"></div>
+      <button class="cnav" onclick="chMo(1)">›</button>
+      <button class="ctd" onclick="goToday()">今天</button>
+      <div class="cj"><select id="cy" onchange="jYear()"></select><select id="cm" onchange="jMonth()"></select></div>
+      <div class="vtabs">
+        <button class="vtab on" id="vt-month" onclick="setV('month')">月</button>
+        <button class="vtab" id="vt-week" onclick="setV('week')">週</button>
+        <button class="vtab" id="vt-list" onclick="setV('list')">清單</button>
       </div>
     </div>
     <div id="cal-body"></div>
   </div>
-  <div class="ev-panel" id="ev-panel" style="display:none">
-    <div class="ev-panel-head">
-      <div class="ev-panel-title" id="ev-panel-title">行程</div>
-      <button class="btn btn-ghost btn-sm" onclick="closeEvPanel()">✕</button>
-    </div>
+  <div class="evp" id="evp" style="display:none">
+    <div class="evph"><div class="evpt" id="evp-title">行程</div><button class="btn btn-g btn-s" onclick="closeEvP()">✕</button></div>
     <div id="ev-list"></div>
-    <div class="ev-add-form" id="ev-add-form" style="display:none">
+    <div class="evaf" id="evaf" style="display:none">
       <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:9px">新增行程</div>
-      <div class="frow">
-        <div class="field" style="flex:2"><label>行程名稱</label><input type="text" id="ev-text" placeholder="例：試婚紗、場地勘查"></div>
-        <div class="field"><label>類型</label><select id="ev-type"><option value="custom">自訂</option><option value="vendor">廠商約定</option><option value="todo">待辦</option></select></div>
+      <div class="fl">
+        <div class="f" style="flex:2"><label>行程名稱</label><input type="text" id="ev-txt" placeholder="例：試婚紗"></div>
+        <div class="f"><label>類型</label><select id="ev-type"><option value="custom">自訂</option><option value="vendor">廠商約定</option><option value="todo">待辦</option></select></div>
       </div>
-      <div class="frow">
-        <div class="field"><label>開始時間</label><input type="time" id="ev-start"></div>
-        <div class="field"><label>結束時間</label><input type="time" id="ev-end"></div>
+      <div class="fl">
+        <div class="f"><label>開始</label><input type="time" id="ev-s"></div>
+        <div class="f"><label>結束</label><input type="time" id="ev-e"></div>
       </div>
-      <div class="frow"><div class="field" style="flex:1"><label>廠商 / 備注</label><textarea id="ev-note" placeholder="例：憶起幸福、Fanson…" style="min-height:40px"></textarea></div></div>
+      <div class="fl"><div class="f"><label>備注</label><textarea id="ev-n" style="min-height:40px"></textarea></div></div>
       <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px">顏色</div>
-      <div class="color-row" id="ev-color-picker"></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:9px" onclick="addCalEvent()">新增行程</button>
+      <div class="cr" id="ev-cp"></div>
+      <button class="btn btn-p" style="width:100%;margin-top:9px" onclick="addEv()">新增行程</button>
     </div>
   </div>
 </div>
 
 <!-- VENDOR -->
-<div id="tab-vendor" class="tab-panel">
-  <div class="card" id="vendor-add-card">
-    <div class="card-title" onclick="toggleCard('vendor-add-card')">
-      <span>新增廠商</span><span class="card-title-arrow" id="vendor-add-card-arrow">›</span>
-    </div>
-    <div class="card-body" id="vendor-add-card-body">
-      <div class="frow">
-        <div class="field" style="flex:2"><label>廠商名稱</label><input type="text" id="v-name" placeholder="廠商名稱"></div>
-        <div class="field"><label>類型</label><select id="v-type" onchange="handleVtypeChange(this)"></select></div>
-        <div class="field"><label>狀態</label><select id="v-status"><option value="pending">洽談中</option><option value="confirmed">已確認</option><option value="cancelled">已取消</option></select></div>
+<div id="tab-vendor" class="tab">
+  <div class="card" id="vc-add">
+    <div class="card-hd" onclick="toggleCard('vc-add')"><span>新增廠商</span><span class="card-arr" id="vc-add-arr">›</span></div>
+    <div class="card-bd" id="vc-add-bd">
+      <div class="fl">
+        <div class="f" style="flex:2"><label>廠商名稱</label><input type="text" id="v-name"></div>
+        <div class="f"><label>類型</label><select id="v-type" onchange="handleVtype(this)"></select></div>
+        <div class="f"><label>狀態</label><select id="v-st"><option value="pending">洽談中</option><option value="confirmed">已確認</option><option value="cancelled">已取消</option></select></div>
       </div>
-      <div class="frow">
-        <div class="field"><label>聯絡人</label><input type="text" id="v-contact"></div>
-        <div class="field"><label>電話</label><input type="text" id="v-phone"></div>
-        <div class="field"><label>LINE</label><input type="text" id="v-line"></div>
+      <div class="fl">
+        <div class="f"><label>聯絡人</label><input type="text" id="v-con"></div>
+        <div class="f"><label>電話</label><input type="text" id="v-ph"></div>
+        <div class="f"><label>LINE</label><input type="text" id="v-line"></div>
       </div>
-      <div class="frow">
-        <div class="field"><label>已付金額</label><input type="number" id="v-paid" placeholder="0"></div>
-        <div class="field"><label>待付金額</label><input type="number" id="v-unpaid" placeholder="0"></div>
+      <div class="fl">
+        <div class="f"><label>已付</label><input type="number" id="v-paid" placeholder="0"></div>
+        <div class="f"><label>待付</label><input type="number" id="v-unpaid" placeholder="0"></div>
       </div>
-      <div class="frow"><div class="field" style="flex:1"><label>備注</label><textarea id="v-note" placeholder="價格、約定…"></textarea></div></div>
-      <button class="btn btn-primary" style="width:100%" onclick="addVendor()">新增廠商</button>
+      <div class="fl"><div class="f"><label>備注</label><textarea id="v-note"></textarea></div></div>
+      <button class="btn btn-p" style="width:100%" onclick="addVendor()">新增廠商</button>
     </div>
   </div>
-  <div id="vendor-list"></div>
+  <div id="v-list"></div>
 </div>
 
 <!-- BUDGET -->
-<div id="tab-budget" class="tab-panel">
+<div id="tab-budget" class="tab">
   <div class="card">
-    <div class="bsum-grid">
-      <div class="bsum paid"><div class="bl">已付</div><div class="ba" id="b-paid">$0</div></div>
-      <div class="bsum unpaid"><div class="bl">待付</div><div class="ba" id="b-unpaid">$0</div></div>
+    <div class="bg2">
+      <div class="bs pd"><div class="bl">已付</div><div class="ba" id="b-paid">$0</div></div>
+      <div class="bs up"><div class="bl">待付</div><div class="ba" id="b-unpaid">$0</div></div>
     </div>
-    <div class="btotal">費用合計<strong id="b-total">$0</strong></div>
+    <div class="bt">費用合計<strong id="b-total">$0</strong></div>
   </div>
-  <div class="card" id="exp-add-card">
-    <div class="card-title" onclick="toggleCard('exp-add-card')">
-      <span>新增費用</span><span class="card-title-arrow" id="exp-add-card-arrow">›</span>
-    </div>
-    <div class="card-body" id="exp-add-card-body">
-      <div class="frow">
-        <div class="field" style="flex:2"><label>費用名稱</label><input type="text" id="exp-name" placeholder="費用名稱"></div>
-        <div class="field"><label>類別</label><select id="exp-cat" onchange="handleCatChange(this)"></select></div>
+  <div class="card" id="ec-add">
+    <div class="card-hd" onclick="toggleCard('ec-add')"><span>新增費用</span><span class="card-arr" id="ec-add-arr">›</span></div>
+    <div class="card-bd" id="ec-add-bd">
+      <div class="fl">
+        <div class="f" style="flex:2"><label>費用名稱</label><input type="text" id="e-name"></div>
+        <div class="f"><label>類別</label><select id="e-cat" onchange="handleCat(this)"></select></div>
       </div>
-      <div class="frow">
-        <div class="field"><label>已付金額</label><input type="number" id="exp-paid" placeholder="0"></div>
-        <div class="field"><label>待付金額</label><input type="number" id="exp-unpaid" placeholder="0"></div>
-        <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" style="width:100%" onclick="addExpense()">新增</button></div>
+      <div class="fl">
+        <div class="f"><label>已付</label><input type="number" id="e-paid" placeholder="0"></div>
+        <div class="f"><label>待付</label><input type="number" id="e-unpaid" placeholder="0"></div>
+        <div class="f" style="display:flex;align-items:flex-end"><button class="btn btn-p" style="width:100%" onclick="addExp()">新增</button></div>
       </div>
     </div>
   </div>
   <div class="card">
-    <div style="font-family:'Playfair Display',serif;font-size:13px;margin-bottom:12px;color:var(--text)">費用明細</div>
-    <div id="expense-list"><div class="empty"><div class="emoji">💵</div>還沒有費用記錄</div></div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;margin-bottom:12px">費用明細</div>
+    <div id="e-list"><div class="empty"><div class="em">💵</div>還沒有費用</div></div>
   </div>
 </div>
 
 <!-- TODO -->
-<div id="tab-todo" class="tab-panel">
-  <div class="card" id="todo-add-card">
-    <div class="card-title" onclick="toggleCard('todo-add-card')">
-      <span>新增待辦</span><span class="card-title-arrow" id="todo-add-card-arrow">›</span>
-    </div>
-    <div class="card-body" id="todo-add-card-body">
-      <div class="frow">
-        <div class="field" style="flex:2"><label>事項名稱</label><input type="text" id="todo-text" placeholder="輸入待辦事項"></div>
-        <div class="field"><label>類別</label><select id="todo-cat" onchange="handleCatChange(this)"></select></div>
-        <div class="field"><label>優先度</label><select id="todo-priority"><option value="">一般</option><option value="urgent">緊急</option></select></div>
+<div id="tab-todo" class="tab">
+  <div class="card" id="tc-add">
+    <div class="card-hd" onclick="toggleCard('tc-add')"><span>新增待辦</span><span class="card-arr" id="tc-add-arr">›</span></div>
+    <div class="card-bd" id="tc-add-bd">
+      <div class="fl">
+        <div class="f" style="flex:2"><label>事項</label><input type="text" id="t-txt"></div>
+        <div class="f"><label>類別</label><select id="t-cat" onchange="handleCat(this)"></select></div>
+        <div class="f"><label>優先</label><select id="t-pri"><option value="">一般</option><option value="u">緊急</option></select></div>
       </div>
-      <div class="frow">
-        <div class="field"><label>截止日</label><input type="date" id="todo-due"></div>
-        <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" style="width:100%" onclick="addTodo()">新增</button></div>
+      <div class="fl">
+        <div class="f"><label>截止日</label><input type="date" id="t-due"></div>
+        <div class="f" style="display:flex;align-items:flex-end"><button class="btn btn-p" style="width:100%" onclick="addTodo()">新增</button></div>
       </div>
     </div>
   </div>
   <div class="card" style="padding:12px 16px">
-    <div class="prog-wrap"><div class="prog-bar" id="progressBar" style="width:0%"></div></div>
-    <div class="prog-lbl" id="progressLbl">0 / 0 完成</div>
+    <div class="pw"><div class="pb" id="pb" style="width:0%"></div></div>
+    <div class="pl" id="pl">0 / 0</div>
   </div>
-  <div id="todo-list"></div>
+  <div id="t-list"></div>
 </div>
 
 <!-- GUEST -->
-<div id="tab-guest" class="tab-panel">
-  <div class="g-stats">
-    <div class="g-stat"><div class="gnum" id="g-total">0</div><div class="glbl">總人數</div></div>
-    <div class="g-stat"><div class="gnum" id="g-yes">0</div><div class="glbl">確認出席</div></div>
-    <div class="g-stat"><div class="gnum" id="g-no">0</div><div class="glbl">無法出席</div></div>
-    <div class="g-stat"><div class="gnum" id="g-pending">0</div><div class="glbl">待確認</div></div>
+<div id="tab-guest" class="tab">
+  <div class="gs">
+    <div class="gst"><div class="gn" id="g-tot">0</div><div class="gl">總人數</div></div>
+    <div class="gst"><div class="gn" id="g-yes">0</div><div class="gl">確認出席</div></div>
+    <div class="gst"><div class="gn" id="g-no">0</div><div class="gl">無法出席</div></div>
+    <div class="gst"><div class="gn" id="g-pnd">0</div><div class="gl">待確認</div></div>
   </div>
-  <div class="card" id="guest-add-card">
-    <div class="card-title" onclick="toggleCard('guest-add-card')">
-      <span>新增賓客</span><span class="card-title-arrow" id="guest-add-card-arrow">›</span>
-    </div>
-    <div class="card-body" id="guest-add-card-body">
-      <div class="frow">
-        <div class="field" style="flex:2"><label>姓名</label><input type="text" id="g-name"></div>
-        <div class="field"><label>方</label><select id="g-side"><option>新郎方</option><option>新娘方</option><option>共同</option></select></div>
-        <div class="field"><label>出席</label><select id="g-rsvp"><option value="pending">待確認</option><option value="yes">確認出席</option><option value="no">無法出席</option></select></div>
+  <div class="card" id="gc-add">
+    <div class="card-hd" onclick="toggleCard('gc-add')"><span>新增賓客</span><span class="card-arr" id="gc-add-arr">›</span></div>
+    <div class="card-bd" id="gc-add-bd">
+      <div class="fl">
+        <div class="f" style="flex:2"><label>姓名</label><input type="text" id="g-name"></div>
+        <div class="f"><label>方</label><select id="g-side"><option>新郎方</option><option>新娘方</option><option>共同</option></select></div>
+        <div class="f"><label>出席</label><select id="g-rsvp"><option value="pending">待確認</option><option value="yes">確認出席</option><option value="no">無法出席</option></select></div>
       </div>
-      <div class="frow">
-        <div class="field"><label>桌次</label><input type="text" id="g-table"></div>
-        <div class="field"><label>飲食需求</label><input type="text" id="g-diet"></div>
-        <div class="field" style="display:flex;align-items:flex-end"><button class="btn btn-primary" style="width:100%" onclick="addGuest()">新增</button></div>
+      <div class="fl">
+        <div class="f"><label>桌次</label><input type="text" id="g-tbl"></div>
+        <div class="f"><label>飲食需求</label><input type="text" id="g-diet"></div>
+        <div class="f" style="display:flex;align-items:flex-end"><button class="btn btn-p" style="width:100%" onclick="addGuest()">新增</button></div>
       </div>
     </div>
   </div>
   <div class="card">
-    <div style="font-family:'Playfair Display',serif;font-size:13px;margin-bottom:12px;color:var(--text)">賓客名單</div>
-    <div id="guest-list"><div class="empty"><div class="emoji">🎊</div>還沒有賓客</div></div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;margin-bottom:12px">賓客名單</div>
+    <div id="g-list"><div class="empty"><div class="em">🎊</div>還沒有賓客</div></div>
   </div>
 </div>
 
-</div><!-- end content -->
-
+</div><!-- content -->
 <script>
-// ── CONFIG ────────────────────────────────────────────
-const FIREBASE_URL='https://wedding-94cc0-default-rtdb.asia-southeast1.firebasedatabase.app';
-const DB_KEY='wedding-main-permanent';
-const EV_COLORS=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#b87a5b','#9e8a5b','#7a6ea8','#5b8a6b'];
-const VENDOR_COLORS=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#e8a87c','#9e8a5b','#7a6ea8','#5b8a6b','#c9a84c','#8b5e52'];
-const DEFAULT_CATS=['場地','婚紗','餐飲','攝影','花藝','喜帖','蜜月','其他'];
-const VTYPES=['場地','婚紗','攝影','錄影','花藝','餐飲','喜帖','主持人','其他'];
+// ═══ CONFIG ═══════════════════════════════════════════
+const FB='https://wedding-94cc0-default-rtdb.asia-southeast1.firebasedatabase.app';
+const LKEY='wedding-v10';
+const FKEY='wedding-files-v10'; // separate localStorage key for files
+const EVC=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#b87a5b','#9e8a5b','#7a6ea8','#5b8a6b'];
+const VCS=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#e8a87c','#9e8a5b','#7a6ea8','#5b8a6b','#c9a84c','#8b5e52'];
+const DCATS=['場地','婚紗','餐飲','攝影','花藝','喜帖','蜜月','其他'];
+const DTYPES=['場地','婚紗','攝影','錄影','花藝','餐飲','喜帖','主持人','其他'];
 
-let db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS]};
-let saving=false,lastJSON='',saveTimer=null;
-let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calView='month',selDate=null,selColor=EV_COLORS[0];
+// ═══ STATE ════════════════════════════════════════════
+let db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS]};
+let files={}; // {itemId: [{type,name,data},...]} stored separately
+let saving=false,stimer=null,lastJ='';
+let calY=new Date().getFullYear(),calM=new Date().getMonth(),calV='month',selD=null,selC=EVC[0];
 
-// ── HELPERS ───────────────────────────────────────────
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function getCats(){return db.cats&&db.cats.length?db.cats:[...DEFAULT_CATS]}
-function catOpts(cur){return[...getCats(),'＋新增類別'].map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
-function vtypeOpts(cur){return[...VTYPES,...getCats().filter(c=>!VTYPES.includes(c)),'＋新增類別'].map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('')}
-function setSyncState(s,t){document.getElementById('syncDot').className='sync-dot '+s;document.getElementById('syncLabel').textContent=t}
-function dateKey(y,m,d){return y+'/'+(String(m+1).padStart(2,'0'))+'/'+String(d).padStart(2,'0')}
-function parseDate(s){const[y,m,d]=s.split(/[-\/]/).map(Number);return new Date(y,m-1,d)}
-function getVendorColor(id){const idx=db.vendors.findIndex(v=>v.id===id);return VENDOR_COLORS[idx%VENDOR_COLORS.length]||VENDOR_COLORS[0]}
+// ═══ HELPERS ══════════════════════════════════════════
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const cats=()=>db.cats&&db.cats.length?db.cats:[...DCATS];
+const catOpts=cur=>[...cats(),'＋新增類別'].map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('');
+const vtOpts=cur=>[...DTYPES,...cats().filter(c=>!DTYPES.includes(c)),'＋新增類別'].map(o=>`<option${o===cur?' selected':''}>${o}</option>`).join('');
+const setSync=(s,t)=>{document.getElementById('sdot').className='dot '+s;document.getElementById('slbl').textContent=t};
+const dkey=(y,m,d)=>y+'/'+(String(m+1).padStart(2,'0'))+'/'+String(d).padStart(2,'0');
+const pdate=s=>{const[y,m,d]=s.split(/[-\/]/).map(Number);return new Date(y,m-1,d)};
+const vcolor=id=>{const i=db.vendors.findIndex(v=>v.id===id);return VCS[i%VCS.length]||VCS[0]};
 
-// ── IMAGE COMPRESS ────────────────────────────────────
-function compressImage(file,maxW=800,quality=0.7){
+// ═══ FILE STORAGE (localStorage, separate from db) ════
+function saveFiles(){
+  try{localStorage.setItem(FKEY,JSON.stringify(files));}
+  catch(e){
+    // If storage full, compress images further
+    console.warn('File storage full, trying compression');
+    const compressed={};
+    Object.entries(files).forEach(([k,arr])=>{
+      compressed[k]=arr.map(f=>f.type==='img'?{...f,data:f.data.substring(0,50000)}:f);
+    });
+    try{localStorage.setItem(FKEY,JSON.stringify(compressed));}
+    catch(e2){console.error('Cannot save files',e2);}
+  }
+}
+function loadFiles(){
+  try{const d=localStorage.getItem(FKEY);if(d)files=JSON.parse(d);}
+  catch(e){files={};}
+}
+function getFiles(id){return files[id]||[];}
+function setFiles(id,arr){files[id]=arr;saveFiles();}
+
+// ═══ IMAGE COMPRESS ════════════════════════════════════
+function compressImg(file){
   return new Promise(res=>{
     if(!file.type.startsWith('image/')){
-      // non-image: convert to base64 directly but limit size
+      // Non-image file: store as base64 with size limit
+      if(file.size>2*1024*1024){res(null);alert('檔案太大（限2MB）');return;}
       const r=new FileReader();
       r.onload=()=>res({type:'doc',name:file.name,data:r.result});
+      r.onerror=()=>res(null);
       r.readAsDataURL(file);
       return;
     }
@@ -455,887 +439,825 @@ function compressImage(file,maxW=800,quality=0.7){
     const url=URL.createObjectURL(file);
     img.onload=()=>{
       URL.revokeObjectURL(url);
-      const scale=Math.min(1,maxW/Math.max(img.width,img.height));
+      const MAX=900;
+      const scale=Math.min(1,MAX/Math.max(img.width,img.height));
       const w=Math.round(img.width*scale),h=Math.round(img.height*scale);
-      const canvas=document.createElement('canvas');
-      canvas.width=w;canvas.height=h;
-      canvas.getContext('2d').drawImage(img,0,0,w,h);
-      res({type:'img',name:file.name,data:canvas.toDataURL('image/jpeg',quality)});
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res({type:'img',name:file.name,data:c.toDataURL('image/jpeg',0.75)});
     };
-    img.onerror=()=>res(null);
+    img.onerror=()=>{URL.revokeObjectURL(url);res(null);};
     img.src=url;
   });
 }
 
-// ── FIREBASE ──────────────────────────────────────────
-async function fbGet(){
-  const res=await fetch(FIREBASE_URL+'/wedding.json');
-  if(!res.ok)throw new Error(await res.text());
-  return res.json();
-}
-async function fbSet(data){
-  const res=await fetch(FIREBASE_URL+'/wedding.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  if(!res.ok)throw new Error(await res.text());
-  return res.json();
+// ═══ PICK FILES ════════════════════════════════════════
+function pickFiles(){
+  return new Promise(res=>{
+    const inp=document.createElement('input');
+    inp.type='file';
+    inp.accept='image/*,application/pdf,.doc,.docx,.xlsx,.txt,.png,.jpg,.jpeg';
+    inp.multiple=true;
+    inp.style.cssText='position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0';
+    document.body.appendChild(inp);
+    let done=false;
+    const finish=async(files)=>{
+      if(done)return;done=true;
+      try{document.body.removeChild(inp);}catch(e){}
+      const results=[];
+      for(const f of Array.from(files||[])){
+        const r=await compressImg(f);
+        if(r)results.push(r);
+      }
+      res(results);
+    };
+    inp.addEventListener('change',e=>finish(e.target.files));
+    inp.addEventListener('cancel',()=>finish([]));
+    setTimeout(()=>finish([]),120000);
+    // Must be synchronous click for iOS
+    inp.click();
+  });
 }
 
-// ── SAVE (immediate + debounce for rapid changes) ─────
-async function saveData(){
-  // Always save to localStorage immediately
-  try{
-    const j=JSON.stringify(db);
-    localStorage.setItem(DB_KEY,j);
-    lastJSON=j;
-  }catch(e){console.error('localStorage save failed',e);}
-  setSyncState('loading','儲存中');
-  // Debounce Firebase push
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(async()=>{
-    if(saving)return;
-    await pushToFirebase();
-  },300);
+// ═══ ATTACHMENT GRID ═══════════════════════════════════
+function fileGrid(itemId){
+  const arr=getFiles(itemId);
+  const imgs=arr.filter(f=>f.type==='img');
+  const docs=arr.filter(f=>f.type==='doc');
+  let h='<div class="ag">';
+  imgs.forEach((f,i)=>{
+    // Use data-idx attribute to avoid quote issues
+    h+=`<div class="ai" onclick="openLB(${itemId},${i})"><img src="${f.data}"><button class="ax" onclick="event.stopPropagation();delFile(${itemId},${i})">✕</button></div>`;
+  });
+  docs.forEach((f,i)=>{
+    const idx=i+imgs.length;
+    h+=`<div class="adoc"><span style="font-size:14px">📄</span><span class="adoc-n" title="${esc(f.name)}">${esc(f.name)}</span><button onclick="delFile(${itemId},${idx})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 3px;flex-shrink:0">✕</button></div>`;
+  });
+  h+=`<div class="aadd" onclick="addFile(${itemId})"><span style="font-size:18px">＋</span><span>加附件</span></div>`;
+  h+='</div>';
+  return h;
 }
 
-async function pushToFirebase(){
-  if(saving)return;
-  saving=true;
-  const timeoutId=setTimeout(()=>{saving=false;setSyncState('err','逾時（本機已存）');},10000);
-  try{
-    await fbSet(db);
-    lastJSON=JSON.stringify(db);
-    localStorage.setItem(DB_KEY,lastJSON);
-    setSyncState('ok','已同步');
-  }catch(e){
-    console.error('Firebase push error:',e);
-    setSyncState('err','離線（本機已存）');
-  }finally{
-    clearTimeout(timeoutId);
-    saving=false;
+// Called from inline onclick
+async function addFile(itemId){
+  const results=await pickFiles();
+  if(!results.length)return;
+  const arr=getFiles(itemId);
+  arr.push(...results);
+  setFiles(itemId,arr);
+  // Refresh grid in modal if open
+  const el=document.getElementById('fg-'+itemId);
+  if(el)el.innerHTML=fileGrid(itemId);
+  // Update file count badge
+  renderAll();
+  // Sync vendor<->expense files
+  syncVendorExpFiles(itemId);
+}
+
+async function delFile(itemId,idx){
+  if(!confirm('確定要刪除此附件嗎？'))return;
+  const arr=getFiles(itemId);
+  arr.splice(idx,1);
+  setFiles(itemId,arr);
+  const el=document.getElementById('fg-'+itemId);
+  if(el)el.innerHTML=fileGrid(itemId);
+  renderAll();
+  syncVendorExpFiles(itemId);
+}
+
+function openLB(itemId,imgIdx){
+  const arr=getFiles(itemId).filter(f=>f.type==='img');
+  const f=arr[imgIdx];
+  if(!f)return;
+  document.getElementById('lb-img').src=f.data;
+  document.getElementById('lb').classList.add('on');
+}
+function closeLB(){document.getElementById('lb').classList.remove('on');}
+document.getElementById('lb').addEventListener('click',e=>{if(e.target.id==='lb')closeLB();});
+
+// Sync files between vendor and linked expense
+function syncVendorExpFiles(itemId){
+  // Check if this is a vendor
+  const v=db.vendors.find(v=>v.id===itemId);
+  if(v){
+    const e=db.exps.find(e=>e.vid===itemId);
+    if(e){setFiles(e.id,getFiles(itemId));}
+  }
+  // Check if this is an expense linked to vendor
+  const exp=db.exps.find(e=>e.id===itemId);
+  if(exp&&exp.vid){
+    setFiles(exp.vid,getFiles(itemId));
   }
 }
 
-// ── LOAD ──────────────────────────────────────────────
+// ═══ FIREBASE ══════════════════════════════════════════
+async function fbGet(){
+  const r=await fetch(FB+'/wedding.json');
+  if(!r.ok)throw new Error(r.status);
+  return r.json();
+}
+async function fbSet(data){
+  const r=await fetch(FB+'/wedding.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  if(!r.ok)throw new Error(r.status);
+}
+
+async function save(){
+  // 1. Save to localStorage immediately
+  try{
+    const j=JSON.stringify(db);
+    localStorage.setItem(LKEY,j);
+    lastJ=j;
+    setSync('spin','儲存中');
+  }catch(e){console.error(e);}
+  // 2. Push to Firebase (debounced)
+  clearTimeout(stimer);
+  stimer=setTimeout(pushFB,500);
+}
+
+async function pushFB(){
+  if(saving)return;
+  saving=true;
+  try{
+    await fbSet(db);
+    lastJ=JSON.stringify(db);
+    setSync('ok','已同步');
+  }catch(e){
+    console.error('Firebase error:',e);
+    setSync('err','離線（本機已存）');
+  }finally{saving=false;}
+}
+
 async function loadData(){
-  // Show cached instantly
-  const cached=localStorage.getItem(DB_KEY);
+  loadFiles();
+  // Show local cache immediately
+  const cached=localStorage.getItem(LKEY);
   if(cached){
     try{
       const p=JSON.parse(cached);
-      db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
-      migrateData();lastJSON=cached;
-    }catch(e){db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS]};}
+      db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+      migrate();
+    }catch(e){db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS]};}
   }
-  document.getElementById('loadingOverlay').style.display='none';
-  renderAll();updateDates();populateSelects();
-  setSyncState('loading','同步中');
+  document.getElementById('lo').style.display='none';
+  renderAll();updateDates();popSelects();
+  setSync('spin','同步中');
 
   // Fetch from Firebase
   try{
     const p=await fbGet();
-    if(p&&typeof p==='object'&&Object.keys(p).length>0){
+    if(p&&typeof p==='object'&&Object.keys(p).length>1){
       const j=JSON.stringify(p);
-      if(j!==lastJSON){
-        db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
-        migrateData();lastJSON=j;
-        localStorage.setItem(DB_KEY,j);
-        renderAll();updateDates();populateSelects();
+      if(j!==lastJ){
+        db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+        migrate();
+        lastJ=j;
+        localStorage.setItem(LKEY,j);
+        renderAll();updateDates();popSelects();
       }
     }else if(!cached){
-      db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...SEED};
-      migrateData();
-      await pushToFirebase();
-      renderAll();updateDates();populateSelects();
+      // First time - load seed
+      Object.assign(db,SEED);
+      migrate();
+      await pushFB();
+      renderAll();updateDates();popSelects();
     }
-    setSyncState('ok','已同步');
+    setSync('ok','已同步');
   }catch(e){
     console.error(e);
-    if(!cached){
-      db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...SEED};
-      migrateData();renderAll();updateDates();populateSelects();
-    }
-    setSyncState('err','離線模式');
+    if(!cached){Object.assign(db,SEED);migrate();renderAll();updateDates();popSelects();}
+    setSync('err','離線模式');
   }
 
-  // Poll every 10s
+  // Poll every 10s for other users' changes
   setInterval(async()=>{
     if(saving)return;
     try{
       const p=await fbGet();
-      if(p&&typeof p==='object'&&Object.keys(p).length>0){
+      if(p&&typeof p==='object'){
         const j=JSON.stringify(p);
-        if(j!==lastJSON){
-          db={todos:[],expenses:[],vendors:[],guests:[],events:[],weddingDate:'',registryDate:'',cats:[...DEFAULT_CATS],...p};
-          migrateData();lastJSON=j;
-          localStorage.setItem(DB_KEY,j);
-          renderAll();updateDates();populateSelects();
-          setSyncState('ok','已同步');
+        if(j!==lastJ){
+          db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+          migrate();lastJ=j;
+          localStorage.setItem(LKEY,j);
+          renderAll();updateDates();popSelects();
+          setSync('ok','已同步');
         }
       }
     }catch(e){}
   },10000);
 }
 
-function migrateData(){
-  if(!db.todos)db.todos=[];
-  if(!db.expenses)db.expenses=[];
-  if(!db.vendors)db.vendors=[];
-  if(!db.guests)db.guests=[];
-  if(!db.events)db.events=[];
-  db.expenses=db.expenses.map(e=>e.paid===undefined?{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0}:e);
-  db.vendors=db.vendors.map(v=>({paid:0,unpaid:0,files:[],...v}));
-  db.todos=db.todos.map(t=>({files:[],...t}));
-  db.expenses=db.expenses.map(e=>({files:[],...e}));
-  db.guests=db.guests.map(g=>({files:[],...g,note:g.note||''}));
+function migrate(){
+  if(!db.todos)db.todos=[];if(!db.exps)db.exps=[];
+  if(!db.vendors)db.vendors=[];if(!db.guests)db.guests=[];if(!db.events)db.events=[];
+  // migrate old expense format
+  db.exps=db.exps.map(e=>e.paid===undefined?{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0}:e);
 }
 
-// ── SEED ─────────────────────────────────────────────
+// ═══ SEED DATA ═════════════════════════════════════════
 const SEED={
-  weddingDate:'2027-01-17',registryDate:'2027-01-11',cats:[...DEFAULT_CATS],events:[],
+  wDate:'2027-01-17',rDate:'2027-01-11',cats:[...DCATS],events:[],
   todos:[
-    {id:1001,text:'喜餅',cat:'其他',due:'',priority:'',done:false,note:'',files:[]},
-    {id:1002,text:'互動：似顏繪山山總',cat:'其他',due:'',priority:'',done:false,note:'總價28600，已付18600，尾款10000待付',files:[]},
-    {id:1003,text:'互動：拍拍印',cat:'其他',due:'',priority:'',done:false,note:'訂金3000，尾款23499待付',files:[]},
-    {id:1004,text:'外包商確認',cat:'其他',due:'',priority:'',done:false,note:'',files:[]},
-    {id:1005,text:'婚紗選定',cat:'婚紗',due:'',priority:'urgent',done:false,note:'候選：verdi / mydear / 後生 / Juno / Lucian',files:[]},
-    {id:1006,text:'婚禮小物準備',cat:'其他',due:'',priority:'',done:false,note:'',files:[]},
-    {id:1007,text:'婚禮遊戲：拍拍印送2',cat:'其他',due:'',priority:'',done:false,note:'',files:[]},
-    {id:1008,text:'六禮：皮鞋、西裝、金飾、部分喜餅',cat:'其他',due:'',priority:'',done:false,note:'男生已給：金飾260000（項鍊1手鐲2戒指1）婚戒Cartier×1',files:[]},
-    {id:1009,text:'燈光：長榮（待確認）',cat:'場地',due:'',priority:'',done:false,note:'',files:[]},
-    {id:1010,text:'喜帖：電子喜帖拍拍印＋紙本',cat:'喜帖',due:'',priority:'',done:false,note:'紙本待印',files:[]},
-    {id:1011,text:'婚禮影片：不留白（待簽約）',cat:'攝影',due:'',priority:'',done:false,note:'',files:[]},
-    {id:1012,text:'婚攝Fanson 尾款18200 待付',cat:'攝影',due:'',priority:'urgent',done:false,note:'另加攝影跟錄影',files:[]},
-    {id:1013,text:'主持斯杰 尾款13000 待付',cat:'其他',due:'',priority:'urgent',done:false,note:'',files:[]},
-    {id:1014,text:'婚紗攝影時尚芭莎澳門 加價15000 待付',cat:'婚紗',due:'',priority:'urgent',done:false,note:'精修78張，大框1中框3小框3相本2',files:[]},
-    {id:1015,text:'婚紗照：澳門（照片待出）',cat:'攝影',due:'',priority:'',done:true,note:'',files:[]},
-    {id:1016,text:'戒指：Cartier',cat:'其他',due:'',priority:'',done:true,note:'女53000 男43000 我出50000',files:[]},
-    {id:1017,text:'婚佈：憶起幸福 訂金8000',cat:'場地',due:'',priority:'',done:true,note:'',files:[]},
-    {id:1018,text:'新秘：Yibi 訂金7200',cat:'其他',due:'',priority:'',done:true,note:'',files:[]},
-    {id:1019,text:'婚攝：Fanson 訂金7800',cat:'攝影',due:'',priority:'',done:true,note:'',files:[]},
-    {id:1020,text:'主持：斯杰 訂金8800',cat:'其他',due:'',priority:'',done:true,note:'',files:[]},
-    {id:1021,text:'場地：長榮文苑 訂金9萬',cat:'場地',due:'',priority:'',done:true,note:'',files:[]},
-    {id:1022,text:'婚紗攝影：時尚芭莎澳門 付款4萬6',cat:'婚紗',due:'',priority:'',done:true,note:'',files:[]},
-    {id:1023,text:'和八字：楊雅晴 1200',cat:'其他',due:'',priority:'',done:true,note:'',files:[]},
+    {id:1001,text:'喜餅',cat:'其他',due:'',pri:'',done:false,note:''},
+    {id:1002,text:'互動：似顏繪山山總',cat:'其他',due:'',pri:'',done:false,note:'總價28600，已付18600，尾款10000待付'},
+    {id:1003,text:'互動：拍拍印',cat:'其他',due:'',pri:'',done:false,note:'訂金3000，尾款23499待付'},
+    {id:1004,text:'外包商確認',cat:'其他',due:'',pri:'',done:false,note:''},
+    {id:1005,text:'婚紗選定',cat:'婚紗',due:'',pri:'u',done:false,note:'候選：verdi / mydear / 後生 / Juno / Lucian'},
+    {id:1006,text:'婚禮小物準備',cat:'其他',due:'',pri:'',done:false,note:''},
+    {id:1007,text:'婚禮遊戲：拍拍印送2',cat:'其他',due:'',pri:'',done:false,note:''},
+    {id:1008,text:'六禮：皮鞋、西裝、金飾、部分喜餅',cat:'其他',due:'',pri:'',done:false,note:'男生已給：金飾260000（項鍊1手鐲2戒指1）婚戒Cartier×1'},
+    {id:1009,text:'燈光：長榮（待確認）',cat:'場地',due:'',pri:'',done:false,note:''},
+    {id:1010,text:'喜帖：電子喜帖拍拍印＋紙本',cat:'喜帖',due:'',pri:'',done:false,note:'紙本待印'},
+    {id:1011,text:'婚禮影片：不留白（待簽約）',cat:'攝影',due:'',pri:'',done:false,note:''},
+    {id:1012,text:'婚攝Fanson 尾款18200 待付',cat:'攝影',due:'',pri:'u',done:false,note:'另加攝影跟錄影'},
+    {id:1013,text:'主持斯杰 尾款13000 待付',cat:'其他',due:'',pri:'u',done:false,note:''},
+    {id:1014,text:'婚紗攝影時尚芭莎澳門 加價15000 待付',cat:'婚紗',due:'',pri:'u',done:false,note:'精修78張，大框1中框3小框3相本2'},
+    {id:1015,text:'婚紗照：澳門（照片待出）',cat:'攝影',due:'',pri:'',done:true,note:''},
+    {id:1016,text:'戒指：Cartier',cat:'其他',due:'',pri:'',done:true,note:'女53000 男43000 我出50000'},
+    {id:1017,text:'婚佈：憶起幸福 訂金8000',cat:'場地',due:'',pri:'',done:true,note:''},
+    {id:1018,text:'新秘：Yibi 訂金7200',cat:'其他',due:'',pri:'',done:true,note:''},
+    {id:1019,text:'婚攝：Fanson 訂金7800',cat:'攝影',due:'',pri:'',done:true,note:''},
+    {id:1020,text:'主持：斯杰 訂金8800',cat:'其他',due:'',pri:'',done:true,note:''},
+    {id:1021,text:'場地：長榮文苑 訂金9萬',cat:'場地',due:'',pri:'',done:true,note:''},
+    {id:1022,text:'婚紗攝影：時尚芭莎澳門 付款4萬6',cat:'婚紗',due:'',pri:'',done:true,note:''},
+    {id:1023,text:'和八字：楊雅晴 1200',cat:'其他',due:'',pri:'',done:true,note:''},
   ],
   vendors:[
-    {id:3001,name:'長榮文苑',type:'場地',contact:'',phone:'',line:'',status:'confirmed',paid:90000,unpaid:360000,note:'婚禮日期2027/1/17',files:[]},
-    {id:3002,name:'憶起幸福',type:'花藝',contact:'',phone:'',line:'',status:'confirmed',paid:8000,unpaid:0,note:'婚佈',files:[]},
-    {id:3003,name:'Yibi',type:'其他',contact:'Yibi',phone:'',line:'',status:'confirmed',paid:7200,unpaid:17300,note:'新秘',files:[]},
-    {id:3004,name:'Fanson',type:'攝影',contact:'Fanson',phone:'',line:'',status:'confirmed',paid:7800,unpaid:18200,note:'另加攝影跟錄影',files:[]},
-    {id:3005,name:'斯杰',type:'主持人',contact:'斯杰',phone:'',line:'',status:'confirmed',paid:8800,unpaid:13000,note:'',files:[]},
-    {id:3006,name:'時尚芭莎澳門',type:'攝影',contact:'',phone:'',line:'',status:'confirmed',paid:46000,unpaid:15000,note:'精修78張，大框1中框3小框3相本2',files:[]},
-    {id:3007,name:'楊雅晴',type:'其他',contact:'楊雅晴',phone:'',line:'',status:'confirmed',paid:1200,unpaid:0,note:'和八字',files:[]},
-    {id:3008,name:'不留白',type:'錄影',contact:'',phone:'',line:'',status:'pending',paid:0,unpaid:0,note:'婚禮影片洽談中',files:[]},
-    {id:3009,name:'似顏繪山山總',type:'其他',contact:'',phone:'',line:'',status:'confirmed',paid:18600,unpaid:10000,note:'互動，總28600',files:[]},
-    {id:3010,name:'拍拍印',type:'其他',contact:'',phone:'',line:'',status:'confirmed',paid:3000,unpaid:23499,note:'互動+喜帖，訂金3000，尾款23499待付',files:[]},
+    {id:3001,name:'長榮文苑',type:'場地',contact:'',phone:'',line:'',status:'confirmed',paid:90000,unpaid:360000,note:'婚禮日期2027/1/17'},
+    {id:3002,name:'憶起幸福',type:'花藝',contact:'',phone:'',line:'',status:'confirmed',paid:8000,unpaid:0,note:'婚佈'},
+    {id:3003,name:'Yibi',type:'其他',contact:'Yibi',phone:'',line:'',status:'confirmed',paid:7200,unpaid:17300,note:'新秘'},
+    {id:3004,name:'Fanson',type:'攝影',contact:'Fanson',phone:'',line:'',status:'confirmed',paid:7800,unpaid:18200,note:'另加攝影跟錄影'},
+    {id:3005,name:'斯杰',type:'主持人',contact:'斯杰',phone:'',line:'',status:'confirmed',paid:8800,unpaid:13000,note:''},
+    {id:3006,name:'時尚芭莎澳門',type:'攝影',contact:'',phone:'',line:'',status:'confirmed',paid:46000,unpaid:15000,note:'精修78張，大框1中框3小框3相本2'},
+    {id:3007,name:'楊雅晴',type:'其他',contact:'楊雅晴',phone:'',line:'',status:'confirmed',paid:1200,unpaid:0,note:'和八字'},
+    {id:3008,name:'不留白',type:'錄影',contact:'',phone:'',line:'',status:'pending',paid:0,unpaid:0,note:'婚禮影片洽談中'},
+    {id:3009,name:'似顏繪山山總',type:'其他',contact:'',phone:'',line:'',status:'confirmed',paid:18600,unpaid:10000,note:'互動，總28600'},
+    {id:3010,name:'拍拍印',type:'其他',contact:'',phone:'',line:'',status:'confirmed',paid:3000,unpaid:23499,note:'互動+喜帖'},
   ],
-  expenses:[],// expenses generated from vendors
+  exps:[],
   guests:[]
 };
 
-// ── UI ────────────────────────────────────────────────
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sb-overlay').classList.add('show')}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-overlay').classList.remove('show')}
-function switchTab(name,btn){
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');
-  closeSidebar();
-  if(name==='calendar')renderCalendar();
+// ═══ UI ════════════════════════════════════════════════
+function openSB(){document.getElementById('sb').classList.add('on');document.getElementById('ov').classList.add('on');}
+function closeSB(){document.getElementById('sb').classList.remove('on');document.getElementById('ov').classList.remove('on');}
+function goTab(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+name).classList.add('on');btn.classList.add('on');
+  closeSB();if(name==='calendar')renderCal();
 }
 function toggleCard(id){
-  const body=document.getElementById(id+'-body');
-  const arrow=document.getElementById(id+'-arrow');
-  if(!body)return;
-  body.classList.toggle('open');
-  if(arrow)arrow.classList.toggle('open');
+  const b=document.getElementById(id+'-bd'),a=document.getElementById(id+'-arr');
+  if(b){b.classList.toggle('on');if(a)a.classList.toggle('on');}
 }
 function editDate(type){
-  const cur=type==='wedding'?db.weddingDate:db.registryDate;
-  const v=prompt('設定'+(type==='wedding'?'婚禮':'登記')+'日期（YYYY-MM-DD）：',cur||'');
+  const cur=type==='w'?db.wDate:db.rDate;
+  const v=prompt('設定'+(type==='w'?'婚禮':'登記')+'日期（YYYY-MM-DD）：',cur||'');
   if(v===null)return;
-  if(type==='wedding')db.weddingDate=v.trim();else db.registryDate=v.trim();
-  updateDates();saveData();
+  if(type==='w')db.wDate=v.trim();else db.rDate=v.trim();
+  updateDates();save();
 }
 function updateDates(){
-  setChip('sb-w-val','sb-w-cd','chip-w','chip-w-cd',db.weddingDate,'婚禮');
-  setChip('sb-r-val','sb-r-cd','chip-r','chip-r-cd',db.registryDate,'登記');
+  setDate('sw-v','sw-c','cw-v','cw-c',db.wDate,'婚禮');
+  setDate('sr-v','sr-c','cr-v','cr-c',db.rDate,'登記');
 }
-function setChip(vId,cId,cvId,ccId,ds,label){
-  const v=document.getElementById(vId),c=document.getElementById(cId);
-  const cv=document.getElementById(cvId),cc=document.getElementById(ccId);
-  if(!ds){if(v)v.textContent='點擊設定';if(c)c.textContent='';if(cv)cv.textContent='設定'+label;if(cc)cc.textContent='';return;}
+function setDate(v1,c1,v2,c2,ds,lbl){
+  const el1=document.getElementById(v1),el2=document.getElementById(v2);
+  const ec1=document.getElementById(c1),ec2=document.getElementById(c2);
+  if(!ds){
+    if(el1)el1.textContent='點擊設定';if(el2)el2.textContent='設定'+lbl;
+    if(ec1)ec1.textContent='';if(ec2)ec2.textContent='';return;
+  }
   const disp=ds.replace(/-/g,'/');
-  if(v)v.textContent=disp;if(cv)cv.textContent=disp;
+  if(el1)el1.textContent=disp;if(el2)el2.textContent=disp;
   const d=Math.ceil((new Date(ds)-new Date())/86400000);
-  if(c)c.textContent=d>0?'倒數'+d+'天':'';if(cc)cc.textContent=d>0?' · 倒數'+d+'天':'';
+  const cd=d>0?'倒數'+d+'天':'';
+  if(ec1)ec1.textContent=cd;if(ec2)ec2.textContent=d>0?' · 倒數'+d+'天':'';
 }
-function openLightbox(src){document.getElementById('lb-img').src=src;document.getElementById('lightbox').classList.add('show')}
-function closeLightbox(){document.getElementById('lightbox').classList.remove('show')}
-document.getElementById('lightbox').addEventListener('click',e=>{if(e.target.id==='lightbox')closeLightbox()})
-function openEditModal(title,bodyHtml,saveFn){
-  document.getElementById('edit-title').textContent=title;
-  document.getElementById('edit-body').innerHTML=bodyHtml;
-  document.getElementById('edit-save-btn').onclick=async()=>{await saveFn();closeEditModal();};
-  document.getElementById('edit-modal').classList.add('show');
+function openModal(title,body,saveFn){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal-save').onclick=async()=>{await saveFn();closeModal();};
+  document.getElementById('modal').classList.add('on');
 }
-function closeEditModal(){document.getElementById('edit-modal').classList.remove('show')}
-function handleModalBg(e){if(e.target.id==='edit-modal')closeEditModal()}
-function populateSelects(){
-  ['todo-cat','exp-cat'].forEach(id=>{const el=document.getElementById(id);if(el){const c=el.value;el.innerHTML=catOpts(c||getCats()[0])}});
-  const vt=document.getElementById('v-type');if(vt){const c=vt.value;vt.innerHTML=vtypeOpts(c||VTYPES[0])}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+function popSelects(){
+  ['t-cat','e-cat'].forEach(id=>{const el=document.getElementById(id);if(el){const c=el.value;el.innerHTML=catOpts(c||cats()[0]);}});
+  const vt=document.getElementById('v-type');if(vt){const c=vt.value;vt.innerHTML=vtOpts(c||DTYPES[0]);}
 }
-async function handleCatChange(sel){
+async function handleCat(sel){
   if(sel.value!=='＋新增類別')return;
-  const name=prompt('新增類別名稱：','');if(!name?.trim()){sel.value=getCats()[0];return}
-  const t=name.trim();if(!db.cats)db.cats=[...DEFAULT_CATS];if(!db.cats.includes(t))db.cats.push(t);
-  sel.innerHTML=catOpts(t);sel.value=t;populateSelects();await saveData();
+  const n=prompt('新增類別：','');if(!n?.trim()){sel.value=cats()[0];return;}
+  const t=n.trim();if(!db.cats)db.cats=[...DCATS];if(!db.cats.includes(t))db.cats.push(t);
+  sel.innerHTML=catOpts(t);sel.value=t;popSelects();await save();
 }
-async function handleVtypeChange(sel){
+async function handleVtype(sel){
   if(sel.value!=='＋新增類別')return;
-  const name=prompt('新增類別名稱：','');if(!name?.trim()){sel.value=VTYPES[0];return}
-  const t=name.trim();if(!db.cats)db.cats=[...DEFAULT_CATS];if(!db.cats.includes(t))db.cats.push(t);
-  sel.innerHTML=vtypeOpts(t);sel.value=t;populateSelects();await saveData();
+  const n=prompt('新增類別：','');if(!n?.trim()){sel.value=DTYPES[0];return;}
+  const t=n.trim();if(!db.cats)db.cats=[...DCATS];if(!db.cats.includes(t))db.cats.push(t);
+  sel.innerHTML=vtOpts(t);sel.value=t;popSelects();await save();
 }
 
-// ── ATTACHMENTS ───────────────────────────────────────
-// ── FILE STORAGE ─────────────────────────────────────
-// Files stored in localStorage separately (too large for Firebase)
-// Firebase only stores metadata
-function saveFilesLocally(key, files){
-  try{localStorage.setItem('wf_'+key, JSON.stringify(files));}catch(e){console.error('File save error',e);}
-}
-function loadFilesLocally(key){
-  try{const d=localStorage.getItem('wf_'+key);return d?JSON.parse(d):[];}catch(e){return[];}
-}
-function getItemFiles(item){
-  if(!item)return[];
-  // Load from localStorage using item id as key
-  return loadFilesLocally(item.id);
-}
-function setItemFiles(item, files){
-  if(!item)return;
-  saveFilesLocally(item.id, files);
-  item.files=files.map(f=>({type:f.type,name:f.name})); // only metadata in db
-}
-
-function buildFileGrid(item, onDelName, onAddName){
-  const files=getItemFiles(item);
-  const imgs=files.filter(f=>f.type==='img');
-  const docs=files.filter(f=>f.type==='doc');
-  const itemId=item.id;
-  // Store image data in a global registry to avoid quote issues
-  if(!window._imgCache)window._imgCache={};
-  let h='<div class="attach-grid">';
-  imgs.forEach((f,i)=>{
-    const cacheKey='img_'+itemId+'_'+i;
-    window._imgCache[cacheKey]=f.data||'';
-    h+=`<div class="attach-img" onclick="openLightbox(window._imgCache['${cacheKey}'])"><img src="${f.data||''}"><button class="attach-del" onclick="event.stopPropagation();${onDelName}(${itemId},${i})">✕</button></div>`;
-  });
-  docs.forEach((f,i)=>h+=`<div class="attach-file"><span style="font-size:14px">📄</span><span class="attach-file-name">${esc(f.name)}</span><button onclick="${onDelName}(${itemId},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 4px">✕</button></div>`);
-  h+=`<div class="attach-add" onclick="${onAddName}(${itemId})"><span style="font-size:18px">＋</span><span>加附件</span></div></div>`;
-  return h;
-}
-function addFilesToItem(files,newFiles){
-  if(!files)files=[];
-  return[...files,...newFiles];
-}
-function pickFiles(){
-  return new Promise(resolve=>{
-    const inp=document.createElement('input');
-    inp.type='file';
-    inp.accept='image/*,application/pdf,.doc,.docx,.xlsx,.txt';
-    inp.multiple=true;
-    inp.style.cssText='position:fixed;top:-100px;left:-100px;opacity:0';
-    document.body.appendChild(inp);
-    let resolved=false;
-    inp.onchange=async(e)=>{
-      if(resolved)return;resolved=true;
-      const results=[];
-      for(const f of Array.from(e.target.files||[])){
-        const r=await compressImage(f);
-        if(r)results.push(r);
-      }
-      document.body.removeChild(inp);
-      resolve(results);
-    };
-    // Fallback timeout
-    setTimeout(()=>{
-      if(!resolved){resolved=true;try{document.body.removeChild(inp)}catch(e){}resolve([]);}
-    },60000);
-    inp.click();
-  });
-}
-
-// ── VENDOR ↔ EXPENSE SYNC ─────────────────────────────
-function syncAllVendorsToExpenses(){
-  // Remove all vendor-linked expenses, rebuild from vendors
-  const standalone=db.expenses.filter(e=>!e.vendorId);
-  const vendorExps=db.vendors.filter(v=>v.paid||v.unpaid).map(v=>({
-    id:v.id+100000,// deterministic id
-    vendorId:v.id,
-    name:v.name,
-    cat:v.type,
-    paid:v.paid||0,
-    unpaid:v.unpaid||0,
-    note:v.note||'',
-    files:v.files||[]
-  }));
-  db.expenses=[...standalone,...vendorExps];
-}
-
-function syncVendorToExpense(v){
+// ═══ VENDOR ════════════════════════════════════════════
+function syncVE(v){
   // Remove old linked expense
-  db.expenses=db.expenses.filter(e=>e.vendorId!==v.id);
-  // Add new one if has amounts
+  db.exps=db.exps.filter(e=>e.vid!==v.id);
   if(v.paid||v.unpaid){
-    db.expenses.push({
-      id:v.id+100000,
-      vendorId:v.id,
-      name:v.name,
-      cat:v.type,
-      paid:v.paid||0,
-      unpaid:v.unpaid||0,
-      note:v.note||'',
-      files:v.files||[]
-    });
+    // Add/update linked expense
+    db.exps.push({id:v.id+100000,vid:v.id,name:v.name,cat:v.type,paid:v.paid||0,unpaid:v.unpaid||0,note:v.note||''});
   }
 }
-
-// ── VENDORS ───────────────────────────────────────────
 async function addVendor(){
   const name=document.getElementById('v-name').value.trim();if(!name)return;
-  const v={id:Date.now(),name,type:document.getElementById('v-type').value,contact:document.getElementById('v-contact').value,phone:document.getElementById('v-phone').value,line:document.getElementById('v-line').value,status:document.getElementById('v-status').value,paid:parseFloat(document.getElementById('v-paid').value)||0,unpaid:parseFloat(document.getElementById('v-unpaid').value)||0,note:document.getElementById('v-note').value,files:[]};
-  db.vendors.push(v);
-  syncVendorToExpense(v);
-  ['v-name','v-contact','v-phone','v-line','v-note'].forEach(id=>document.getElementById(id).value='');
+  const v={id:Date.now(),name,type:document.getElementById('v-type').value,
+    contact:document.getElementById('v-con').value,phone:document.getElementById('v-ph').value,
+    line:document.getElementById('v-line').value,status:document.getElementById('v-st').value,
+    paid:parseFloat(document.getElementById('v-paid').value)||0,
+    unpaid:parseFloat(document.getElementById('v-unpaid').value)||0,
+    note:document.getElementById('v-note').value};
+  db.vendors.push(v);syncVE(v);
+  ['v-name','v-con','v-ph','v-line','v-note'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('v-paid').value='';document.getElementById('v-unpaid').value='';
-  renderVendors();renderExpenses();await saveData();
+  renderVendors();renderExps();await save();
 }
-
-async function deleteVendor(id){
+async function delVendor(id){
   const v=db.vendors.find(v=>v.id===id);
-  if(!confirm('確定要刪除廠商「'+(v?v.name:'此廠商')+'」嗎？（對應費用也會一起刪除）'))return;
+  if(!confirm('確定刪除廠商「'+(v?v.name:'')+'」？（費用記錄也會刪除）'))return;
   db.vendors=db.vendors.filter(v=>v.id!==id);
-  db.expenses=db.expenses.filter(e=>e.vendorId!==id);
-  renderVendors();renderExpenses();await saveData();
+  db.exps=db.exps.filter(e=>e.vid!==id);
+  renderVendors();renderExps();await save();
 }
-
-function openVendorDetail(id){
+function openVendor(id){
   const v=db.vendors.find(v=>v.id===id);if(!v)return;
-  const col=getVendorColor(id);
-  const bodyHtml=`
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <div style="width:12px;height:12px;border-radius:50%;background:${col};flex-shrink:0"></div>
-      <span style="font-size:11px;color:var(--text3)">${v.type}</span>
-      <span class="vstatus vstatus-${v.status}" style="margin-left:4px">${{confirmed:'已確認',pending:'洽談中',cancelled:'已取消'}[v.status]}</span>
+  const sl={confirmed:'已確認',pending:'洽談中',cancelled:'已取消'};
+  const col=vcolor(id);
+  const body=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:6px 10px;background:var(--bg2);border-radius:var(--r2)">
+      <div style="width:10px;height:10px;border-radius:50%;background:${col}"></div>
+      <span style="font-size:11px;color:var(--text2)">${v.type}</span>
+      <span class="vs vs-${v.status==='confirmed'?'c':v.status==='pending'?'p':'x'}">${sl[v.status]}</span>
     </div>
-    <div class="frow">
-      <div class="field" style="flex:2"><label>廠商名稱</label><input type="text" id="em-name" value="${esc(v.name)}"></div>
-      <div class="field"><label>類型</label><select id="em-type" onchange="handleVtypeChange(this)">${vtypeOpts(v.type)}</select></div>
-      <div class="field"><label>狀態</label><select id="em-st"><option value="pending"${v.status==='pending'?' selected':''}>洽談中</option><option value="confirmed"${v.status==='confirmed'?' selected':''}>已確認</option><option value="cancelled"${v.status==='cancelled'?' selected':''}>已取消</option></select></div>
+    <div class="fl">
+      <div class="f" style="flex:2"><label>廠商名稱</label><input id="em-name" value="${esc(v.name)}"></div>
+      <div class="f"><label>類型</label><select id="em-type" onchange="handleVtype(this)">${vtOpts(v.type)}</select></div>
+      <div class="f"><label>狀態</label><select id="em-st">
+        <option value="pending"${v.status==='pending'?' selected':''}>洽談中</option>
+        <option value="confirmed"${v.status==='confirmed'?' selected':''}>已確認</option>
+        <option value="cancelled"${v.status==='cancelled'?' selected':''}>已取消</option>
+      </select></div>
     </div>
-    <div class="frow" style="margin-top:8px">
-      <div class="field"><label>聯絡人</label><input type="text" id="em-contact" value="${esc(v.contact)}"></div>
-      <div class="field"><label>電話</label><input type="text" id="em-phone" value="${esc(v.phone)}"></div>
-      <div class="field"><label>LINE</label><input type="text" id="em-line" value="${esc(v.line)}"></div>
+    <div class="fl" style="margin-top:8px">
+      <div class="f"><label>聯絡人</label><input id="em-con" value="${esc(v.contact)}"></div>
+      <div class="f"><label>電話</label><input id="em-ph" value="${esc(v.phone)}"></div>
+      <div class="f"><label>LINE</label><input id="em-line" value="${esc(v.line)}"></div>
     </div>
-    <div class="frow" style="margin-top:8px">
-      <div class="field"><label>✅ 已付</label><input type="number" id="em-paid" value="${v.paid||0}"></div>
-      <div class="field"><label>⏳ 待付</label><input type="number" id="em-unpaid" value="${v.unpaid||0}"></div>
+    <div class="fl" style="margin-top:8px">
+      <div class="f"><label>✅ 已付</label><input type="number" id="em-paid" value="${v.paid||0}"></div>
+      <div class="f"><label>⏳ 待付</label><input type="number" id="em-unpaid" value="${v.unpaid||0}"></div>
     </div>
-    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(v.note||'')}</textarea></div></div>
-    <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件</div>
-    <div id="vendor-files-${v.id}">${buildFileGrid(v,'removeVendorFile','addVendorFile')}</div></div>`;
-  openEditModal(v.name, bodyHtml, async()=>{
+    <div class="fl" style="margin-top:8px"><div class="f"><label>備注</label><textarea id="em-note">${esc(v.note||'')}</textarea></div></div>
+    <div style="margin-top:12px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件（圖片或文件）</div>
+      <div id="fg-${v.id}">${fileGrid(v.id)}</div>
+    </div>`;
+  openModal(v.name,body,async()=>{
     const nn=document.getElementById('em-name').value.trim();if(nn)v.name=nn;
     v.type=document.getElementById('em-type').value;
     v.status=document.getElementById('em-st').value;
-    v.contact=document.getElementById('em-contact').value;
-    v.phone=document.getElementById('em-phone').value;
+    v.contact=document.getElementById('em-con').value;
+    v.phone=document.getElementById('em-ph').value;
     v.line=document.getElementById('em-line').value;
     v.paid=parseFloat(document.getElementById('em-paid').value)||0;
     v.unpaid=parseFloat(document.getElementById('em-unpaid').value)||0;
     v.note=document.getElementById('em-note').value;
-    syncVendorToExpense(v);
-    renderVendors();renderExpenses();await saveData();
-  });
-  // expose file functions globally for inline onclick
-  window._curVId=id;
-}
-
-async function addVendorFile(id){
-  pickFiles(async results=>{
-    const v=db.vendors.find(v=>v.id===id);if(!v)return;
-    if(!v.files)v.files=[];
-    v.files.push(...results);
-    syncVendorToExpense(v);
-    renderVendors();renderExpenses();
-    // refresh modal file grid if open
-    const el=document.getElementById('vendor-files-'+id);
-    if(el)el.innerHTML=buildFileGrid(v.files,(idx)=>removeVendorFile(v.id,idx),()=>addVendorFile(v.id));
-    await saveData();
+    syncVE(v);renderVendors();renderExps();await save();
   });
 }
-async function removeVendorFile(id,idx){
-  if(!confirm('確定要刪除此附件嗎？'))return;
-  const v=db.vendors.find(v=>v.id===id);if(!v||!v.files)return;
-  v.files.splice(idx,1);
-  syncVendorToExpense(v);
-  renderVendors();renderExpenses();
-  const el=document.getElementById('vendor-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(v.files,(idx)=>removeVendorFile(id,idx),()=>addVendorFile(id));
-  await saveData();
-}
-
 function renderVendors(){
-  const list=document.getElementById('vendor-list');
-  if(!db.vendors.length){list.innerHTML='<div class="empty"><div class="emoji">🏪</div>還沒有廠商</div>';return}
+  const list=document.getElementById('v-list');
+  if(!db.vendors.length){list.innerHTML='<div class="empty"><div class="em">🏪</div>還沒有廠商</div>';return;}
   const sl={confirmed:'已確認',pending:'洽談中',cancelled:'已取消'};
-  // Group by type
   const types=[...new Set(db.vendors.map(v=>v.type))].sort();
-  let html='';
+  let h='';
   types.forEach(type=>{
-    const group=db.vendors.filter(v=>v.type===type);
-    html+=`<div style="font-size:10px;font-weight:500;color:var(--text3);letter-spacing:.5px;padding:8px 4px 4px;text-transform:uppercase">${type}</div>`;
-    html+=group.map(v=>{
-      const col=getVendorColor(v.id);
-      const paid=v.paid||0,unpaid=v.unpaid||0;
-      return`<div class="item-card" style="border-left:4px solid ${col};margin-bottom:5px">
-        <div class="item-row" onclick="openVendorDetail(${v.id})" style="cursor:pointer">
-          <div class="item-body">
-            <div class="item-title">${esc(v.name)}</div>
-            <div class="item-sub">
-              <span class="vstatus vstatus-${v.status}">${sl[v.status]}</span>
-              ${paid?`<span style="font-size:10px;color:var(--green)">✅ $${paid.toLocaleString()}</span>`:''}
-              ${unpaid?`<span style="font-size:10px;color:var(--accent)">⏳ $${unpaid.toLocaleString()}</span>`:''}
-              ${v.note?`<span class="tag" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.note.slice(0,20))}</span>`:''}
-              ${loadFilesLocally(v.id).length?`<span class="tag">📎 ${loadFilesLocally(v.id).length}</span>`:''}
+    const grp=db.vendors.filter(v=>v.type===type);
+    h+=`<div style="font-size:10px;font-weight:500;color:var(--text3);letter-spacing:.5px;padding:8px 4px 4px;text-transform:uppercase">${type}</div>`;
+    h+=grp.map(v=>{
+      const col=vcolor(v.id);
+      const fc=getFiles(v.id).length;
+      return`<div class="ic" style="border-left:4px solid ${col};margin-bottom:5px">
+        <div class="ir" onclick="openVendor(${v.id})">
+          <div class="ib">
+            <div class="it">${esc(v.name)}</div>
+            <div class="is">
+              <span class="vs vs-${v.status==='confirmed'?'c':v.status==='pending'?'p':'x'}">${sl[v.status]}</span>
+              ${v.paid?`<span style="font-size:10px;color:var(--green)">✅ $${v.paid.toLocaleString()}</span>`:''}
+              ${v.unpaid?`<span style="font-size:10px;color:var(--accent)">⏳ $${v.unpaid.toLocaleString()}</span>`:''}
+              ${v.note?`<span class="tag" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(v.note.slice(0,18))}</span>`:''}
+              ${fc?`<span class="tag">📎 ${fc}</span>`:''}
             </div>
           </div>
-          <button class="btn-del" onclick="event.stopPropagation();deleteVendor(${v.id})">✕</button>
+          <button class="btn-x" onclick="event.stopPropagation();delVendor(${v.id})">✕</button>
         </div>
       </div>`;
     }).join('');
   });
-  list.innerHTML=html;
+  list.innerHTML=h;
 }
 
-// ── EXPENSES ──────────────────────────────────────────
-async function addExpense(){
-  const name=document.getElementById('exp-name').value.trim();if(!name)return;
-  const paid=parseFloat(document.getElementById('exp-paid').value)||0;
-  const unpaid=parseFloat(document.getElementById('exp-unpaid').value)||0;
+// ═══ EXPENSES ══════════════════════════════════════════
+async function addExp(){
+  const name=document.getElementById('e-name').value.trim();if(!name)return;
+  const paid=parseFloat(document.getElementById('e-paid').value)||0;
+  const unpaid=parseFloat(document.getElementById('e-unpaid').value)||0;
   if(!paid&&!unpaid)return;
-  db.expenses.push({id:Date.now(),name,cat:document.getElementById('exp-cat').value,paid,unpaid,note:'',files:[]});
-  document.getElementById('exp-name').value='';document.getElementById('exp-paid').value='';document.getElementById('exp-unpaid').value='';
-  renderExpenses();await saveData();
+  db.exps.push({id:Date.now(),name,cat:document.getElementById('e-cat').value,paid,unpaid,note:''});
+  document.getElementById('e-name').value='';document.getElementById('e-paid').value='';document.getElementById('e-unpaid').value='';
+  renderExps();await save();
 }
-async function deleteExpense(id){
-  const e=db.expenses.find(e=>e.id===id);
-  if(!confirm('確定要刪除「'+(e?e.name:'此費用')+'」嗎？'))return;
-  // if linked to vendor, also update vendor
-  if(e&&e.vendorId){
-    const v=db.vendors.find(v=>v.id===e.vendorId);
-    if(v){v.paid=0;v.unpaid=0;renderVendors();}
-  }
-  db.expenses=db.expenses.filter(e=>e.id!==id);
-  renderExpenses();await saveData();
+async function delExp(id){
+  const e=db.exps.find(e=>e.id===id);
+  if(!confirm('確定刪除「'+(e?e.name:'')+'」？'))return;
+  if(e?.vid){const v=db.vendors.find(v=>v.id===e.vid);if(v){v.paid=0;v.unpaid=0;renderVendors();}}
+  db.exps=db.exps.filter(e=>e.id!==id);renderExps();await save();
 }
-
-function openExpDetail(id){
-  const e=db.expenses.find(e=>e.id===id);if(!e)return;
-  const isLinked=!!e.vendorId;
-  const bodyHtml=`
-    ${isLinked?`<div style="font-size:11px;color:var(--accent);margin-bottom:10px;padding:6px 10px;background:var(--accent-l);border-radius:var(--r2)">🔗 此費用與廠商「${esc(db.vendors.find(v=>v.id===e.vendorId)?.name||'')}」連動，修改後廠商資料也會同步更新</div>`:''}
-    <div class="frow"><div class="field" style="flex:1"><label>費用名稱</label><input type="text" id="em-name" value="${esc(e.name)}"></div></div>
-    <div class="frow" style="margin-top:8px">
-      <div class="field"><label>類別</label><select id="em-cat" onchange="handleCatChange(this)">${catOpts(e.cat)}</select></div>
-      <div class="field"><label>✅ 已付</label><input type="number" id="em-paid" value="${e.paid||0}"></div>
-      <div class="field"><label>⏳ 待付</label><input type="number" id="em-unpaid" value="${e.unpaid||0}"></div>
+function openExp(id){
+  const e=db.exps.find(e=>e.id===id);if(!e)return;
+  const linked=e.vid?db.vendors.find(v=>v.id===e.vid):null;
+  const body=`
+    ${linked?`<div style="font-size:11px;color:var(--accent);margin-bottom:10px;padding:6px 10px;background:var(--accent-l);border-radius:var(--r2)">🔗 與廠商「${esc(linked.name)}」連動</div>`:''}
+    <div class="fl"><div class="f"><label>費用名稱</label><input id="em-name" value="${esc(e.name)}"></div></div>
+    <div class="fl" style="margin-top:8px">
+      <div class="f"><label>類別</label><select id="em-cat" onchange="handleCat(this)">${catOpts(e.cat)}</select></div>
+      <div class="f"><label>✅ 已付</label><input type="number" id="em-paid" value="${e.paid||0}"></div>
+      <div class="f"><label>⏳ 待付</label><input type="number" id="em-unpaid" value="${e.unpaid||0}"></div>
     </div>
-    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(e.note||'')}</textarea></div></div>
-    <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件${isLinked?'（與廠商共用）':''}</div>
-    <div id="exp-files-${e.id}">${buildFileGrid(e,'removeExpFile','addExpFile')}</div></div>`;
-  openEditModal(e.name, bodyHtml, async()=>{
+    <div class="fl" style="margin-top:8px"><div class="f"><label>備注</label><textarea id="em-note">${esc(e.note||'')}</textarea></div></div>
+    <div style="margin-top:12px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件（圖片或文件）</div>
+      <div id="fg-${e.id}">${fileGrid(e.id)}</div>
+    </div>`;
+  openModal(e.name,body,async()=>{
     const nn=document.getElementById('em-name').value.trim();if(nn)e.name=nn;
     e.cat=document.getElementById('em-cat').value;
     e.paid=parseFloat(document.getElementById('em-paid').value)||0;
     e.unpaid=parseFloat(document.getElementById('em-unpaid').value)||0;
     e.note=document.getElementById('em-note').value;
-    // sync back to vendor
-    if(e.vendorId){
-      const v=db.vendors.find(v=>v.id===e.vendorId);
-      if(v){v.paid=e.paid;v.unpaid=e.unpaid;v.note=e.note;v.name=e.name;renderVendors();}
+    if(e.vid){
+      const v=db.vendors.find(v=>v.id===e.vid);
+      if(v){v.paid=e.paid;v.unpaid=e.unpaid;v.note=e.note;v.name=e.name;syncVE(v);renderVendors();}
     }
-    renderExpenses();await saveData();
+    renderExps();await save();
   });
 }
-
-async function addExpFile(id){
-  pickFiles(async results=>{
-    const e=db.expenses.find(e=>e.id===id);if(!e)return;
-    if(!e.files)e.files=[];e.files.push(...results);
-    // sync to vendor
-    if(e.vendorId){const v=db.vendors.find(v=>v.id===e.vendorId);if(v){v.files=[...e.files];renderVendors();}}
-    renderExpenses();
-    const el=document.getElementById('exp-files-'+id);
-    if(el)el.innerHTML=buildFileGrid(e.files,`(idx)=>{removeExpFile(${id},idx)}`,`()=>{addExpFile(${id})}`);
-    await saveData();
-  });
-}
-async function removeExpFile(id,idx){
-  if(!confirm('確定要刪除此附件嗎？'))return;
-  const e=db.expenses.find(e=>e.id===id);if(!e||!e.files)return;
-  e.files.splice(idx,1);
-  if(e.vendorId){const v=db.vendors.find(v=>v.id===e.vendorId);if(v){v.files=[...e.files];renderVendors();}}
-  renderExpenses();
-  const el=document.getElementById('exp-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(e.files,(idx)=>removeExpFile(id,idx),()=>addExpFile(id));
-  await saveData();
-}
-
-function renderExpenses(){
-  const tp=db.expenses.reduce((s,e)=>s+(e.paid||0),0);
-  const tu=db.expenses.reduce((s,e)=>s+(e.unpaid||0),0);
+function renderExps(){
+  const tp=db.exps.reduce((s,e)=>s+(e.paid||0),0);
+  const tu=db.exps.reduce((s,e)=>s+(e.unpaid||0),0);
   document.getElementById('b-paid').textContent='$'+tp.toLocaleString();
   document.getElementById('b-unpaid').textContent='$'+tu.toLocaleString();
   document.getElementById('b-total').textContent='$'+(tp+tu).toLocaleString();
-  const list=document.getElementById('expense-list');
-  if(!db.expenses.length){list.innerHTML='<div class="empty"><div class="emoji">💵</div>還沒有費用</div>';return}
-  list.innerHTML=db.expenses.map(e=>{
-    const paid=e.paid||0,unpaid=e.unpaid||0;
-    const vColor=e.vendorId?getVendorColor(e.vendorId):null;
-    return`<div class="item-card"${vColor?` style="border-left:4px solid ${vColor}"`:''}> 
-      <div class="item-row" onclick="openExpDetail(${e.id})" style="cursor:pointer">
-        <div class="item-body">
-          <div class="item-title">${esc(e.name)}${e.vendorId?'<span style="font-size:9px;color:var(--text3);margin-left:5px">🔗廠商</span>':''}</div>
-          <div class="item-sub">
+  const list=document.getElementById('e-list');
+  if(!db.exps.length){list.innerHTML='<div class="empty"><div class="em">💵</div>還沒有費用</div>';return;}
+  list.innerHTML=db.exps.map(e=>{
+    const p=e.paid||0,u=e.unpaid||0;
+    const vc=e.vid?vcolor(e.vid):null;
+    const fc=getFiles(e.id).length;
+    return`<div class="ic"${vc?` style="border-left:4px solid ${vc}"`:''}> 
+      <div class="ir" onclick="openExp(${e.id})">
+        <div class="ib">
+          <div class="it">${esc(e.name)}${e.vid?'<span style="font-size:9px;color:var(--text3);margin-left:5px">🔗廠商</span>':''}</div>
+          <div class="is">
             <span class="tag">${e.cat}</span>
-            ${paid?`<span style="font-size:10px;color:var(--green)">✅ $${paid.toLocaleString()}</span>`:''}
-            ${unpaid?`<span style="font-size:10px;color:var(--accent)">⏳ $${unpaid.toLocaleString()}</span>`:''}
+            ${p?`<span style="font-size:10px;color:var(--green)">✅ $${p.toLocaleString()}</span>`:''}
+            ${u?`<span style="font-size:10px;color:var(--accent)">⏳ $${u.toLocaleString()}</span>`:''}
             ${e.note?'<span class="tag">備注</span>':''}
-            ${loadFilesLocally(e.id).length?`<span class="tag">📎 ${loadFilesLocally(e.id).length}</span>`:''}
+            ${fc?`<span class="tag">📎 ${fc}</span>`:''}
           </div>
         </div>
-        <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--text);white-space:nowrap;flex-shrink:0">$${(paid+unpaid).toLocaleString()}</div>
-        ${!e.vendorId?`<button class="btn-del" onclick="event.stopPropagation();deleteExpense(${e.id})">✕</button>`:''}
+        <div style="font-family:'Playfair Display',serif;font-size:15px;white-space:nowrap;flex-shrink:0">$${(p+u).toLocaleString()}</div>
+        ${!e.vid?`<button class="btn-x" onclick="event.stopPropagation();delExp(${e.id})">✕</button>`:''}
       </div>
     </div>`;
   }).join('');
 }
 
-// ── TODOS ─────────────────────────────────────────────
+// ═══ TODOS ═════════════════════════════════════════════
 async function addTodo(){
-  const text=document.getElementById('todo-text').value.trim();if(!text)return;
-  db.todos.push({id:Date.now(),text,cat:document.getElementById('todo-cat').value,due:document.getElementById('todo-due').value,priority:document.getElementById('todo-priority').value,done:false,note:'',files:[]});
-  document.getElementById('todo-text').value='';document.getElementById('todo-due').value='';
-  renderTodos();await saveData();
+  const text=document.getElementById('t-txt').value.trim();if(!text)return;
+  db.todos.push({id:Date.now(),text,cat:document.getElementById('t-cat').value,
+    due:document.getElementById('t-due').value,pri:document.getElementById('t-pri').value,done:false,note:''});
+  document.getElementById('t-txt').value='';document.getElementById('t-due').value='';
+  renderTodos();await save();
 }
-async function toggleDone(id){const t=db.todos.find(t=>t.id===id);if(t){t.done=!t.done;renderTodos();await saveData();}}
-async function deleteTodo(id){
+async function togDone(id){
+  const t=db.todos.find(t=>t.id===id);if(t){t.done=!t.done;renderTodos();await save();}
+}
+async function delTodo(id){
   const t=db.todos.find(t=>t.id===id);
-  if(!confirm('確定要刪除待辦「'+(t?t.text:'此項目')+'」嗎？'))return;
-  db.todos=db.todos.filter(t=>t.id!==id);renderTodos();await saveData();
+  if(!confirm('確定刪除「'+(t?t.text:'')+'」？'))return;
+  db.todos=db.todos.filter(t=>t.id!==id);renderTodos();await save();
 }
-function openTodoDetail(id){
+function openTodo(id){
   const t=db.todos.find(t=>t.id===id);if(!t)return;
-  const bodyHtml=`
-    <div class="frow"><div class="field" style="flex:1"><label>事項名稱</label><input type="text" id="em-title" value="${esc(t.text)}"></div></div>
-    <div class="frow" style="margin-top:8px">
-      <div class="field"><label>類別</label><select id="em-cat" onchange="handleCatChange(this)">${catOpts(t.cat)}</select></div>
-      <div class="field"><label>截止日</label><input type="date" id="em-due" value="${t.due||''}"></div>
-      <div class="field"><label>優先度</label><select id="em-pri"><option value=""${!t.priority?' selected':''}>一般</option><option value="urgent"${t.priority==='urgent'?' selected':''}>緊急</option></select></div>
+  const body=`
+    <div class="fl"><div class="f"><label>事項名稱</label><input id="em-txt" value="${esc(t.text)}"></div></div>
+    <div class="fl" style="margin-top:8px">
+      <div class="f"><label>類別</label><select id="em-cat" onchange="handleCat(this)">${catOpts(t.cat)}</select></div>
+      <div class="f"><label>截止日</label><input type="date" id="em-due" value="${t.due||''}"></div>
+      <div class="f"><label>優先度</label><select id="em-pri"><option value=""${!t.pri?' selected':''}>一般</option><option value="u"${t.pri==='u'?' selected':''}>緊急</option></select></div>
     </div>
-    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(t.note||'')}</textarea></div></div>
-    <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件</div>
-    <div id="todo-files-${t.id}">${buildFileGrid(t.files,(idx)=>removeTodoFile(id,idx),()=>addTodoFile(id))}</div></div>`;
-  openEditModal(t.text,bodyHtml,async()=>{
-    const nt=document.getElementById('em-title').value.trim();if(nt)t.text=nt;
+    <div class="fl" style="margin-top:8px"><div class="f"><label>備注</label><textarea id="em-note">${esc(t.note||'')}</textarea></div></div>
+    <div style="margin-top:12px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件（圖片或文件）</div>
+      <div id="fg-${t.id}">${fileGrid(t.id)}</div>
+    </div>`;
+  openModal(t.text,body,async()=>{
+    const nt=document.getElementById('em-txt').value.trim();if(nt)t.text=nt;
     t.cat=document.getElementById('em-cat').value;t.due=document.getElementById('em-due').value;
-    t.priority=document.getElementById('em-pri').value;t.note=document.getElementById('em-note').value;
-    renderTodos();await saveData();
+    t.pri=document.getElementById('em-pri').value;t.note=document.getElementById('em-note').value;
+    renderTodos();await save();
   });
-}
-async function addTodoFile(id){
-  pickFiles(async results=>{
-    const t=db.todos.find(t=>t.id===id);if(!t)return;if(!t.files)t.files=[];t.files.push(...results);
-    renderTodos();const el=document.getElementById('todo-files-'+id);
-    if(el)el.innerHTML=buildFileGrid(t.files,`(idx)=>{removeTodoFile(${id},idx)}`,`()=>{addTodoFile(${id})}`);
-    await saveData();
-  });
-}
-async function removeTodoFile(id,idx){
-  if(!confirm('確定要刪除此附件嗎？'))return;
-  const t=db.todos.find(t=>t.id===id);if(!t||!t.files)return;t.files.splice(idx,1);
-  renderTodos();const el=document.getElementById('todo-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(t.files,(idx)=>removeTodoFile(id,idx),()=>addTodoFile(id));
-  await saveData();
 }
 function renderTodos(){
-  const list=document.getElementById('todo-list');
+  const list=document.getElementById('t-list');
   const arr=[...db.todos.filter(t=>!t.done),...db.todos.filter(t=>t.done)];
-  if(!arr.length){list.innerHTML='<div class="empty"><div class="emoji">🌸</div>還沒有待辦事項</div>';updateProgress();return}
-  list.innerHTML=arr.map(t=>`
-    <div class="item-card">
-      <div class="item-row">
-        <input type="checkbox" style="width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex-shrink:0" ${t.done?'checked':''} onchange="toggleDone(${t.id})">
-        <div class="item-body" onclick="openTodoDetail(${t.id})" style="cursor:pointer">
-          <div class="item-title${t.done?' done':''}">${esc(t.text)}</div>
-          <div class="item-sub">
+  if(!arr.length){list.innerHTML='<div class="empty"><div class="em">🌸</div>還沒有待辦</div>';updProg();return;}
+  list.innerHTML=arr.map(t=>{
+    const fc=getFiles(t.id).length;
+    return`<div class="ic">
+      <div class="ir">
+        <input type="checkbox" style="width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex-shrink:0" ${t.done?'checked':''} onchange="togDone(${t.id})">
+        <div class="ib" onclick="openTodo(${t.id})" style="cursor:pointer">
+          <div class="it${t.done?' done':''}">${esc(t.text)}</div>
+          <div class="is">
             <span class="tag">${t.cat}</span>
             ${t.due?`<span class="tag">📅 ${t.due}</span>`:''}
-            ${t.priority==='urgent'?'<span class="tag urgent">緊急</span>':''}
+            ${t.pri==='u'?'<span class="tag urg">緊急</span>':''}
             ${t.done?'<span class="tag done-t">✓</span>':''}
             ${t.note?'<span class="tag">備注</span>':''}
-            ${loadFilesLocally(t.id).length?`<span class="tag">📎 ${loadFilesLocally(t.id).length}</span>`:''}
+            ${fc?`<span class="tag">📎 ${fc}</span>`:''}
           </div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="openTodoDetail(${t.id})" style="flex-shrink:0;font-size:11px">詳情</button>
-        <button class="btn-del" onclick="deleteTodo(${t.id})">✕</button>
+        <button class="btn btn-g btn-s" onclick="openTodo(${t.id})" style="flex-shrink:0;font-size:11px">詳情</button>
+        <button class="btn-x" onclick="delTodo(${t.id})">✕</button>
       </div>
-    </div>`).join('');
-  updateProgress();
+    </div>`;
+  }).join('');
+  updProg();
 }
-function updateProgress(){
+function updProg(){
   const done=db.todos.filter(t=>t.done).length,total=db.todos.length,pct=total?Math.round(done/total*100):0;
-  document.getElementById('progressBar').style.width=pct+'%';
-  document.getElementById('progressLbl').textContent=`${done} / ${total} 完成（${pct}%）`;
+  document.getElementById('pb').style.width=pct+'%';
+  document.getElementById('pl').textContent=`${done} / ${total} 完成（${pct}%）`;
 }
 
-// ── GUESTS ────────────────────────────────────────────
+// ═══ GUESTS ════════════════════════════════════════════
 async function addGuest(){
   const name=document.getElementById('g-name').value.trim();if(!name)return;
-  db.guests.push({id:Date.now(),name,side:document.getElementById('g-side').value,table:document.getElementById('g-table').value,rsvp:document.getElementById('g-rsvp').value,diet:document.getElementById('g-diet').value,note:'',files:[]});
-  ['g-name','g-table','g-diet'].forEach(id=>document.getElementById(id).value='');
-  renderGuests();await saveData();
+  db.guests.push({id:Date.now(),name,side:document.getElementById('g-side').value,
+    table:document.getElementById('g-tbl').value,rsvp:document.getElementById('g-rsvp').value,
+    diet:document.getElementById('g-diet').value,note:''});
+  ['g-name','g-tbl','g-diet'].forEach(i=>document.getElementById(i).value='');
+  renderGuests();await save();
 }
-async function deleteGuest(id){
+async function delGuest(id){
   const g=db.guests.find(g=>g.id===id);
-  if(!confirm('確定要刪除賓客「'+(g?g.name:'此賓客')+'」嗎？'))return;
-  db.guests=db.guests.filter(g=>g.id!==id);renderGuests();await saveData();
+  if(!confirm('確定刪除賓客「'+(g?g.name:'')+'」？'))return;
+  db.guests=db.guests.filter(g=>g.id!==id);renderGuests();await save();
 }
-function openGuestDetail(id){
+function openGuest(id){
   const g=db.guests.find(g=>g.id===id);if(!g)return;
-  const bodyHtml=`
-    <div class="frow">
-      <div class="field" style="flex:2"><label>姓名</label><input type="text" id="em-name" value="${esc(g.name)}"></div>
-      <div class="field"><label>方</label><select id="em-side"><option${g.side==='新郎方'?' selected':''}>新郎方</option><option${g.side==='新娘方'?' selected':''}>新娘方</option><option${g.side==='共同'?' selected':''}>共同</option></select></div>
+  const body=`
+    <div class="fl">
+      <div class="f" style="flex:2"><label>姓名</label><input id="em-name" value="${esc(g.name)}"></div>
+      <div class="f"><label>方</label><select id="em-side"><option${g.side==='新郎方'?' selected':''}>新郎方</option><option${g.side==='新娘方'?' selected':''}>新娘方</option><option${g.side==='共同'?' selected':''}>共同</option></select></div>
     </div>
-    <div class="frow" style="margin-top:8px">
-      <div class="field"><label>出席確認</label><select id="em-rsvp"><option value="pending"${g.rsvp==='pending'?' selected':''}>待確認</option><option value="yes"${g.rsvp==='yes'?' selected':''}>確認出席</option><option value="no"${g.rsvp==='no'?' selected':''}>無法出席</option></select></div>
-      <div class="field"><label>桌次</label><input type="text" id="em-table" value="${esc(g.table||'')}"></div>
-      <div class="field"><label>飲食需求</label><input type="text" id="em-diet" value="${esc(g.diet||'')}"></div>
+    <div class="fl" style="margin-top:8px">
+      <div class="f"><label>出席</label><select id="em-rsvp"><option value="pending"${g.rsvp==='pending'?' selected':''}>待確認</option><option value="yes"${g.rsvp==='yes'?' selected':''}>確認出席</option><option value="no"${g.rsvp==='no'?' selected':''}>無法出席</option></select></div>
+      <div class="f"><label>桌次</label><input id="em-tbl" value="${esc(g.table||'')}"></div>
+      <div class="f"><label>飲食需求</label><input id="em-diet" value="${esc(g.diet||'')}"></div>
     </div>
-    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(g.note||'')}</textarea></div></div>
-    <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">附件</div>
-    <div id="guest-files-${g.id}">${buildFileGrid(g.files,(idx)=>removeGuestFile(id,idx),()=>addGuestFile(id))}</div></div>`;
-  openEditModal(g.name,bodyHtml,async()=>{
+    <div class="fl" style="margin-top:8px"><div class="f"><label>備注</label><textarea id="em-note">${esc(g.note||'')}</textarea></div></div>
+    <div style="margin-top:12px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">附件（圖片或文件）</div>
+      <div id="fg-${g.id}">${fileGrid(g.id)}</div>
+    </div>`;
+  openModal(g.name,body,async()=>{
     const nn=document.getElementById('em-name').value.trim();if(nn)g.name=nn;
     g.side=document.getElementById('em-side').value;g.rsvp=document.getElementById('em-rsvp').value;
-    g.table=document.getElementById('em-table').value;g.diet=document.getElementById('em-diet').value;g.note=document.getElementById('em-note').value;
-    renderGuests();await saveData();
+    g.table=document.getElementById('em-tbl').value;g.diet=document.getElementById('em-diet').value;
+    g.note=document.getElementById('em-note').value;
+    renderGuests();await save();
   });
 }
-async function addGuestFile(id){
-  const g=db.guests.find(g=>g.id===id);if(!g)return;
-  const results=await pickFiles();
-  if(!results.length)return;
-  const files=getItemFiles(g);files.push(...results);setItemFiles(g,files);
-  renderGuests();
-  const el=document.getElementById('guest-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(g,'removeGuestFile','addGuestFile');
-  await saveData();
-}
-async function removeGuestFile(id,idx){
-  if(!confirm('確定要刪除此附件嗎？'))return;
-  const g=db.guests.find(g=>g.id===id);if(!g)return;
-  const files=getItemFiles(g);files.splice(idx,1);setItemFiles(g,files);
-  renderGuests();const el=document.getElementById('guest-files-'+id);
-  if(el)el.innerHTML=buildFileGrid(g,'removeGuestFile','addGuestFile');
-  await saveData();
-}
 function renderGuests(){
-  document.getElementById('g-total').textContent=db.guests.length;
+  document.getElementById('g-tot').textContent=db.guests.length;
   document.getElementById('g-yes').textContent=db.guests.filter(g=>g.rsvp==='yes').length;
   document.getElementById('g-no').textContent=db.guests.filter(g=>g.rsvp==='no').length;
-  document.getElementById('g-pending').textContent=db.guests.filter(g=>g.rsvp==='pending').length;
-  const list=document.getElementById('guest-list');
-  if(!db.guests.length){list.innerHTML='<div class="empty"><div class="emoji">🎊</div>還沒有賓客</div>';return}
-  const rl={yes:'rsvp-yes',no:'rsvp-no',pending:'rsvp-pending'};
+  document.getElementById('g-pnd').textContent=db.guests.filter(g=>g.rsvp==='pending').length;
+  const list=document.getElementById('g-list');
+  if(!db.guests.length){list.innerHTML='<div class="empty"><div class="em">🎊</div>還沒有賓客</div>';return;}
+  const rl={yes:'ryes',no:'rno',pending:'rpnd'};
   const rt={yes:'確認出席',no:'無法出席',pending:'待確認'};
-  list.innerHTML=db.guests.map(g=>`
-    <div class="item-card">
-      <div class="item-row" onclick="openGuestDetail(${g.id})" style="cursor:pointer">
-        <div class="item-body">
-          <div class="item-title">${esc(g.name)}</div>
-          <div class="item-sub">
+  list.innerHTML=db.guests.map(g=>{
+    const fc=getFiles(g.id).length;
+    return`<div class="ic">
+      <div class="ir" onclick="openGuest(${g.id})">
+        <div class="ib">
+          <div class="it">${esc(g.name)}</div>
+          <div class="is">
             <span class="tag">${g.side}</span>
-            <span class="tag ${rl[g.rsvp]||'rsvp-pending'}">${rt[g.rsvp]||'待確認'}</span>
-            ${g.table?`<span class="tag">桌 ${esc(g.table)}</span>`:''}
+            <span class="tag ${rl[g.rsvp]||'rpnd'}">${rt[g.rsvp]||'待確認'}</span>
+            ${g.table?`<span class="tag">桌${esc(g.table)}</span>`:''}
             ${g.diet?`<span class="tag">${esc(g.diet)}</span>`:''}
-            ${loadFilesLocally(g.id).length?`<span class="tag">📎 ${loadFilesLocally(g.id).length}</span>`:''}
+            ${fc?`<span class="tag">📎 ${fc}</span>`:''}
           </div>
         </div>
-        <button class="btn-del" onclick="event.stopPropagation();deleteGuest(${g.id})">✕</button>
+        <button class="btn-x" onclick="event.stopPropagation();delGuest(${g.id})">✕</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
-// ── CALENDAR ──────────────────────────────────────────
-function setView(v){calView=v;['month','week','list'].forEach(x=>document.getElementById('vt-'+x).classList.toggle('active',x===v));renderCalendar()}
-function changeMonth(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++}if(calMonth<0){calMonth=11;calYear--}renderCalendar()}
-function goToday(){const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();selDate=dateKey(calYear,calMonth,n.getDate());renderCalendar();showEvPanel(selDate)}
-function jumpYear(){calYear=parseInt(document.getElementById('cal-year-sel').value);renderCalendar()}
-function jumpMonth(){calMonth=parseInt(document.getElementById('cal-month-sel').value);renderCalendar()}
-function updateCalJump(){
-  const ySel=document.getElementById('cal-year-sel');const mSel=document.getElementById('cal-month-sel');if(!ySel||!mSel)return;
-  const years=Array.from({length:10},(_,i)=>calYear-3+i);
-  ySel.innerHTML=years.map(y=>`<option${y===calYear?' selected':''}>${y}</option>`).join('');
+// ═══ CALENDAR ══════════════════════════════════════════
+function setV(v){calV=v;['month','week','list'].forEach(x=>document.getElementById('vt-'+x).classList.toggle('on',x===v));renderCal();}
+function chMo(d){calM+=d;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}renderCal();}
+function goToday(){const n=new Date();calY=n.getFullYear();calM=n.getMonth();selD=dkey(calY,calM,n.getDate());renderCal();showEvP(selD);}
+function jYear(){calY=parseInt(document.getElementById('cy').value);renderCal();}
+function jMonth(){calM=parseInt(document.getElementById('cm').value);renderCal();}
+function updCalJ(){
+  const cy=document.getElementById('cy'),cm=document.getElementById('cm');if(!cy||!cm)return;
+  cy.innerHTML=Array.from({length:10},(_,i)=>calY-3+i).map(y=>`<option${y===calY?' selected':''}>${y}</option>`).join('');
   const mns=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  mSel.innerHTML=mns.map((m,i)=>`<option value="${i}"${i===calMonth?' selected':''}>${m}</option>`).join('');
+  cm.innerHTML=mns.map((m,i)=>`<option value="${i}"${i===calM?' selected':''}>${m}</option>`).join('');
 }
-function getEvForDate(ds){
+function getEv(ds){
   const evs=(db.events||[]).filter(e=>e.date===ds);
   const todos=db.todos.filter(t=>t.due&&t.due.replace(/-/g,'/')===ds);
-  const isW=db.weddingDate&&db.weddingDate.replace(/-/g,'/')===ds;
-  const isR=db.registryDate&&db.registryDate.replace(/-/g,'/')===ds;
+  const isW=db.wDate&&db.wDate.replace(/-/g,'/')===ds;
+  const isR=db.rDate&&db.rDate.replace(/-/g,'/')===ds;
   return{evs,todos,isW,isR};
 }
-function renderCalendar(){
+function renderCal(){
   const mns=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  document.getElementById('cal-title').textContent=calYear+'年 '+mns[calMonth];
-  updateCalJump();
-  if(calView==='month')renderMonth();else if(calView==='week')renderWeek();else renderList();
+  document.getElementById('cal-title').textContent=calY+'年 '+mns[calM];
+  updCalJ();
+  if(calV==='month')renderMonth();else if(calV==='week')renderWeek();else renderListV();
 }
 function renderMonth(){
   const body=document.getElementById('cal-body');
   const today=new Date();today.setHours(0,0,0,0);
-  const fd=new Date(calYear,calMonth,1).getDay(),dim=new Date(calYear,calMonth+1,0).getDate(),dip=new Date(calYear,calMonth,0).getDate();
-  let h='<div class="cal-month-grid">';
-  ['日','一','二','三','四','五','六'].forEach(d=>h+=`<div class="cal-dow">${d}</div>`);
-  for(let i=fd-1;i>=0;i--)h+=`<div class="cal-cell other"><div class="cnum">${dip-i}</div></div>`;
+  const fd=new Date(calY,calM,1).getDay(),dim=new Date(calY,calM+1,0).getDate(),dip=new Date(calY,calM,0).getDate();
+  let h='<div class="cmg">';
+  ['日','一','二','三','四','五','六'].forEach(d=>h+=`<div class="cdow">${d}</div>`);
+  for(let i=fd-1;i>=0;i--)h+=`<div class="cc oth"><div class="cn">${dip-i}</div></div>`;
   for(let d=1;d<=dim;d++){
-    const ds=dateKey(calYear,calMonth,d),dt=new Date(calYear,calMonth,d);
-    const isT=dt.getTime()===today.getTime(),isSel=selDate===ds;
-    const{evs,todos,isW,isR}=getEvForDate(ds);
-    let cls='cal-cell';if(isW)cls+=' wedding-d';else if(isR)cls+=' registry-d';if(isT)cls+=' today';if(isSel)cls+=' selected';
+    const ds=dkey(calY,calM,d),dt=new Date(calY,calM,d);
+    const isT=dt.getTime()===today.getTime(),isSel=selD===ds;
+    const{evs,todos,isW,isR}=getEv(ds);
+    let cls='cc';
+    if(isW)cls+=' wed';else if(isR)cls+=' reg';if(isT)cls+=' tod';if(isSel)cls+=' sel';
     const sorted=evs.sort((a,b)=>(a.start||'').localeCompare(b.start||''));
-    const pills=[isW?`<div class="special-tag">💒婚禮</div>`:'',isR?`<div class="special-tag" style="background:var(--green)">📋登記</div>`:'',
-      ...sorted.slice(0,2).map(e=>`<div class="ev-pill" style="background:${e.color||'var(--accent)'}">${e.start?e.start.slice(0,5)+' ':''}${esc(e.text)}</div>`),
+    const pills=[
+      isW?`<div class="sptag">💒婚禮</div>`:'',
+      isR?`<div class="sptag" style="background:var(--green)">📋登記</div>`:'',
+      ...sorted.slice(0,2).map(e=>`<div class="ep" style="background:${e.color||'var(--accent)'}">${e.start?e.start.slice(0,5)+' ':''}${esc(e.text)}</div>`),
       sorted.length>2?`<div style="font-size:9px;color:var(--text3)">+${sorted.length-2}</div>`:'',
-      ...todos.slice(0,1).map(t=>`<div class="ev-pill todo-p">✅ ${esc(t.text)}</div>`)].filter(Boolean);
-    h+=`<div class="${cls}" onclick="selectCalDate('${ds}')"><div class="cnum">${d}</div>${pills.join('')}</div>`;
+      ...todos.slice(0,1).map(t=>`<div class="ep tp">✅ ${esc(t.text)}</div>`)
+    ].filter(Boolean);
+    h+=`<div class="${cls}" onclick="selDate('${ds}')"><div class="cn">${d}</div>${pills.join('')}</div>`;
   }
-  const rem=(fd+dim)%7===0?0:7-(fd+dim)%7;for(let d=1;d<=rem;d++)h+=`<div class="cal-cell other"><div class="cnum">${d}</div></div>`;
+  const rem=(fd+dim)%7===0?0:7-(fd+dim)%7;
+  for(let d=1;d<=rem;d++)h+=`<div class="cc oth"><div class="cn">${d}</div></div>`;
   h+='</div>';body.innerHTML=h;
 }
 function renderWeek(){
   const body=document.getElementById('cal-body');
   const today=new Date();today.setHours(0,0,0,0);
-  const ref=selDate?parseDate(selDate):new Date(),sow=new Date(ref);sow.setDate(ref.getDate()-ref.getDay());
-  const days=Array.from({length:7},(_,i)=>{const d=new Date(sow);d.setDate(sow.getDate()+i);return d});
-  const dows=['日','一','二','三','四','五','六'],hours=Array.from({length:24},(_,i)=>i);
-  let h=`<div class="week-wrap"><div class="week-head"><div class="wh-cell" style="border-right:1px solid var(--border)"></div>`;
-  days.forEach((d,i)=>{const isT=d.getTime()===today.getTime();h+=`<div class="wh-cell${isT?' today-c':''}"><div>${dows[i]}</div><div class="wdate">${d.getDate()}</div></div>`;});
-  h+=`</div><div class="week-body"><div class="wtime-col">${hours.map(h=>`<div class="wtime">${String(h).padStart(2,'0')}:00</div>`).join('')}</div>`;
+  const ref=selD?pdate(selD):new Date(),sow=new Date(ref);sow.setDate(ref.getDate()-ref.getDay());
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(sow);d.setDate(sow.getDate()+i);return d;});
+  const dows=['日','一','二','三','四','五','六'],hrs=Array.from({length:24},(_,i)=>i);
+  let h=`<div class="ww"><div class="wh"><div class="whc" style="border-right:1px solid var(--border)"></div>`;
+  days.forEach((d,i)=>{
+    const isT=d.getTime()===today.getTime();
+    h+=`<div class="whc${isT?' tc':''}"><div>${dows[i]}</div><div class="wd">${d.getDate()}</div></div>`;
+  });
+  h+=`</div><div class="wb"><div class="wtc">${hrs.map(h=>`<div class="wt">${String(h).padStart(2,'0')}:00</div>`).join('')}</div>`;
   days.forEach(d=>{
-    const ds=dateKey(d.getFullYear(),d.getMonth(),d.getDate());
-    const{evs,isW,isR}=getEvForDate(ds);
-    const slots=hours.map(()=>'<div class="wslot"></div>').join('');
-    const wevs=evs.filter(e=>e.start).map(e=>{const[sh,sm]=e.start.split(':').map(Number);const top=sh*38+Math.floor(sm/60*38);let ht=38;if(e.end){const[eh,em]=e.end.split(':').map(Number);ht=Math.max(18,(eh*60+em-sh*60-sm)/60*38);}return`<div class="wev" style="top:${top}px;height:${ht}px;background:${e.color||'var(--accent)'}" onclick="event.stopPropagation();selectCalDate('${ds}')">${e.start.slice(0,5)} ${esc(e.text)}</div>`;}).join('');
+    const ds=dkey(d.getFullYear(),d.getMonth(),d.getDate());
+    const{evs,isW,isR}=getEv(ds);
+    const slots=hrs.map(()=>'<div class="ws"></div>').join('');
+    const wevs=evs.filter(e=>e.start).map(e=>{
+      const[sh,sm]=e.start.split(':').map(Number);
+      const top=sh*38+Math.floor(sm/60*38);
+      let ht=38;if(e.end){const[eh,em]=e.end.split(':').map(Number);ht=Math.max(18,(eh*60+em-sh*60-sm)/60*38);}
+      return`<div class="wev" style="top:${top}px;height:${ht}px;background:${e.color||'var(--accent)'}" onclick="event.stopPropagation();selDate('${ds}')">${e.start.slice(0,5)} ${esc(e.text)}</div>`;
+    }).join('');
     const sp=(isW||isR)?`<div style="background:${isW?'var(--accent)':'var(--green)'};color:#fff;font-size:9px;padding:2px 4px;position:absolute;top:0;left:2px;right:2px;border-radius:2px;z-index:3">${isW?'💒婚禮':'📋登記'}</div>`:'';
-    h+=`<div class="wday-col" onclick="selectCalDate('${ds}')" style="position:relative">${sp}${slots}${wevs}</div>`;
+    h+=`<div class="wdc" onclick="selDate('${ds}')" style="position:relative">${sp}${slots}${wevs}</div>`;
   });
   h+=`</div></div>`;body.innerHTML=h;
 }
-function renderList(){
+function renderListV(){
   const body=document.getElementById('cal-body');
-  const allEvs=[];
-  for(let mi=0;mi<3;mi++){const y=calMonth+mi>11?calYear+1:calYear,m=(calMonth+mi)%12,dim=new Date(y,m+1,0).getDate();
-    for(let d=1;d<=dim;d++){const ds=dateKey(y,m,d),{evs,todos,isW,isR}=getEvForDate(ds);if(evs.length||todos.length||isW||isR)allEvs.push({ds,evs,todos,isW,isR});}}
-  if(!allEvs.length){body.innerHTML='<div class="empty"><div class="emoji">📅</div>未來3個月沒有行程</div>';return}
+  const all=[];
+  for(let mi=0;mi<3;mi++){
+    const y=calM+mi>11?calY+1:calY,m=(calM+mi)%12,dim=new Date(y,m+1,0).getDate();
+    for(let d=1;d<=dim;d++){
+      const ds=dkey(y,m,d),{evs,todos,isW,isR}=getEv(ds);
+      if(evs.length||todos.length||isW||isR)all.push({ds,evs,todos,isW,isR});
+    }
+  }
+  if(!all.length){body.innerHTML='<div class="empty"><div class="em">📅</div>未來3個月沒有行程</div>';return;}
   const dows=['日','一','二','三','四','五','六'];
   let h='<div style="padding:4px 0">';
-  allEvs.forEach(({ds,evs,todos,isW,isR})=>{
-    const dt=parseDate(ds),label=`${ds.replace(/\//g,'-')} ${dows[dt.getDay()]}`;
-    h+=`<div class="list-date-h">${label}</div>`;
-    if(isW)h+=`<div class="list-ev"><div class="list-ev-bar" style="background:var(--accent)"></div><div><div class="list-ev-title">💒 婚禮</div></div></div>`;
-    if(isR)h+=`<div class="list-ev"><div class="list-ev-bar" style="background:var(--green)"></div><div><div class="list-ev-title">📋 登記</div></div></div>`;
+  all.forEach(({ds,evs,todos,isW,isR})=>{
+    const dt=pdate(ds),lbl=`${ds.replace(/\//g,'-')} ${dows[dt.getDay()]}`;
+    h+=`<div class="ldh">${lbl}</div>`;
+    if(isW)h+=`<div class="le"><div class="leb" style="background:var(--accent)"></div><div><div class="let">💒 婚禮</div></div></div>`;
+    if(isR)h+=`<div class="le"><div class="leb" style="background:var(--green)"></div><div><div class="let">📋 登記</div></div></div>`;
     evs.sort((a,b)=>(a.start||'').localeCompare(b.start||'')).forEach(e=>{
-      h+=`<div class="list-ev" onclick="selectCalDate('${ds}')"><div class="list-ev-bar" style="background:${e.color||'var(--accent)'}"></div><div><div class="list-ev-title">${e.start?`<span style="color:var(--text3);font-size:10px">${e.start}${e.end?'–'+e.end:''} </span>`:''}${esc(e.text)}</div>${e.note?`<div class="list-ev-meta">📝 ${esc(e.note)}</div>`:''}</div></div>`;
+      h+=`<div class="le" onclick="selDate('${ds}')"><div class="leb" style="background:${e.color||'var(--accent)'}"></div><div><div class="let">${e.start?`<span style="color:var(--text3);font-size:10px">${e.start}${e.end?'–'+e.end:''} </span>`:''}${esc(e.text)}</div>${e.note?`<div class="lem">📝 ${esc(e.note)}</div>`:''}</div></div>`;
     });
-    todos.forEach(t=>h+=`<div class="list-ev"><div class="list-ev-bar" style="background:var(--green)"></div><div><div class="list-ev-title${t.done?' done':''}">✅ ${esc(t.text)}</div></div></div>`);
+    todos.forEach(t=>h+=`<div class="le"><div class="leb" style="background:var(--green)"></div><div><div class="let${t.done?' done':''}">✅ ${esc(t.text)}</div></div></div>`);
   });
   h+='</div>';body.innerHTML=h;
 }
-function selectCalDate(ds){
-  selDate=ds;if(calView==='month')renderMonth();else if(calView==='week'){const d=parseDate(ds);calYear=d.getFullYear();calMonth=d.getMonth();renderWeek();}
-  showEvPanel(ds);
+function selDate(ds){
+  selD=ds;
+  if(calV==='month')renderMonth();
+  else if(calV==='week'){const d=pdate(ds);calY=d.getFullYear();calM=d.getMonth();renderWeek();}
+  showEvP(ds);
 }
-function closeEvPanel(){document.getElementById('ev-panel').style.display='none';selDate=null;if(calView==='month')renderMonth()}
-function showEvPanel(ds){
-  const panel=document.getElementById('ev-panel'),title=document.getElementById('ev-panel-title'),list=document.getElementById('ev-list'),form=document.getElementById('ev-add-form');
-  panel.style.display='block';
-  const dt=parseDate(ds),dows=['日','一','二','三','四','五','六'];
+function closeEvP(){document.getElementById('evp').style.display='none';selD=null;if(calV==='month')renderMonth();}
+function showEvP(ds){
+  const p=document.getElementById('evp'),title=document.getElementById('evp-title');
+  const list=document.getElementById('ev-list'),form=document.getElementById('evaf');
+  p.style.display='block';
+  const dt=pdate(ds),dows=['日','一','二','三','四','五','六'];
   title.textContent=ds.replace(/\//g,'-')+' ('+dows[dt.getDay()]+')';
-  form.style.display='block';initColorPicker();
-  const{evs,todos,isW,isR}=getEvForDate(ds);
-  if(!evs.length&&!todos.length&&!isW&&!isR){list.innerHTML='<div style="padding:9px 14px;font-size:12px;color:var(--text3)">這天還沒有行程</div>';return}
+  form.style.display='block';initCP();
+  const{evs,todos,isW,isR}=getEv(ds);
+  if(!evs.length&&!todos.length&&!isW&&!isR){list.innerHTML='<div style="padding:9px 14px;font-size:12px;color:var(--text3)">這天還沒有行程</div>';return;}
   const sorted=evs.sort((a,b)=>(a.start||'').localeCompare(b.start||''));
   list.innerHTML=[
-    isW?`<div class="ev-item"><div class="ev-dot" style="background:var(--accent)"></div><div class="ev-body"><div class="ev-title">💒 婚禮</div></div></div>`:'',
-    isR?`<div class="ev-item"><div class="ev-dot" style="background:var(--green)"></div><div class="ev-body"><div class="ev-title">📋 登記</div></div></div>`:'',
-    ...sorted.map(e=>`<div class="ev-item" onclick="openCalEvEdit(${e.id},'${ds}')">
-      <div class="ev-dot" style="background:${e.color||'var(--accent)'}"></div>
-      <div class="ev-body">
-        <div class="ev-title">${e.start?`<span style="color:var(--text3);font-size:10px">${e.start}${e.end?'–'+e.end:''} </span>`:''}${esc(e.text)}</div>
-        ${e.note?`<div class="ev-note">📝 ${esc(e.note)}</div>`:''}
+    isW?`<div class="evi"><div class="evd" style="background:var(--accent)"></div><div class="evb"><div class="evt">💒 婚禮</div></div></div>`:'',
+    isR?`<div class="evi"><div class="evd" style="background:var(--green)"></div><div class="evb"><div class="evt">📋 登記</div></div></div>`:'',
+    ...sorted.map(e=>`<div class="evi" onclick="openEvEdit(${e.id},'${ds}')">
+      <div class="evd" style="background:${e.color||'var(--accent)'}"></div>
+      <div class="evb">
+        <div class="evt">${e.start?`<span style="color:var(--text3);font-size:10px">${e.start}${e.end?'–'+e.end:''} </span>`:''}${esc(e.text)}</div>
+        ${e.note?`<div class="even">📝 ${esc(e.note)}</div>`:''}
       </div>
-      <div class="ev-actions-row">
-        <button class="ev-edit-b" onclick="event.stopPropagation();openCalEvEdit(${e.id},'${ds}')">✏️</button>
-        <button class="btn-del" onclick="event.stopPropagation();deleteCalEv(${e.id})">✕</button>
+      <div style="display:flex;gap:4px;flex-shrink:0;align-items:flex-start">
+        <button style="background:transparent;border:1px solid var(--border);border-radius:var(--r2);padding:2px 7px;font-size:10px;color:var(--text2);cursor:pointer" onclick="event.stopPropagation();openEvEdit(${e.id},'${ds}')">✏️</button>
+        <button class="btn-x" onclick="event.stopPropagation();delEv(${e.id})">✕</button>
       </div>
     </div>`),
-    ...todos.map(t=>`<div class="ev-item"><div class="ev-dot" style="background:var(--green)"></div><div class="ev-body"><div class="ev-title${t.done?' done':''}">✅ ${esc(t.text)}</div></div></div>`)
+    ...todos.map(t=>`<div class="evi"><div class="evd" style="background:var(--green)"></div><div class="evb"><div class="evt${t.done?' done':''}">✅ ${esc(t.text)}</div></div></div>`)
   ].filter(Boolean).join('');
 }
-function initColorPicker(){
-  const p=document.getElementById('ev-color-picker');if(!p)return;
-  p.innerHTML=EV_COLORS.map(c=>`<div class="cswatch${c===selColor?' sel':''}" style="background:${c}" onclick="selColor='${c}';this.parentElement.querySelectorAll('.cswatch').forEach(s=>s.classList.remove('sel'));this.classList.add('sel')"></div>`).join('');
+function initCP(){
+  const p=document.getElementById('ev-cp');if(!p)return;
+  p.innerHTML=EVC.map(c=>`<div class="cs${c===selC?' on':''}" style="background:${c}" onclick="selC='${c}';this.parentElement.querySelectorAll('.cs').forEach(s=>s.classList.remove('on'));this.classList.add('on')"></div>`).join('');
 }
-function openCalEvEdit(id,ds){
+function openEvEdit(id,ds){
   const e=(db.events||[]).find(e=>e.id===id);if(!e)return;
-  window._editEvColor=e.color||EV_COLORS[0];
-  const bodyHtml=`
-    <div class="frow"><div class="field" style="flex:1"><label>行程名稱</label><input type="text" id="em-text" value="${esc(e.text)}"></div></div>
-    <div class="frow" style="margin-top:8px">
-      <div class="field"><label>開始</label><input type="time" id="em-start" value="${e.start||''}"></div>
-      <div class="field"><label>結束</label><input type="time" id="em-end" value="${e.end||''}"></div>
+  window._evc=e.color||EVC[0];
+  const body=`
+    <div class="fl"><div class="f"><label>行程名稱</label><input id="em-txt" value="${esc(e.text)}"></div></div>
+    <div class="fl" style="margin-top:8px">
+      <div class="f"><label>開始</label><input type="time" id="em-s" value="${e.start||''}"></div>
+      <div class="f"><label>結束</label><input type="time" id="em-e" value="${e.end||''}"></div>
     </div>
-    <div class="frow" style="margin-top:8px"><div class="field" style="flex:1"><label>備注</label><textarea id="em-note">${esc(e.note||'')}</textarea></div></div>
+    <div class="fl" style="margin-top:8px"><div class="f"><label>備注</label><textarea id="em-note">${esc(e.note||'')}</textarea></div></div>
     <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">顏色</div>
-    <div class="color-row">${EV_COLORS.map(c=>`<div class="cswatch${c===(e.color||EV_COLORS[0])?' sel':''}" style="background:${c}" onclick="window._editEvColor='${c}';this.parentElement.querySelectorAll('.cswatch').forEach(s=>s.classList.remove('sel'));this.classList.add('sel')"></div>`).join('')}</div></div>`;
-  openEditModal(e.text,bodyHtml,async()=>{
-    const nt=document.getElementById('em-text').value.trim();if(nt)e.text=nt;
-    e.start=document.getElementById('em-start').value;e.end=document.getElementById('em-end').value;
-    e.note=document.getElementById('em-note').value;e.color=window._editEvColor||e.color;
-    renderCalendar();showEvPanel(ds);await saveData();
+    <div class="cr">${EVC.map(c=>`<div class="cs${c===(e.color||EVC[0])?' on':''}" style="background:${c}" onclick="window._evc='${c}';this.parentElement.querySelectorAll('.cs').forEach(s=>s.classList.remove('on'));this.classList.add('on')"></div>`).join('')}</div></div>`;
+  openModal(e.text,body,async()=>{
+    const nt=document.getElementById('em-txt').value.trim();if(nt)e.text=nt;
+    e.start=document.getElementById('em-s').value;e.end=document.getElementById('em-e').value;
+    e.note=document.getElementById('em-note').value;e.color=window._evc||e.color;
+    renderCal();showEvP(ds);await save();
   });
 }
-async function addCalEvent(){
-  if(!selDate)return;const text=document.getElementById('ev-text').value.trim();if(!text)return;
+async function addEv(){
+  if(!selD)return;const text=document.getElementById('ev-txt').value.trim();if(!text)return;
   if(!db.events)db.events=[];
-  db.events.push({id:Date.now(),date:selDate,text,type:document.getElementById('ev-type').value,color:selColor,start:document.getElementById('ev-start').value,end:document.getElementById('ev-end').value,note:document.getElementById('ev-note').value.trim()});
-  document.getElementById('ev-text').value='';document.getElementById('ev-start').value='';document.getElementById('ev-end').value='';document.getElementById('ev-note').value='';
-  renderCalendar();showEvPanel(selDate);await saveData();
+  db.events.push({id:Date.now(),date:selD,text,type:document.getElementById('ev-type').value,
+    color:selC,start:document.getElementById('ev-s').value,end:document.getElementById('ev-e').value,
+    note:document.getElementById('ev-n').value.trim()});
+  document.getElementById('ev-txt').value='';document.getElementById('ev-s').value='';
+  document.getElementById('ev-e').value='';document.getElementById('ev-n').value='';
+  renderCal();showEvP(selD);await save();
 }
-async function deleteCalEv(id){
+async function delEv(id){
   const e=(db.events||[]).find(e=>e.id===id);
-  if(!confirm('確定要刪除行程「'+(e?e.text:'此行程')+'」嗎？'))return;
-  db.events=db.events.filter(e=>e.id!==id);renderCalendar();if(selDate)showEvPanel(selDate);await saveData();
+  if(!confirm('確定刪除行程「'+(e?e.text:'')+'」？'))return;
+  db.events=db.events.filter(e=>e.id!==id);renderCal();if(selD)showEvP(selD);await save();
 }
 
-function renderAll(){renderTodos();renderExpenses();renderVendors();renderGuests();renderCalendar()}
+function renderAll(){renderTodos();renderExps();renderVendors();renderGuests();renderCal();}
 loadData();
 </script>
 </body>
