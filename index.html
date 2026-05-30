@@ -428,7 +428,7 @@ function compressImg(file){
   return new Promise(res=>{
     if(!file.type.startsWith('image/')){
       // Non-image file: store as base64 with size limit
-      if(file.size>2*1024*1024){res(null);alert('檔案太大（限2MB）');return;}
+      if(file.size>10*1024*1024){res(null);alert('檔案太大（限10MB）');return;}
       const r=new FileReader();
       r.onload=()=>res({type:'doc',name:file.name,data:r.result});
       r.onerror=()=>res(null);
@@ -594,7 +594,7 @@ async function loadData(){
   if(cached){
     try{
       const p=JSON.parse(cached);
-      db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+      db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
       migrate();
     }catch(e){db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS]};}
   }
@@ -608,10 +608,12 @@ async function loadData(){
     if(p&&typeof p==='object'&&Object.keys(p).length>1){
       const j=JSON.stringify(p);
       if(j!==lastJ){
-        db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+        db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
         migrate();
-        lastJ=j;
-        localStorage.setItem(LKEY,j);
+        lastJ=JSON.stringify(db);
+        localStorage.setItem(LKEY,lastJ);
+        // if old format, save back migrated version
+        if(p.expenses&&!p.exps){setTimeout(()=>pushFB(),1000);}
         renderAll();updateDates();popSelects();
       }
     }else if(!cached){
@@ -636,9 +638,9 @@ async function loadData(){
       if(p&&typeof p==='object'){
         const j=JSON.stringify(p);
         if(j!==lastJ){
-          db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
-          migrate();lastJ=j;
-          localStorage.setItem(LKEY,j);
+          db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+          migrate();lastJ=JSON.stringify(db);
+          localStorage.setItem(LKEY,lastJ);
           renderAll();updateDates();popSelects();
           setSync('ok','已同步');
         }
@@ -648,15 +650,36 @@ async function loadData(){
 }
 
 function migrate(){
-  if(!db.todos)db.todos=[];if(!db.exps)db.exps=[];
-  if(!db.vendors)db.vendors=[];if(!db.guests)db.guests=[];if(!db.events)db.events=[];
-  // migrate old expense format
+  if(!db.todos)db.todos=[];
+  if(!db.vendors)db.vendors=[];
+  if(!db.guests)db.guests=[];
+  if(!db.events)db.events=[];
+  // read old 'expenses' field if 'exps' missing
+  if((!db.exps||!db.exps.length)&&db.expenses&&db.expenses.length){
+    db.exps=[...db.expenses];
+  }
+  if(!db.exps)db.exps=[];
+  // migrate old paid/unpaid format
   db.exps=db.exps.map(e=>e.paid===undefined?{...e,paid:e.status==='paid'?(e.amount||0):0,unpaid:e.status!=='paid'?(e.amount||0):0}:e);
+  // ensure vendors have paid/unpaid fields
+  db.vendors=db.vendors.map(v=>({paid:0,unpaid:0,...v}));
+  // auto-link vendors to expenses
+  db.vendors.forEach(v=>{
+    const vid=v.id+100000;
+    const linked=db.exps.find(e=>e.id===vid||e.vid===v.id);
+    if(!linked&&(v.paid||v.unpaid)){
+      db.exps.push({id:vid,vid:v.id,name:v.name,cat:v.type,paid:v.paid||0,unpaid:v.unpaid||0,note:v.note||''});
+    }
+  });
 }
 
 // ═══ SEED DATA ═════════════════════════════════════════
 const SEED={
-  wDate:'2027-01-17',rDate:'2027-01-11',cats:[...DCATS],events:[],
+  wDate:'2027-01-17',rDate:'2027-01-11',cats:[...DCATS],events:[
+    {id:9001,date:'2026/06/13',text:'試喜餅',type:'vendor',color:'#b8956a',start:'12:30',end:'22:29',note:'Ooh la love'},
+    {id:9002,date:'2026/06/13',text:'試喜餅',type:'vendor',color:'#6a9e72',start:'14:00',end:'',note:'暖法菓子'},
+    {id:9003,date:'2026/06/13',text:'試喜餅',type:'vendor',color:'#5b8fa8',start:'15:30',end:'',note:'But'},
+  ],
   todos:[
     {id:1001,text:'喜餅',cat:'其他',due:'',pri:'',done:false,note:''},
     {id:1002,text:'互動：似顏繪山山總',cat:'其他',due:'',pri:'',done:false,note:'總價28600，已付18600，尾款10000待付'},
@@ -694,7 +717,19 @@ const SEED={
     {id:3009,name:'似顏繪山山總',type:'其他',contact:'',phone:'',line:'',status:'confirmed',paid:18600,unpaid:10000,note:'互動，總28600'},
     {id:3010,name:'拍拍印',type:'其他',contact:'',phone:'',line:'',status:'confirmed',paid:3000,unpaid:23499,note:'互動+喜帖'},
   ],
-  exps:[],
+  exps:[
+    {id:2001,vid:3001,name:'長榮文苑',cat:'場地',paid:90000,unpaid:360000,note:'婚禮日期2027/1/17'},
+    {id:2002,vid:3006,name:'時尚芭莎澳門',cat:'婚紗',paid:46000,unpaid:15000,note:'精修78張，大框1中框3小框3相本2'},
+    {id:2004,name:'金飾（項鍊1手鐲2戒指1）',cat:'其他',paid:260000,unpaid:0,note:'男生已給'},
+    {id:2005,name:'戒指 Cartier',cat:'其他',paid:50000,unpaid:0,note:'女53000 男43000 我出50000'},
+    {id:2006,vid:3004,name:'婚攝：Fanson',cat:'攝影',paid:7800,unpaid:18200,note:'另加攝影跟錄影'},
+    {id:2008,vid:3005,name:'主持：斯杰',cat:'其他',paid:8800,unpaid:13000,note:''},
+    {id:2010,vid:3002,name:'婚佈：憶起幸福',cat:'場地',paid:8000,unpaid:0,note:''},
+    {id:2011,vid:3003,name:'新秘：Yibi',cat:'其他',paid:7200,unpaid:17300,note:''},
+    {id:2012,vid:3009,name:'互動：似顏繪山山總',cat:'其他',paid:18600,unpaid:10000,note:'總價28600'},
+    {id:2014,vid:3010,name:'互動：拍拍印',cat:'其他',paid:3000,unpaid:23499,note:''},
+    {id:2016,vid:3007,name:'和八字：楊雅晴',cat:'其他',paid:1200,unpaid:0,note:''},
+  ],
   guests:[]
 };
 
