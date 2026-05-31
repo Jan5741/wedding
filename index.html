@@ -403,31 +403,36 @@ const pdate=s=>{const[y,m,d]=s.split(/[-\/]/).map(Number);return new Date(y,m-1,
 const vcolor=id=>{const i=db.vendors.findIndex(v=>v.id===id);return VCS[i%VCS.length]||VCS[0]};
 
 // ═══ FILE STORAGE (localStorage, separate from db) ════
+function _allItems(){
+  return [...(db.vendors||[]),...(db.exps||[]),...(db.todos||[]),...(db.guests||[]),...(db.events||[])];
+}
 function saveFiles(){
-  try{
-    localStorage.setItem(FKEY,JSON.stringify(files));
-  }catch(e){
-    // localStorage full - try removing oldest entries
-    console.warn('Storage full, trying to free space');
-    try{
-      const keys=Object.keys(files);
-      if(keys.length>0){
-        // Remove the first item (oldest)
-        const removed=keys[0];
-        const f2={...files};
-        delete f2[removed];
-        localStorage.setItem(FKEY,JSON.stringify(f2));
-        console.warn('Removed files for item',removed);
-      }
-    }catch(e2){console.error('Cannot save files even after cleanup',e2);}
-  }
+  // Files live inside db items (_files field) and sync via Firebase automatically.
+  // Also keep localStorage as a fast-load cache.
+  try{localStorage.setItem(FKEY,JSON.stringify(files));}catch(e){console.warn('localStorage full, files only in db');}
 }
 function loadFiles(){
-  try{const d=localStorage.getItem(FKEY);if(d)files=JSON.parse(d);}
-  catch(e){files={};}
+  // Source of truth: _files field inside each db item (comes from Firebase).
+  let found=false;
+  _allItems().forEach(item=>{
+    if(item._files&&item._files.length){files[item.id]=item._files;found=true;}
+  });
+  if(!found){
+    // Migration: load from old localStorage and write into db items.
+    try{const d=localStorage.getItem(FKEY);if(d)files=JSON.parse(d);}catch(e){files={};}
+    _allItems().forEach(item=>{if(files[item.id])item._files=files[item.id];});
+  }
 }
-function getFiles(id){return files[id]||[];}
-function setFiles(id,arr){files[id]=arr;saveFiles();}
+function getFiles(id){
+  const item=_allItems().find(x=>x.id===id);
+  return (item&&item._files)||files[id]||[];
+}
+function setFiles(id,arr){
+  files[id]=arr;
+  const item=_allItems().find(x=>x.id===id);
+  if(item)item._files=arr;
+  saveFiles();
+}
 
 // ═══ IMAGE COMPRESS ════════════════════════════════════
 function compressImg(file){
@@ -518,6 +523,8 @@ async function addFile(itemId){
   renderAll();
   // Sync vendor<->expense files
   syncVendorExpFiles(itemId);
+  // Push to Firebase so files sync across devices
+  await save();
 }
 
 async function delFile(itemId,idx){
@@ -529,6 +536,8 @@ async function delFile(itemId,idx){
   if(el)el.innerHTML=fileGrid(itemId);
   renderAll();
   syncVendorExpFiles(itemId);
+  // Push to Firebase
+  await save();
 }
 
 function openLB(itemId,imgIdx){
@@ -628,6 +637,7 @@ async function loadData(){
         db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
         migrate();lastJ=JSON.stringify(db);
         localStorage.setItem(LKEY,lastJ);
+        files={};loadFiles();
         renderAll();updateDates();popSelects();
         setSync('ok','已同步');
       }else{
@@ -641,6 +651,7 @@ async function loadData(){
       db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
       migrate();lastJ=JSON.stringify(db);
       localStorage.setItem(LKEY,lastJ);
+      files={};loadFiles();
       renderAll();updateDates();popSelects();
       setSync('ok','已同步');
     }else{
@@ -666,6 +677,7 @@ async function loadData(){
         db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
         migrate();lastJ=JSON.stringify(db);
         localStorage.setItem(LKEY,lastJ);
+        files={};loadFiles();
         renderAll();updateDates();popSelects();
         setSync('ok','已同步');
       }
