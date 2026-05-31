@@ -96,6 +96,8 @@ textarea{resize:vertical;min-height:48px}
 #lb img{max-width:92vw;max-height:92vh;object-fit:contain;border-radius:var(--r2)}
 #lb-x{position:absolute;top:14px;right:18px;background:transparent;border:none;color:#fff;font-size:26px;cursor:pointer;opacity:.7}
 #lb-x:hover{opacity:1}
+#lb-dl{position:absolute;top:14px;right:60px;color:#fff;font-size:22px;opacity:.7;text-decoration:none;cursor:pointer}
+#lb-dl:hover{opacity:1}
 /* PROGRESS */
 .pw{background:var(--bg3);border-radius:10px;height:4px;margin:8px 0 3px;overflow:hidden}
 .pb{height:100%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:10px;transition:width .5s}
@@ -190,7 +192,7 @@ textarea{resize:vertical;min-height:48px}
 </head>
 <body>
 <div id="lo"><div class="spin"></div><p style="font-size:12px;color:var(--text3)">載入中…</p></div>
-<div id="lb"><button id="lb-x" onclick="closeLB()">✕</button><img id="lb-img" src="" alt=""></div>
+<div id="lb"><button id="lb-x" onclick="closeLB()">✕</button><a id="lb-dl" download title="下載">⬇</a><img id="lb-img" src="" alt=""></div>
 <div id="ov" onclick="closeSB()"></div>
 <div id="modal" onclick="if(event.target.id==='modal')closeModal()">
   <div class="msheet">
@@ -502,7 +504,7 @@ function fileGrid(itemId){
   });
   docs.forEach((f,i)=>{
     const idx=i+imgs.length;
-    h+=`<div class="adoc"><span style="font-size:14px">📄</span><span class="adoc-n" title="${esc(f.name)}">${esc(f.name)}</span><button onclick="delFile(${itemId},${idx})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 3px;flex-shrink:0">✕</button></div>`;
+    h+=`<div class="adoc" onclick="dlFile(${itemId},${i+imgs.length})" style="cursor:pointer" title="點擊下載"><span style="font-size:14px">📄</span><span class="adoc-n" title="${esc(f.name)}">${esc(f.name)}</span><button onclick="event.stopPropagation();delFile(${itemId},${i+imgs.length})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:0 3px;flex-shrink:0">✕</button></div>`;
   });
   h+=`<div class="aadd" onclick="addFile(${itemId})"><span style="font-size:18px">＋</span><span>加附件</span></div>`;
   h+='</div>';
@@ -545,9 +547,19 @@ function openLB(itemId,imgIdx){
   const f=arr[imgIdx];
   if(!f)return;
   document.getElementById('lb-img').src=f.data;
+  const dl=document.getElementById('lb-dl');
+  dl.href=f.data;dl.download=f.name||'image.jpg';
   document.getElementById('lb').classList.add('on');
 }
 function closeLB(){document.getElementById('lb').classList.remove('on');}
+function dlFile(itemId,idx){
+  const f=getFiles(itemId)[idx];
+  if(!f)return;
+  const a=document.createElement('a');
+  a.href=f.data;a.download=f.name||'file';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>document.body.removeChild(a),100);
+}
 document.getElementById('lb').addEventListener('click',e=>{if(e.target.id==='lb')closeLB();});
 
 // Sync files between vendor and linked expense
