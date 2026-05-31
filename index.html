@@ -568,6 +568,12 @@ function dataURLtoBlob(dataURL){
 function dlFile(itemId,idx){
   const f=getFiles(itemId)[idx];
   if(!f)return;
+  // iOS Safari: open in new tab so built-in PDF viewer handles it
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+  if(isIOS){
+    window.open(f.data,'_blank');
+    return;
+  }
   try{
     const blob=dataURLtoBlob(f.data);
     const url=URL.createObjectURL(blob);
@@ -576,7 +582,6 @@ function dlFile(itemId,idx){
     document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},300);
   }catch(e){
-    // Fallback: open in new tab
     window.open(f.data,'_blank');
   }
 }
