@@ -567,90 +567,97 @@ async function fbSet(data){
   if(!r.ok)throw new Error(r.status);
 }
 
-async function save(){
-  // Add timestamp so we can compare with Firebase
+async function pushFB(){
+  if(saving)return;
+  saving=true;
+  try{
+    await fbSet(db);
+    localStorage.setItem(LKEY,JSON.stringify(db));
+    setSync('ok','已同步');
+  }catch(e){
+    console.error('Firebase push failed:',e);
+    setSync('err','離線（本機已存）');
+  }
+  saving=false;
+}
+
+function save(){
   db._ts=Date.now();
-  // 1. Save to localStorage immediately
   try{
     const j=JSON.stringify(db);
     localStorage.setItem(LKEY,j);
     lastJ=j;
     setSync('spin','儲存中');
   }catch(e){console.error(e);}
-  // 2. Push to Firebase immediately (debounced to avoid hammering)
   clearTimeout(stimer);
-  stimer=setTimeout(pushFB,300);
-}
-
-async function pushFB(){
-  if(saving)return;
-  saving=true;
-  let ok=false;
-  for(let i=0;i<3&&!ok;i++){
-    try{
-      await fbSet(db);
-      lastJ=JSON.stringify(db);
-      localStorage.setItem(LKEY,lastJ);
-      setSync('ok','已同步');
-      ok=true;
-    }catch(e){
-      if(i<2)await new Promise(r=>setTimeout(r,800));
-      else{console.error('Firebase push failed:',e);setSync('err','離線（本機已存）');}
-    }
-  }
-  saving=false;
+  stimer=setTimeout(pushFB,400);
 }
 
 async function loadData(){
   loadFiles();
-
-  // 1. 永遠先載入 localStorage（source of truth）
   const cached=localStorage.getItem(LKEY);
+  let localTs=0;
+
+  // Step 1: Load localStorage immediately
   if(cached){
     try{
       const p=JSON.parse(cached);
       db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
       migrate();
+      localTs=db._ts||0;
       lastJ=JSON.stringify(db);
     }catch(e){
       localStorage.removeItem(LKEY);
-      Object.assign(db,SEED);migrate();db._ts=Date.now();
     }
-  }else{
-    // 第一次，用 SEED
-    Object.assign(db,SEED);migrate();db._ts=Date.now();
   }
+
+  // Step 2: Show immediately
   document.getElementById('lo').style.display='none';
   renderAll();updateDates();popSelects();
   setSync('spin','同步中');
 
-  // 2. 背景嘗試連 Firebase
+  // Step 3: Check Firebase
   try{
     const p=await fbGet();
-    if(p&&typeof p==='object'&&Object.keys(p).length>1){
-      const fbTs=p._ts||0;
-      const localTs=db._ts||0;
-      if(fbTs>localTs){
-        // Firebase 有更新的資料（另一裝置改過）
+    const fbTs=(p&&p._ts)||0;
+
+    if(!cached){
+      // No local data at all
+      if(p&&typeof p==='object'&&Object.keys(p).length>1){
+        // Use Firebase data
         db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
         migrate();lastJ=JSON.stringify(db);
         localStorage.setItem(LKEY,lastJ);
         renderAll();updateDates();popSelects();
         setSync('ok','已同步');
       }else{
-        // 本機比 Firebase 新，推上去
-        pushFB();
+        // Firebase empty too - use seed, push to Firebase
+        Object.assign(db,SEED);migrate();db._ts=Date.now();
+        save();
+        renderAll();updateDates();popSelects();
       }
+    }else if(fbTs>localTs){
+      // Firebase is newer (edited on another device)
+      db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+      migrate();lastJ=JSON.stringify(db);
+      localStorage.setItem(LKEY,lastJ);
+      renderAll();updateDates();popSelects();
+      setSync('ok','已同步');
     }else{
-      // Firebase 是空的，推本機上去
+      // Local is same or newer - push to Firebase
       pushFB();
     }
   }catch(e){
-    console.error(e);
+    console.error('Firebase load error:',e);
+    if(!cached){
+      Object.assign(db,SEED);migrate();db._ts=Date.now();
+      localStorage.setItem(LKEY,JSON.stringify(db));
+      renderAll();updateDates();popSelects();
+    }
     setSync('err','離線（本機資料安全）');
   }
 
-  // 3. 每15秒輪詢同步
+  // Poll every 15s - sync if Firebase is newer
   setInterval(async()=>{
     if(saving)return;
     try{
