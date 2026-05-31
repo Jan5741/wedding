@@ -552,16 +552,17 @@ document.getElementById('lb').addEventListener('click',e=>{if(e.target.id==='lb'
 
 // Sync files between vendor and linked expense
 function syncVendorExpFiles(itemId){
-  // Check if this is a vendor
+  const arr=getFiles(itemId);
+  // Vendor -> sync to all linked expenses
   const v=db.vendors.find(v=>v.id===itemId);
   if(v){
-    const e=db.exps.find(e=>e.vid===itemId);
-    if(e){setFiles(e.id,getFiles(itemId));}
+    db.exps.filter(e=>e.vid===itemId).forEach(e=>setFiles(e.id,arr));
   }
-  // Check if this is an expense linked to vendor
+  // Expense -> sync back to vendor and sibling expenses
   const exp=db.exps.find(e=>e.id===itemId);
   if(exp&&exp.vid){
-    setFiles(exp.vid,getFiles(itemId));
+    setFiles(exp.vid,arr);
+    db.exps.filter(e=>e.vid===exp.vid&&e.id!==itemId).forEach(e=>setFiles(e.id,arr));
   }
 }
 
