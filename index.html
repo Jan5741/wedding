@@ -404,16 +404,22 @@ const vcolor=id=>{const i=db.vendors.findIndex(v=>v.id===id);return VCS[i%VCS.le
 
 // ═══ FILE STORAGE (localStorage, separate from db) ════
 function saveFiles(){
-  try{localStorage.setItem(FKEY,JSON.stringify(files));}
-  catch(e){
-    // If storage full, compress images further
-    console.warn('File storage full, trying compression');
-    const compressed={};
-    Object.entries(files).forEach(([k,arr])=>{
-      compressed[k]=arr.map(f=>f.type==='img'?{...f,data:f.data.substring(0,50000)}:f);
-    });
-    try{localStorage.setItem(FKEY,JSON.stringify(compressed));}
-    catch(e2){console.error('Cannot save files',e2);}
+  try{
+    localStorage.setItem(FKEY,JSON.stringify(files));
+  }catch(e){
+    // localStorage full - try removing oldest entries
+    console.warn('Storage full, trying to free space');
+    try{
+      const keys=Object.keys(files);
+      if(keys.length>0){
+        // Remove the first item (oldest)
+        const removed=keys[0];
+        const f2={...files};
+        delete f2[removed];
+        localStorage.setItem(FKEY,JSON.stringify(f2));
+        console.warn('Removed files for item',removed);
+      }
+    }catch(e2){console.error('Cannot save files even after cleanup',e2);}
   }
 }
 function loadFiles(){
@@ -562,6 +568,8 @@ async function fbSet(data){
 }
 
 async function save(){
+  // Add timestamp so we can compare with Firebase
+  db._ts=Date.now();
   // 1. Save to localStorage immediately
   try{
     const j=JSON.stringify(db);
@@ -569,9 +577,9 @@ async function save(){
     lastJ=j;
     setSync('spin','儲存中');
   }catch(e){console.error(e);}
-  // 2. Push to Firebase (debounced)
+  // 2. Push to Firebase immediately (debounced to avoid hammering)
   clearTimeout(stimer);
-  stimer=setTimeout(pushFB,500);
+  stimer=setTimeout(pushFB,300);
 }
 
 async function pushFB(){
@@ -580,6 +588,7 @@ async function pushFB(){
   try{
     await fbSet(db);
     lastJ=JSON.stringify(db);
+    localStorage.setItem(LKEY,lastJ);
     setSync('ok','已同步');
   }catch(e){
     console.error('Firebase error:',e);
@@ -606,15 +615,23 @@ async function loadData(){
   try{
     const p=await fbGet();
     if(p&&typeof p==='object'&&Object.keys(p).length>1){
-      const j=JSON.stringify(p);
-      if(j!==lastJ){
-        db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
-        migrate();
-        lastJ=JSON.stringify(db);
-        localStorage.setItem(LKEY,lastJ);
-        // if old format, save back migrated version
-        if(p.expenses&&!p.exps){setTimeout(()=>pushFB(),1000);}
-        renderAll();updateDates();popSelects();
+      const fbTs=p._ts||0;
+      const localTs=db._ts||0;
+      // Only use Firebase data if it's newer than what we have locally
+      if(fbTs>=localTs){
+        const j=JSON.stringify(p);
+        if(j!==lastJ){
+          db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+          migrate();
+          lastJ=JSON.stringify(db);
+          localStorage.setItem(LKEY,lastJ);
+          if(p.expenses&&!p.exps){setTimeout(()=>pushFB(),1000);}
+          renderAll();updateDates();popSelects();
+        }
+      }else{
+        // Local is newer - push local to Firebase
+        console.log('Local data is newer, pushing to Firebase');
+        setTimeout(()=>pushFB(),500);
       }
     }else if(!cached){
       // First time - load seed
@@ -638,6 +655,9 @@ async function loadData(){
       if(p&&typeof p==='object'){
         const j=JSON.stringify(p);
         if(j!==lastJ){
+          const fbTs2=p._ts||0;
+          const localTs2=db._ts||0;
+          if(fbTs2<localTs2){return;} // local is newer, ignore
           db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
           migrate();lastJ=JSON.stringify(db);
           localStorage.setItem(LKEY,lastJ);
