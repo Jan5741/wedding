@@ -452,9 +452,8 @@ async function uploadToCloudinary(file){
   fd.append('file',file);
   fd.append('upload_preset',CDN_PRESET);
   const isImg=file.type.startsWith('image/');
-  const endpoint=isImg
-    ?`https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`
-    :`https://api.cloudinary.com/v1_1/${CDN_CLOUD}/raw/upload`;
+  // Use image/upload for all files so Safari can open PDFs directly
+  const endpoint=`https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`;
   try{
     const r=await fetch(endpoint,{method:'POST',body:fd});
     const d=await r.json();
@@ -570,10 +569,9 @@ function dlFile(itemId,idx){
   const f=getFiles(itemId)[idx];
   if(!f)return;
   let src=f.url||f.data;
-  // For Cloudinary raw files, add fl_attachment to force download/open
-  if(src&&src.includes('res.cloudinary.com')&&!src.startsWith('data:')){
-    // Insert fl_attachment into the URL path for proper file delivery
-    src=src.replace('/upload/','/upload/fl_attachment/');
+  // Fix old raw URLs to image URLs so Safari can open PDFs
+  if(src&&src.includes('res.cloudinary.com')){
+    src=src.replace('/raw/upload/','/image/upload/');
   }
   window.open(src,'_blank');
 }
