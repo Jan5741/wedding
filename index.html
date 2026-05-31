@@ -629,7 +629,7 @@ async function pushFB(){
   saving=false;
 }
 
-function save(){
+async function save(){
   db._ts=Date.now();
   pendingPush=true;
   try{
@@ -639,7 +639,7 @@ function save(){
     setSync('spin','儲存中');
   }catch(e){console.error(e);}
   clearTimeout(stimer);
-  stimer=setTimeout(pushFB,400);
+  await pushFB();
 }
 
 async function loadData(){
