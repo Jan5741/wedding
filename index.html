@@ -615,16 +615,19 @@ async function fbSet(data){
 }
 
 async function pushFB(){
-  if(saving)return;
+  if(saving){console.warn('[pushFB] skipped - already saving');return;}
   saving=true;
   pendingPush=false;
   try{
+    console.log('[pushFB] pushing, size='+JSON.stringify(db).length+' bytes');
     await fbSet(db);
     localStorage.setItem(LKEY,JSON.stringify(db));
     setSync('ok','已同步');
+    console.log('[pushFB] success _ts='+db._ts);
   }catch(e){
-    console.error('Firebase push failed:',e);
-    setSync('err','離線（本機已存）');
+    console.error('[pushFB] FAILED:',e);
+    setSync('err','同步失敗！請截圖回報');
+    alert('⚠️ 資料同步失敗！\n錯誤：'+e.message+'\n\n資料已存在本機，但換裝置後可能看不到。');
   }
   saving=false;
 }
@@ -1023,6 +1026,8 @@ function openExp(id){
     e.paid=parseFloat(document.getElementById('em-paid').value)||0;
     e.unpaid=parseFloat(document.getElementById('em-unpaid').value)||0;
     e.note=document.getElementById('em-note').value;
+    console.log('[openExp save] id='+e.id+' paid='+e.paid+' unpaid='+e.unpaid);
+    console.log('[openExp save] db.exps has id?', db.exps.some(x=>x.id===e.id));
     if(e.vid){
       const v=db.vendors.find(v=>v.id===e.vid);
       if(v){
@@ -1034,6 +1039,7 @@ function openExp(id){
       }
     }
     renderExps();await save();
+    console.log('[openExp save] after save, db.exps entry:', JSON.stringify(db.exps.find(x=>x.id===e.id)));
   });
 }
 function renderExps(){
