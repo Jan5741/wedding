@@ -585,88 +585,85 @@ async function save(){
 async function pushFB(){
   if(saving)return;
   saving=true;
-  try{
-    await fbSet(db);
-    lastJ=JSON.stringify(db);
-    localStorage.setItem(LKEY,lastJ);
-    setSync('ok','已同步');
-  }catch(e){
-    console.error('Firebase error:',e);
-    setSync('err','離線（本機已存）');
-  }finally{saving=false;}
+  let ok=false;
+  for(let i=0;i<3&&!ok;i++){
+    try{
+      await fbSet(db);
+      lastJ=JSON.stringify(db);
+      localStorage.setItem(LKEY,lastJ);
+      setSync('ok','已同步');
+      ok=true;
+    }catch(e){
+      if(i<2)await new Promise(r=>setTimeout(r,800));
+      else{console.error('Firebase push failed:',e);setSync('err','離線（本機已存）');}
+    }
+  }
+  saving=false;
 }
 
 async function loadData(){
   loadFiles();
-  // Show local cache immediately
+
+  // 1. 永遠先載入 localStorage（source of truth）
   const cached=localStorage.getItem(LKEY);
   if(cached){
     try{
       const p=JSON.parse(cached);
       db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
       migrate();
-    }catch(e){db={todos:[],exps:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS]};}
+      lastJ=JSON.stringify(db);
+    }catch(e){
+      localStorage.removeItem(LKEY);
+      Object.assign(db,SEED);migrate();db._ts=Date.now();
+    }
+  }else{
+    // 第一次，用 SEED
+    Object.assign(db,SEED);migrate();db._ts=Date.now();
   }
   document.getElementById('lo').style.display='none';
   renderAll();updateDates();popSelects();
   setSync('spin','同步中');
 
-  // Fetch from Firebase
+  // 2. 背景嘗試連 Firebase
   try{
     const p=await fbGet();
     if(p&&typeof p==='object'&&Object.keys(p).length>1){
       const fbTs=p._ts||0;
       const localTs=db._ts||0;
-      // Only use Firebase data if it's newer than what we have locally
-      if(fbTs>=localTs){
-        const j=JSON.stringify(p);
-        if(j!==lastJ){
-          db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
-          migrate();
-          lastJ=JSON.stringify(db);
-          localStorage.setItem(LKEY,lastJ);
-          if(p.expenses&&!p.exps){setTimeout(()=>pushFB(),1000);}
-          renderAll();updateDates();popSelects();
-        }
+      if(fbTs>localTs){
+        // Firebase 有更新的資料（另一裝置改過）
+        db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+        migrate();lastJ=JSON.stringify(db);
+        localStorage.setItem(LKEY,lastJ);
+        renderAll();updateDates();popSelects();
+        setSync('ok','已同步');
       }else{
-        // Local is newer - push local to Firebase
-        console.log('Local data is newer, pushing to Firebase');
-        setTimeout(()=>pushFB(),500);
+        // 本機比 Firebase 新，推上去
+        pushFB();
       }
-    }else if(!cached){
-      // First time - load seed
-      Object.assign(db,SEED);
-      migrate();
-      await pushFB();
-      renderAll();updateDates();popSelects();
+    }else{
+      // Firebase 是空的，推本機上去
+      pushFB();
     }
-    setSync('ok','已同步');
   }catch(e){
     console.error(e);
-    if(!cached){Object.assign(db,SEED);migrate();renderAll();updateDates();popSelects();}
-    setSync('err','離線模式');
+    setSync('err','離線（本機資料安全）');
   }
 
-  // Poll every 10s for other users' changes
+  // 3. 每15秒輪詢同步
   setInterval(async()=>{
     if(saving)return;
     try{
       const p=await fbGet();
-      if(p&&typeof p==='object'){
-        const j=JSON.stringify(p);
-        if(j!==lastJ){
-          const fbTs2=p._ts||0;
-          const localTs2=db._ts||0;
-          if(fbTs2<localTs2){return;} // local is newer, ignore
-          db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
-          migrate();lastJ=JSON.stringify(db);
-          localStorage.setItem(LKEY,lastJ);
-          renderAll();updateDates();popSelects();
-          setSync('ok','已同步');
-        }
+      if(p&&typeof p==='object'&&(p._ts||0)>(db._ts||0)){
+        db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
+        migrate();lastJ=JSON.stringify(db);
+        localStorage.setItem(LKEY,lastJ);
+        renderAll();updateDates();popSelects();
+        setSync('ok','已同步');
       }
     }catch(e){}
-  },10000);
+  },15000);
 }
 
 function migrate(){
