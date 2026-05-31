@@ -870,11 +870,17 @@ async function handleVtype(sel){
 
 // ═══ VENDOR ════════════════════════════════════════════
 function syncVE(v){
-  // Remove old linked expense
+  // Find existing linked expense to preserve _files and id
+  const existing=db.exps.find(e=>e.vid===v.id);
   db.exps=db.exps.filter(e=>e.vid!==v.id);
   if(v.paid||v.unpaid){
-    // Add/update linked expense
-    db.exps.push({id:v.id+100000,vid:v.id,name:v.name,cat:v.type,paid:v.paid||0,unpaid:v.unpaid||0,note:v.note||''});
+    const expId=existing?existing.id:v.id+100000;
+    const expFiles=existing?existing._files:v._files;
+    const newExp={id:expId,vid:v.id,name:v.name,cat:v.type,paid:v.paid||0,unpaid:v.unpaid||0,note:v.note||''};
+    if(expFiles&&expFiles.length)newExp._files=expFiles;
+    db.exps.push(newExp);
+    // Keep files in sync
+    if(expFiles&&expFiles.length)files[expId]=expFiles;
   }
 }
 async function addVendor(){
@@ -1015,7 +1021,13 @@ function openExp(id){
     e.note=document.getElementById('em-note').value;
     if(e.vid){
       const v=db.vendors.find(v=>v.id===e.vid);
-      if(v){v.paid=e.paid;v.unpaid=e.unpaid;v.note=e.note;v.name=e.name;syncVE(v);renderVendors();}
+      if(v){
+        v.paid=e.paid;v.unpaid=e.unpaid;v.note=e.note;v.name=e.name;
+        // Sync files: expense -> vendor
+        const eFiles=getFiles(e.id);
+        if(eFiles.length){v._files=eFiles;files[v.id]=eFiles;}
+        syncVE(v);renderVendors();
+      }
     }
     renderExps();await save();
   });
