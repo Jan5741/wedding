@@ -381,6 +381,8 @@ textarea{resize:vertical;min-height:48px}
 <script>
 // ═══ CONFIG ═══════════════════════════════════════════
 const FB='https://wedding-94cc0-default-rtdb.asia-southeast1.firebasedatabase.app';
+const CDN_CLOUD='dzm2f6dxm';
+const CDN_PRESET='wedding';
 const LKEY='wedding-v10';
 const FKEY='wedding-files-v10'; // separate localStorage key for files
 const EVC=['#b8956a','#6a9e72','#5b8fa8','#a67cb8','#c0715a','#6b9b8e','#b87a5b','#9e8a5b','#7a6ea8','#5b8a6b'];
@@ -409,59 +411,62 @@ function _allItems(){
   return [...(db.vendors||[]),...(db.exps||[]),...(db.todos||[]),...(db.guests||[]),...(db.events||[])];
 }
 function saveFiles(){
-  // Files live inside db items (_files field) and sync via Firebase automatically.
-  // Also keep localStorage as a fast-load cache.
-  try{localStorage.setItem(FKEY,JSON.stringify(files));}catch(e){console.warn('localStorage full, files only in db');}
+  // Files store Cloudinary URLs (tiny text), safe for Firebase sync
+  try{localStorage.setItem(FKEY,JSON.stringify(files));}catch(e){console.warn('localStorage full');}
+  // Write into db items so Firebase syncs URLs across devices
+  _allItems().forEach(item=>{
+    if(files[item.id]&&files[item.id].length)item._files=files[item.id];
+    else delete item._files;
+  });
 }
 function loadFiles(){
-  // Source of truth: _files field inside each db item (comes from Firebase).
+  // Source of truth: _files in db items (Firebase, contains Cloudinary URLs)
   let found=false;
   _allItems().forEach(item=>{
     if(item._files&&item._files.length){files[item.id]=item._files;found=true;}
   });
   if(!found){
-    // Migration: load from old localStorage and write into db items.
     try{const d=localStorage.getItem(FKEY);if(d)files=JSON.parse(d);}catch(e){files={};}
-    _allItems().forEach(item=>{if(files[item.id])item._files=files[item.id];});
+    _allItems().forEach(item=>{
+      if(files[item.id]&&files[item.id].length)item._files=files[item.id];
+    });
   }
+  try{localStorage.setItem(FKEY,JSON.stringify(files));}catch(e){}
 }
 function getFiles(id){
-  const item=_allItems().find(x=>x.id===id);
-  return (item&&item._files)||files[id]||[];
+  return files[id]||[];
 }
 function setFiles(id,arr){
   files[id]=arr;
+  // Write into db item so URL syncs via Firebase
   const item=_allItems().find(x=>x.id===id);
-  if(item)item._files=arr;
+  if(item){if(arr.length)item._files=arr;else delete item._files;}
   saveFiles();
 }
 
 // ═══ IMAGE COMPRESS ════════════════════════════════════
-function compressImg(file){
-  return new Promise(res=>{
-    if(!file.type.startsWith('image/')){
-      // Non-image file: store as base64 with size limit
-      if(file.size>10*1024*1024){res(null);alert('檔案太大（限10MB）');return;}
-      const r=new FileReader();
-      r.onload=()=>res({type:'doc',name:file.name,data:r.result});
-      r.onerror=()=>res(null);
-      r.readAsDataURL(file);
-      return;
-    }
-    const img=new Image();
-    const url=URL.createObjectURL(file);
-    img.onload=()=>{
-      URL.revokeObjectURL(url);
-      const MAX=900;
-      const scale=Math.min(1,MAX/Math.max(img.width,img.height));
-      const w=Math.round(img.width*scale),h=Math.round(img.height*scale);
-      const c=document.createElement('canvas');c.width=w;c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      res({type:'img',name:file.name,data:c.toDataURL('image/jpeg',0.75)});
-    };
-    img.onerror=()=>{URL.revokeObjectURL(url);res(null);};
-    img.src=url;
-  });
+// ═══ CLOUDINARY UPLOAD ════════════════════════════════
+async function uploadToCloudinary(file){
+  if(file.size>20*1024*1024){alert('檔案太大（限20MB）');return null;}
+  const fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset',CDN_PRESET);
+  const isImg=file.type.startsWith('image/');
+  const endpoint=isImg
+    ?`https://api.cloudinary.com/v1_1/${CDN_CLOUD}/image/upload`
+    :`https://api.cloudinary.com/v1_1/${CDN_CLOUD}/raw/upload`;
+  try{
+    const r=await fetch(endpoint,{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.secure_url)return{type:isImg?'img':'doc',name:file.name,url:d.secure_url};
+    console.error('Cloudinary error:',d);
+    alert('上傳失敗：'+(d.error?.message||'未知錯誤'));
+    return null;
+  }catch(e){
+    console.error('Upload failed:',e);
+    alert('上傳失敗，請確認網路連線');
+    return null;
+  }
 }
 
 // ═══ PICK FILES ════════════════════════════════════════
@@ -474,20 +479,20 @@ function pickFiles(){
     inp.style.cssText='position:fixed;top:-200px;left:-200px;width:1px;height:1px;opacity:0';
     document.body.appendChild(inp);
     let done=false;
-    const finish=async(files)=>{
+    const finish=async(fileList)=>{
       if(done)return;done=true;
       try{document.body.removeChild(inp);}catch(e){}
       const results=[];
-      for(const f of Array.from(files||[])){
-        const r=await compressImg(f);
+      setSync('spin','上傳中...');
+      for(const f of Array.from(fileList||[])){
+        const r=await uploadToCloudinary(f);
         if(r)results.push(r);
       }
       res(results);
     };
     inp.addEventListener('change',e=>finish(e.target.files));
     inp.addEventListener('cancel',()=>finish([]));
-    setTimeout(()=>finish([]),120000);
-    // Must be synchronous click for iOS
+    setTimeout(()=>finish([]),300000);
     inp.click();
   });
 }
@@ -500,7 +505,7 @@ function fileGrid(itemId){
   let h='<div class="ag">';
   imgs.forEach((f,i)=>{
     // Use data-idx attribute to avoid quote issues
-    h+=`<div class="ai" onclick="openLB(${itemId},${i})"><img src="${f.data}"><button class="ax" onclick="event.stopPropagation();delFile(${itemId},${i})">✕</button></div>`;
+    h+=`<div class="ai" onclick="openLB(${itemId},${i})"><img src="${f.url||f.data}"><button class="ax" onclick="event.stopPropagation();delFile(${itemId},${i})">✕</button></div>`;
   });
   docs.forEach((f,i)=>{
     const idx=i+imgs.length;
@@ -546,14 +551,10 @@ function openLB(itemId,imgIdx){
   const arr=getFiles(itemId).filter(f=>f.type==='img');
   const f=arr[imgIdx];
   if(!f)return;
-  document.getElementById('lb-img').src=f.data;
+  const src=f.url||f.data;
+  document.getElementById('lb-img').src=src;
   const dl=document.getElementById('lb-dl');
-  try{
-    const blob=dataURLtoBlob(f.data);
-    const burl=URL.createObjectURL(blob);
-    dl.href=burl;dl.download=f.name||'image.jpg';
-    dl.onclick=()=>setTimeout(()=>URL.revokeObjectURL(burl),300);
-  }catch(e){dl.href=f.data;dl.download=f.name||'image.jpg';}
+  dl.href=src;dl.download=f.name||'image.jpg';
   document.getElementById('lb').classList.add('on');
 }
 function closeLB(){document.getElementById('lb').classList.remove('on');}
@@ -568,22 +569,7 @@ function dataURLtoBlob(dataURL){
 function dlFile(itemId,idx){
   const f=getFiles(itemId)[idx];
   if(!f)return;
-  // iOS Safari: open in new tab so built-in PDF viewer handles it
-  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-  if(isIOS){
-    window.open(f.data,'_blank');
-    return;
-  }
-  try{
-    const blob=dataURLtoBlob(f.data);
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download=f.name||'file';
-    document.body.appendChild(a);a.click();
-    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},300);
-  }catch(e){
-    window.open(f.data,'_blank');
-  }
+  window.open(f.url||f.data,'_blank');
 }
 document.getElementById('lb').addEventListener('click',e=>{if(e.target.id==='lb')closeLB();});
 
@@ -615,19 +601,16 @@ async function fbSet(data){
 }
 
 async function pushFB(){
-  if(saving){console.warn('[pushFB] skipped - already saving');return;}
+  if(saving)return;
   saving=true;
   pendingPush=false;
   try{
-    console.log('[pushFB] pushing, size='+JSON.stringify(db).length+' bytes');
     await fbSet(db);
     localStorage.setItem(LKEY,JSON.stringify(db));
     setSync('ok','已同步');
-    console.log('[pushFB] success _ts='+db._ts);
   }catch(e){
-    console.error('[pushFB] FAILED:',e);
-    setSync('err','同步失敗！請截圖回報');
-    alert('⚠️ 資料同步失敗！\n錯誤：'+e.message+'\n\n資料已存在本機，但換裝置後可能看不到。');
+    console.error('Firebase push failed:',e);
+    setSync('err','離線（本機已存）');
   }
   saving=false;
 }
@@ -680,7 +663,7 @@ async function loadData(){
         db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
         migrate();lastJ=JSON.stringify(db);
         localStorage.setItem(LKEY,lastJ);
-        files={};loadFiles();
+        loadFiles();
         renderAll();updateDates();popSelects();
         setSync('ok','已同步');
       }else{
@@ -694,7 +677,7 @@ async function loadData(){
       db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
       migrate();lastJ=JSON.stringify(db);
       localStorage.setItem(LKEY,lastJ);
-      files={};loadFiles();
+      loadFiles();
       renderAll();updateDates();popSelects();
       setSync('ok','已同步');
     }else{
@@ -720,7 +703,7 @@ async function loadData(){
         db={todos:[],vendors:[],guests:[],events:[],wDate:'',rDate:'',cats:[...DCATS],...p};
         migrate();lastJ=JSON.stringify(db);
         localStorage.setItem(LKEY,lastJ);
-        files={};loadFiles();
+        loadFiles();
         renderAll();updateDates();popSelects();
         setSync('ok','已同步');
       }
@@ -881,12 +864,13 @@ function syncVE(v){
   db.exps=db.exps.filter(e=>e.vid!==v.id);
   if(v.paid||v.unpaid){
     const expId=existing?existing.id:v.id+100000;
-    const expFiles=existing?existing._files:v._files;
     const newExp={id:expId,vid:v.id,name:v.name,cat:v.type,paid:v.paid||0,unpaid:v.unpaid||0,note:v.note||''};
-    if(expFiles&&expFiles.length)newExp._files=expFiles;
     db.exps.push(newExp);
-    // Keep files in sync
-    if(expFiles&&expFiles.length)files[expId]=expFiles;
+    // Keep files in sync between vendor and expense (localStorage only)
+    const vFiles=files[v.id]||[];
+    if(vFiles.length)files[expId]=vFiles;
+    else if(files[expId]&&files[expId].length)files[v.id]=files[expId];
+    saveFiles();
   }
 }
 async function addVendor(){
@@ -1032,9 +1016,9 @@ function openExp(id){
       const v=db.vendors.find(v=>v.id===e.vid);
       if(v){
         v.paid=e.paid;v.unpaid=e.unpaid;v.note=e.note;v.name=e.name;
-        // Sync files: expense -> vendor
+        // Sync files between expense and vendor (localStorage only)
         const eFiles=getFiles(e.id);
-        if(eFiles.length){v._files=eFiles;files[v.id]=eFiles;}
+        if(eFiles.length)files[v.id]=eFiles;
         syncVE(v);renderVendors();
       }
     }
