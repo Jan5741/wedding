@@ -569,7 +569,13 @@ function dataURLtoBlob(dataURL){
 function dlFile(itemId,idx){
   const f=getFiles(itemId)[idx];
   if(!f)return;
-  window.open(f.url||f.data,'_blank');
+  let src=f.url||f.data;
+  // For Cloudinary raw files, add fl_attachment to force download/open
+  if(src&&src.includes('res.cloudinary.com')&&!src.startsWith('data:')){
+    // Insert fl_attachment into the URL path for proper file delivery
+    src=src.replace('/upload/','/upload/fl_attachment/');
+  }
+  window.open(src,'_blank');
 }
 document.getElementById('lb').addEventListener('click',e=>{if(e.target.id==='lb')closeLB();});
 
