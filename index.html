@@ -548,17 +548,37 @@ function openLB(itemId,imgIdx){
   if(!f)return;
   document.getElementById('lb-img').src=f.data;
   const dl=document.getElementById('lb-dl');
-  dl.href=f.data;dl.download=f.name||'image.jpg';
+  try{
+    const blob=dataURLtoBlob(f.data);
+    const burl=URL.createObjectURL(blob);
+    dl.href=burl;dl.download=f.name||'image.jpg';
+    dl.onclick=()=>setTimeout(()=>URL.revokeObjectURL(burl),300);
+  }catch(e){dl.href=f.data;dl.download=f.name||'image.jpg';}
   document.getElementById('lb').classList.add('on');
 }
 function closeLB(){document.getElementById('lb').classList.remove('on');}
+function dataURLtoBlob(dataURL){
+  const [header,b64]=dataURL.split(',');
+  const mime=header.match(/:(.*?);/)[1];
+  const bin=atob(b64);
+  const arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
 function dlFile(itemId,idx){
   const f=getFiles(itemId)[idx];
   if(!f)return;
-  const a=document.createElement('a');
-  a.href=f.data;a.download=f.name||'file';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>document.body.removeChild(a),100);
+  try{
+    const blob=dataURLtoBlob(f.data);
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=f.name||'file';
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},300);
+  }catch(e){
+    // Fallback: open in new tab
+    window.open(f.data,'_blank');
+  }
 }
 document.getElementById('lb').addEventListener('click',e=>{if(e.target.id==='lb')closeLB();});
 
