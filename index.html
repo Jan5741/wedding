@@ -870,6 +870,7 @@ async function handleVtype(sel){
 
 // ═══ VENDOR ════════════════════════════════════════════
 function syncVE(v){
+  if(!db.exps)db.exps=[];
   // Find existing linked expense to preserve _files and id
   const existing=db.exps.find(e=>e.vid===v.id);
   db.exps=db.exps.filter(e=>e.vid!==v.id);
@@ -987,6 +988,7 @@ async function addExp(){
   const paid=parseFloat(document.getElementById('e-paid').value)||0;
   const unpaid=parseFloat(document.getElementById('e-unpaid').value)||0;
   if(!paid&&!unpaid)return;
+  if(!db.exps)db.exps=[];
   db.exps.push({id:Date.now(),name,cat:document.getElementById('e-cat').value,paid,unpaid,note:''});
   document.getElementById('e-name').value='';document.getElementById('e-paid').value='';document.getElementById('e-unpaid').value='';
   renderExps();await save();
@@ -1066,6 +1068,7 @@ function renderExps(){
 // ═══ TODOS ═════════════════════════════════════════════
 async function addTodo(){
   const text=document.getElementById('t-txt').value.trim();if(!text)return;
+  if(!db.todos)db.todos=[];
   db.todos.push({id:Date.now(),text,cat:document.getElementById('t-cat').value,
     due:document.getElementById('t-due').value,pri:document.getElementById('t-pri').value,done:false,note:''});
   document.getElementById('t-txt').value='';document.getElementById('t-due').value='';
@@ -1136,6 +1139,7 @@ function updProg(){
 // ═══ GUESTS ════════════════════════════════════════════
 async function addGuest(){
   const name=document.getElementById('g-name').value.trim();if(!name)return;
+  if(!db.guests)db.guests=[];
   db.guests.push({id:Date.now(),name,side:document.getElementById('g-side').value,
     table:document.getElementById('g-tbl').value,rsvp:document.getElementById('g-rsvp').value,
     diet:document.getElementById('g-diet').value,note:''});
