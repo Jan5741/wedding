@@ -1,0 +1,88 @@
+<title>婚禮倒計時</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;700&family=Noto+Sans+TC:wght@300;700&display=swap">
+<style>
+:root {
+  --card: #7B1C1C;
+  --fg: #ffffff;
+  --fg-sub: rgba(255,255,255,0.65);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: transparent;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+
+body {
+  padding-block: 60px;
+  padding-inline: 20px;
+}
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.block {
+  background: var(--card);
+  border-radius: 10px;
+  width: 96px;
+  height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 56px;
+  line-height: 1;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+}
+
+.lbl {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--fg-sub);
+  letter-spacing: 2px;
+}
+</style>
+
+<div class="wrap">
+  <div class="block"><div class="num" id="cd-d">--</div><div class="lbl">天</div></div>
+  <div class="block"><div class="num" id="cd-h">--</div><div class="lbl">時</div></div>
+  <div class="block"><div class="num" id="cd-m">--</div><div class="lbl">分</div></div>
+  <div class="block"><div class="num" id="cd-s">--</div><div class="lbl">秒</div></div>
+</div>
+
+<script>
+const WEDDING = new Date('2027-01-17T00:00:00+08:00');
+function pad(n){ return String(n).padStart(2,'0'); }
+function tick(){
+  const diff = WEDDING - new Date();
+  if(diff <= 0){
+    ['cd-d','cd-h','cd-m','cd-s'].forEach(id=>document.getElementById(id).textContent='00');
+    return;
+  }
+  document.getElementById('cd-d').textContent = Math.floor(diff/86400000);
+  document.getElementById('cd-h').textContent = pad(Math.floor(diff%86400000/3600000));
+  document.getElementById('cd-m').textContent = pad(Math.floor(diff%3600000/60000));
+  document.getElementById('cd-s').textContent = pad(Math.floor(diff%60000/1000));
+}
+tick();
+setInterval(tick,1000);
+</script>
